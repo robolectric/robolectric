@@ -9,11 +9,13 @@ import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -27,6 +29,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.Display;
@@ -45,6 +48,7 @@ import androidx.test.runner.lifecycle.Stage;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.FutureTask;
@@ -54,7 +58,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.shadows.ShadowWindowManagerGlobal.WindowManagerGlobalReflector;
 
 /** Shadow for {@link UiAutomation}. */
 @Implements(UiAutomation.class)
@@ -145,47 +149,51 @@ public class ShadowUiAutomation {
       return null;
     }
 
+    // Fast-path when already on the main Looper thread (e.g. ScreenUpdateHandler in the
+    // Robolectric Simulator).
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      return captureScreenshotOnMainThread();
+    }
+
     FutureTask<Bitmap> screenshotTask =
-        new FutureTask<>(
-            () -> {
-              List<Root> visibleRoots =
-                  getViewRoots().reverse().stream().filter(IS_VISIBLE).collect(toList());
-              Point displaySize = new Point();
-              ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
-              Bitmap screenshot =
-                  Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
-
-              if (visibleRoots.isEmpty()) {
-                // short circuit, nothing to do
-                return screenshot;
-              } else if (visibleRoots.size() == 1
-                  && visibleRoots.getFirst().getRootView().getWidth() == displaySize.x
-                  && visibleRoots.getFirst().getRootView().getHeight() == displaySize.y) {
-                // optimized path - there is only a single full screen window. Just draw into
-                // screenshot and return
-                drawIntoBitmap(screenshot, visibleRoots.getFirst());
-                return screenshot;
-              }
-
-              // multiple windows, draw them independently
-              Canvas screenshotCanvas = new Canvas(screenshot);
-              Paint paint = new Paint();
-              for (Root root : visibleRoots) {
-                Bitmap window =
-                    Bitmap.createBitmap(
-                        root.getRootView().getWidth(),
-                        root.getRootView().getHeight(),
-                        Bitmap.Config.ARGB_8888);
-                drawIntoBitmap(window, root);
-                screenshotCanvas.drawBitmap(
-                    window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
-                window.recycle();
-              }
-              return screenshot;
-            });
-
+        new FutureTask<>(ShadowUiAutomation::captureScreenshotOnMainThread);
     ShadowInstrumentation.runOnMainSyncNoIdle(screenshotTask);
     return screenshotTask.get();
+  }
+
+  private static Bitmap captureScreenshotOnMainThread() {
+    List<Root> visibleRoots =
+        getViewRoots().reverse().stream().filter(IS_VISIBLE).collect(toImmutableList());
+    Point displaySize = new Point();
+    ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
+    Bitmap screenshot = Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
+
+    if (visibleRoots.isEmpty()) {
+      // short circuit, nothing to do
+      return screenshot;
+    } else if (visibleRoots.size() == 1
+        && visibleRoots.getFirst().getRootView().getWidth() == displaySize.x
+        && visibleRoots.getFirst().getRootView().getHeight() == displaySize.y) {
+      // optimized path - there is only a single full screen window. Just draw into
+      // screenshot and return
+      drawIntoBitmap(screenshot, visibleRoots.getFirst());
+      return screenshot;
+    }
+
+    // multiple windows, draw them independently
+    Canvas screenshotCanvas = new Canvas(screenshot);
+    Paint paint = new Paint();
+    for (Root root : visibleRoots) {
+      Bitmap window =
+          Bitmap.createBitmap(
+              root.getRootView().getWidth(),
+              root.getRootView().getHeight(),
+              Bitmap.Config.ARGB_8888);
+      drawIntoBitmap(window, root);
+      screenshotCanvas.drawBitmap(window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
+      window.recycle();
+    }
+    return screenshot;
   }
 
   private static void drawIntoBitmap(Bitmap bitmap, Root root) {
@@ -309,10 +317,12 @@ public class ShadowUiAutomation {
     return ImmutableList.copyOf(roots);
   }
 
+  // Safe cast: WindowManagerGlobal.mRoots is a List<ViewRootImpl> on JB+ SDKs.
   @SuppressWarnings("unchecked")
   private static List<ViewRootImpl> getViewRootImpls() {
     Object windowManager = getViewRootsContainer();
-    Object viewRootsObj = ReflectionHelpers.getField(windowManager, "mRoots");
+    Object viewRootsObj =
+        reflector(WindowManagerGlobalReflector.class, windowManager).getViewRootsObj();
     Class<?> viewRootsClass = viewRootsObj.getClass();
     if (ViewRootImpl[].class.isAssignableFrom(viewRootsClass)) {
       return Arrays.asList((ViewRootImpl[]) viewRootsObj);
@@ -324,10 +334,11 @@ public class ShadowUiAutomation {
     }
   }
 
+  // Safe cast: WindowManagerGlobal.mParams is a List<WindowManager.LayoutParams> on JB+ SDKs.
   @SuppressWarnings("unchecked")
   private static List<WindowManager.LayoutParams> getRootLayoutParams() {
     Object windowManager = getViewRootsContainer();
-    Object paramsObj = ReflectionHelpers.getField(windowManager, "mParams");
+    Object paramsObj = reflector(WindowManagerGlobalReflector.class, windowManager).getParamsObj();
     Class<?> paramsClass = paramsObj.getClass();
     if (WindowManager.LayoutParams[].class.isAssignableFrom(paramsClass)) {
       return Arrays.asList((WindowManager.LayoutParams[]) paramsObj);
@@ -344,13 +355,21 @@ public class ShadowUiAutomation {
   }
 
   private static Set<IBinder> getStartedActivityTokens() {
-    Set<Activity> startedActivities = newConcurrentHashSet();
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
-          startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
-          startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
-        });
+    Set<Activity> startedActivities;
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      startedActivities = new HashSet<>();
+      ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
+      startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
+      startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
+    } else {
+      startedActivities = newConcurrentHashSet();
+      ShadowInstrumentation.runOnMainSyncNoIdle(
+          () -> {
+            ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
+            startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
+            startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
+          });
+    }
 
     return startedActivities.stream()
         .map(activity -> activity.getWindow().getDecorView().getApplicationWindowToken())
