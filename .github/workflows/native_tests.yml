@@ -1,4 +1,4 @@
-name: Graphics Tests
+name: Native Tests
 
 on:
   push:
@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 jobs:
-  graphics_tests:
+  native_tests:
     strategy:
       fail-fast: false
       matrix:
@@ -28,6 +28,8 @@ jobs:
           ubuntu-latest, # Tests Linux x86_64
           windows-latest, # Tests Windows x86_64
         ]
+
+    name: Native Tests
     runs-on: ${{ matrix.device }}
 
     steps:
@@ -51,6 +53,7 @@ jobs:
         run: >
           ./gradlew
           :integration_tests:nativegraphics:testDebugUnitTest
+          :integration_tests:ctesque:testDebugUnitTestNativeResources
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
           "-Dorg.gradle.workers.max=2"

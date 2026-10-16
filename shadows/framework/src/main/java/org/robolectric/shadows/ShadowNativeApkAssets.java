@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.shadows.ShadowArscApkAssets9.FRAMEWORK_APK_PATH;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -19,7 +19,7 @@ import org.robolectric.util.reflector.Static;
 
 @Implements(
     value = ApkAssets.class,
-    minSdk = VANILLA_ICE_CREAM,
+    minSdk = BAKLAVA,
     callNativeMethodsByDefault = true,
     shadowPicker = ShadowApkAssets.Picker.class,
     isInAndroidSdk = false)
