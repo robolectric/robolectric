@@ -24,13 +24,13 @@ class SpotlessPlugin : Plugin<Project> {
       // Add configurations for Kotlin files
       kotlin {
         target("**/*.kt")
-        ktfmt("0.64").googleStyle()
+        ktfmt("0.65").googleStyle()
       }
 
       // Add configurations for Kotlin Gradle files
       kotlinGradle {
         target("**/*.kts")
-        ktfmt("0.64").googleStyle()
+        ktfmt("0.65").googleStyle()
       }
 
       // Only apply YAML and JSON formatting for root project
