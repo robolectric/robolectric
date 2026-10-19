@@ -46,7 +46,7 @@ spotless-gradle = "8.10.4"
 detekt-gradle = "2.0.0-alpha.6"
 
 # https://asm.ow2.io/versions.html
-asm = "9.10.1"
+asm = "9.11.1"
 
 # https://github.com/google/auto/releases
 auto-common = "1.2.2"
