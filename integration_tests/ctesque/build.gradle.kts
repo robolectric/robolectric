@@ -1,3 +1,5 @@
+import org.robolectric.gradle.AndroidSdk
+
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.robolectric.android.project)
@@ -43,6 +45,29 @@ android {
     androidTest.resources.srcDirs(sharedTestResourceDir)
     androidTest.java.srcDirs(sharedTestSourceDir)
   }
+}
+
+afterEvaluate {
+  val testDebugUnitTest = tasks.named<Test>("testDebugUnitTest").get()
+  val testDebugUnitTestNativeResources =
+    tasks.register<Test>("testDebugUnitTestNativeResources") {
+      testClassesDirs = testDebugUnitTest.testClassesDirs
+      classpath = testDebugUnitTest.classpath
+      systemProperty("robolectric.graphicsMode", "NATIVE")
+      systemProperty("robolectric.resourcesMode", "NATIVE")
+      val nativeResourcesSdks =
+        AndroidSdk.ALL_SDKS.filter { it.apiLevel >= AndroidSdk.BAKLAVA.apiLevel }
+          .joinToString(",") { it.apiLevel.toString() }
+      systemProperty("robolectric.enabledSdks", nativeResourcesSdks)
+      filter {
+        isFailOnNoMatchingTests = false
+        includeTestsMatching("android.content.res.AssetManagerTest")
+        includeTestsMatching("android.content.res.ResourcesTest")
+        includeTestsMatching("android.content.res.ThemeTest")
+      }
+    }
+
+  tasks.named("test") { dependsOn(testDebugUnitTestNativeResources) }
 }
 
 dependencies {
