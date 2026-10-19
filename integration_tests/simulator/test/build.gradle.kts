@@ -19,7 +19,7 @@ val createBundleJar =
       project(":integration_tests:simulator:app")
         .layout
         .buildDirectory
-        .dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes")
+        .dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes"),
     )
 
     // Add binary AndroidManifest.xml and resources.arsc from processed resources
@@ -28,7 +28,7 @@ val createBundleJar =
         .layout
         .buildDirectory
         .file(
-          "intermediates/linked_resources_binary_format/debug/processDebugResources/linked-resources-binary-format-debug.ap_"
+          "intermediates/linked_resources_binary_format/debug/processDebugResources/linked-resources-binary-format-debug.ap_",
         )
     from(zipTree(processedRes)) {
       include("AndroidManifest.xml")

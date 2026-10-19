@@ -72,7 +72,7 @@ class RobolectricKspProcessorTest {
     assertThat(content).contains("implements ShadowProvider")
     assertThat(content)
       .contains(
-        "SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(\"java.lang.String\", \"ShadowString\"))"
+        "SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(\"java.lang.String\", \"ShadowString\"))",
       )
   }
 
@@ -172,7 +172,8 @@ class RobolectricKspProcessorTest {
       )
     assertThat(content)
       .contains(
-        "if (RuntimeEnvironment.getApiLevel() >= 19 " + "&& RuntimeEnvironment.getApiLevel() <= 28)"
+        "if (RuntimeEnvironment.getApiLevel() >= 19 " +
+          "&& RuntimeEnvironment.getApiLevel() <= 28)",
       )
   }
 
@@ -225,7 +226,7 @@ class RobolectricKspProcessorTest {
     assertThat(content)
       .contains(
         "if (classTracker.isClassLoaded(\"ShadowString\") " +
-          "|| classTracker.isClassLoaded(\"java.lang.String\")) {"
+          "|| classTracker.isClassLoaded(\"java.lang.String\")) {",
       )
   }
 
@@ -234,7 +235,10 @@ class RobolectricKspProcessorTest {
     val content =
       generate(
         shadowInfos =
-          listOf(shadow("java.util.List", "ShadowList"), shadow("java.lang.String", "ShadowString"))
+          listOf(
+            shadow("java.util.List", "ShadowList"),
+            shadow("java.lang.String", "ShadowString"),
+          ),
       )
     val stringIdx = content.indexOf("\"java.lang.String\"")
     val listIdx = content.indexOf("\"java.util.List\"")
@@ -256,7 +260,7 @@ class RobolectricKspProcessorTest {
     val contentExcluded = generate(shadowInfos = listOf(excludedShadow))
     assertThat(contentVisible)
       .contains(
-        "public static org.robolectric.ShadowDummy shadowOf(com.example.objects.Dummy actual)"
+        "public static org.robolectric.ShadowDummy shadowOf(com.example.objects.Dummy actual)",
       )
     assertThat(contentVisible).contains("return org.robolectric.shadow.api.Shadow.extract(actual);")
     assertThat(contentExcluded).doesNotContain("shadowOf(")
@@ -274,8 +278,8 @@ class RobolectricKspProcessorTest {
               "org.robolectric.ShadowDummy",
               isInAndroidSdk = true,
               actualIsPublic = false,
-            )
-          )
+            ),
+          ),
       )
     assertThat(content).doesNotContain("shadowOf(")
   }
@@ -291,13 +295,13 @@ class RobolectricKspProcessorTest {
               "com.example.objects.Dummy",
               "org.robolectric.ShadowDummy",
               isInAndroidSdk = false,
-            )
+            ),
           ),
       )
     assertThat(content)
       .contains(
         "SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(" +
-          "\"com.example.objects.Dummy\", \"org.robolectric.ShadowDummy\"))"
+          "\"com.example.objects.Dummy\", \"org.robolectric.ShadowDummy\"))",
       )
   }
 
@@ -312,7 +316,7 @@ class RobolectricKspProcessorTest {
               "com.example.objects.Dummy",
               "org.robolectric.ShadowDummy",
               isInAndroidSdk = false,
-            )
+            ),
           ),
       )
     assertThat(content).contains("\"com.example.objects\"")

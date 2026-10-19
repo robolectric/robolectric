@@ -64,7 +64,7 @@ private class RobolectricKspProcessor(private val environment: SymbolProcessorEn
       val shadowInfo = declaration.toShadowInfo(resolver)
       if (shadowInfo == null) {
         environment.logger.error(
-          "Unable to resolve @Implements target for '${declaration.qualifiedName?.asString()}'"
+          "Unable to resolve @Implements target for '${declaration.qualifiedName?.asString()}'",
         )
         return@forEach
       }

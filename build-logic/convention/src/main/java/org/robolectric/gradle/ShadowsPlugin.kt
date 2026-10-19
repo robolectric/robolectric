@@ -53,7 +53,7 @@ class ShadowsPlugin : Plugin<Project> {
         project.layout.file(
           project.project(":processor").tasks.named("generateSdksFile").map {
             it.outputs.files.singleFile
-          }
+          },
         )
 
       options.compilerArgumentProviders.add(
@@ -62,7 +62,7 @@ class ShadowsPlugin : Plugin<Project> {
           sdkCheckMode = shadows.sdkCheckMode,
           jsonDocsDir = jsonDocsDir,
           sdksFile = sdksFile,
-        )
+        ),
       )
     }
 

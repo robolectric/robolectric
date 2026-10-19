@@ -43,7 +43,7 @@ abstract class CollectErrorProneIssuesTask : DefaultTask() {
     val errors = issues.count { it.severity == "error" }
     logger.lifecycle(
       "Error Prone: ${issues.size} issue(s) ($errors error(s)) across " +
-        "${issues.map { it.check }.distinct().size} check(s); report in ${dir.absolutePath}"
+        "${issues.map { it.check }.distinct().size} check(s); report in ${dir.absolutePath}",
     )
   }
 

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
 class VersionTest {
   @Test
   fun testCompareTo(
-    @TestParameter(valuesProvider = CompareToValuesProvider::class) testCase: CompareToTestCase
+    @TestParameter(valuesProvider = CompareToValuesProvider::class) testCase: CompareToTestCase,
   ) {
     val version1 = Version(testCase.version1)
     val version2 = Version(testCase.version2)
@@ -21,7 +21,7 @@ class VersionTest {
 
   @Test
   fun testToString(
-    @TestParameter("", "foo", "1", "1.2", "1.2.3-rc1", "1.2.3", "1.2.3.4") version: String
+    @TestParameter("", "foo", "1", "1.2", "1.2.3-rc1", "1.2.3", "1.2.3.4") version: String,
   ) {
     assertThat(Version(version).toString()).isEqualTo(version)
   }

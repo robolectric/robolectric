@@ -37,7 +37,7 @@ class PerfStatsCollectorPerformanceTest {
     println(
       "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for " +
         "${threadCount * incrementsPerThread} increments across $threadCount " +
-        "threads (different metrics)"
+        "threads (different metrics)",
     )
 
     val metrics = collector.metrics
@@ -72,7 +72,7 @@ class PerfStatsCollectorPerformanceTest {
     println(
       "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for " +
         "${threadCount * incrementsPerThread} increments across $threadCount " +
-        "threads (same metric)"
+        "threads (same metric)",
     )
 
     val metrics = collector.metrics

@@ -95,7 +95,7 @@ class RoborazziRepeatedCaptureTest {
     val application = ApplicationProvider.getApplicationContext<Application>()
     shadowOf(application.packageManager)
       .addActivityIfNotPresent(
-        ComponentName(application.packageName, RepeatedCaptureActivity::class.java.name)
+        ComponentName(application.packageName, RepeatedCaptureActivity::class.java.name),
       )
     return ActivityScenario.launch(RepeatedCaptureActivity::class.java)
   }

@@ -71,7 +71,7 @@ class RobolectricKspCompileTest {
       sourcesGeneratedBySymbolProcessor.firstOrNull { it.name == "Shadows.java" }
         ?: error(
           "Shadows.java not found in generated files: " +
-            "${sourcesGeneratedBySymbolProcessor.map { it.name }.toList()}"
+            "${sourcesGeneratedBySymbolProcessor.map { it.name }.toList()}",
         )
     return shadowsFile.readText()
   }
@@ -92,7 +92,7 @@ class RobolectricKspCompileTest {
 
     error(
       "Service file not found.\ngenerated: ${generatedFiles.map { it.path }}\n" +
-        "kspSources: ${sourcesGeneratedBySymbolProcessor.map { it.path }.toList()}"
+        "kspSources: ${sourcesGeneratedBySymbolProcessor.map { it.path }.toList()}",
     )
   }
 
@@ -267,7 +267,7 @@ class RobolectricKspCompileTest {
     assertThat(content)
       .contains(
         "SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(" +
-          "\"com.test.shadows.Outer.Inner\", \"com.test.shadows.ShadowNested\"))"
+          "\"com.test.shadows.Outer.Inner\", \"com.test.shadows.ShadowNested\"))",
       )
     assertThat(content).doesNotContain("com.test.shadows.Outer\$Inner")
   }
@@ -495,7 +495,7 @@ class RobolectricKspCompileTest {
     assertThat(content)
       .contains(
         "SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(" +
-          "\"com.test.shadows.Outer.Inner\", \"com.test.shadows.ShadowInner\"))"
+          "\"com.test.shadows.Outer.Inner\", \"com.test.shadows.ShadowInner\"))",
       )
     assertThat(content).doesNotContain("com.test.shadows.Outer\$Inner")
   }

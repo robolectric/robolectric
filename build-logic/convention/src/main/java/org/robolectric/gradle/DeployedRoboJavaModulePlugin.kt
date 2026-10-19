@@ -27,7 +27,7 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
  * use `allJava`; modules with Kotlin sources use `allSource` so that `.kt` files are included.
  */
 internal fun Project.configureDeployedModule(
-  sourcesSelector: JavaPluginExtension.() -> SourceDirectorySet
+  sourcesSelector: JavaPluginExtension.() -> SourceDirectorySet,
 ) {
   pluginManager.apply("signing")
   pluginManager.apply("java-library")

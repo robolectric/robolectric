@@ -54,7 +54,7 @@ class PerfStatsCollectorTest {
         collector.measure<String, RuntimeException>("event") {
           fakeClock.delay(10)
           "return value"
-        }
+        },
       )
       .isEqualTo("return value")
     val metrics = collector.metrics

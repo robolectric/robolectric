@@ -41,12 +41,12 @@ class SimulatorPlugin : Plugin<Project> {
         ?: throw GradleException(
           "The '$packageTaskName' task was not found. " +
             "Check that you have set 'android.testOptions.unitTests.isIncludeAndroidResources = true'" +
-            " in your build.gradle(.kts) file."
+            " in your build.gradle(.kts) file.",
         )
     val resourceApkFile =
       targetTask.outputs.files.find { it.name.endsWith(".ap_") }
         ?: throw GradleException(
-          "Could not find an .ap_ file in the outputs of task '$packageTaskName'."
+          "Could not find an .ap_ file in the outputs of task '$packageTaskName'.",
         )
     val testTask = project.tasks.getByName<Test>("test${variantName}UnitTest")
 

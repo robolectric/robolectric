@@ -78,7 +78,7 @@ class ErrorProneReportPlugin : Plugin<Project> {
       logs.setFrom(
         root.fileTree(root.layout.projectDirectory) {
           include("**/build/reports/errorprone/*.log")
-        }
+        },
       )
       projectRoot.set(root.layout.projectDirectory)
       reportDir.set(root.layout.buildDirectory.dir("reports/errorprone"))

@@ -67,7 +67,7 @@ fun androidStubsJar(): ConfigurableFileCollection {
   val androidJar = file(androidJarPath)
   if (!androidJar.exists()) {
     throw GradleException(
-      "android.jar $androidStubsVersion not found at $androidJarPath. Download it through Android SDK Manager, or install the `Android SDK Command-line tools` and run `sdkmanager \"platforms;android-$androidStubsVersion\"`."
+      "android.jar $androidStubsVersion not found at $androidJarPath. Download it through Android SDK Manager, or install the `Android SDK Command-line tools` and run `sdkmanager \"platforms;android-$androidStubsVersion\"`.",
     )
   }
 

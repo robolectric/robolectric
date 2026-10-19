@@ -49,7 +49,7 @@ class ActivityEmbeddingTest {
     embeddingRule.overrideSplitInfo(
       primary,
       listOf(
-        TestSplitInfo(TestActivityStack(listOf(primary)), TestActivityStack(listOf(secondary)))
+        TestSplitInfo(TestActivityStack(listOf(primary)), TestActivityStack(listOf(secondary))),
       ),
     )
     shadowOf(Looper.getMainLooper()).idle()
