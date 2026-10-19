@@ -84,8 +84,8 @@ class FoldablePostureTest {
   ) {
     publisherRule.overrideWindowLayoutInfo(
       TestWindowLayoutInfo(
-        listOf(TestFoldingFeature(activity = activity, state = state, orientation = orientation))
-      )
+        listOf(TestFoldingFeature(activity = activity, state = state, orientation = orientation)),
+      ),
     )
     shadowOf(Looper.getMainLooper()).idle()
   }

@@ -96,9 +96,9 @@ class AdaptiveLayoutTest {
               activity = composeRule.activity,
               state = FoldingFeature.State.HALF_OPENED,
               orientation = FoldingFeature.Orientation.HORIZONTAL,
-            )
-          )
-        )
+            ),
+          ),
+        ),
       )
     }
     composeRule.waitForIdle()

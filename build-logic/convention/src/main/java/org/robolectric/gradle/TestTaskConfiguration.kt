@@ -34,7 +34,7 @@ fun Test.configureTestTask() {
     RobolectricJvmArgumentsProvider(
       robolectricPropertiesProvider = project.providers.systemPropertiesPrefixedBy("robolectric."),
       logger = logger,
-    )
+    ),
   )
   jvmArgumentProviders.add(DefaultJvmArgumentsProvider())
 }

@@ -48,7 +48,7 @@ internal fun KSClassDeclaration.directStaticResetters(
 
 /** Collects `@JvmStatic @Resetter` methods from the companion object of [this] declaration. */
 internal fun KSClassDeclaration.companionObjectResetters(
-  shadowInfo: ShadowInfo
+  shadowInfo: ShadowInfo,
 ): List<ResetterInfo> =
   declarations
     .filterIsInstance<KSClassDeclaration>()

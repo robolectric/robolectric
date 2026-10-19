@@ -37,7 +37,7 @@ val instrumentTasks =
 
       androidAllJarFile =
         layout.projectDirectory.file(
-          androidAllMavenLocal.map { "$it/${androidSdk.version}/${androidSdk.jarFileName}" }
+          androidAllMavenLocal.map { "$it/${androidSdk.version}/${androidSdk.jarFileName}" },
         )
       preinstrumentedJarFile = layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName)
       runtimeClasspath.from(sourceSets.named("main").map { it.runtimeClasspath })
@@ -95,7 +95,7 @@ if (System.getenv("PUBLISH_PREINSTRUMENTED_JARS") == "true") {
       sdksToInstrument().forEach { androidSdk ->
         register<MavenPublication>("sdk${androidSdk.apiLevel}") {
           artifact(
-            layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
+            layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path,
           )
           artifactId = "android-all-instrumented"
           artifact(emptySourcesJar)

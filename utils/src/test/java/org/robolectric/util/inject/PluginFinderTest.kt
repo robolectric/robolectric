@@ -34,7 +34,7 @@ class PluginFinderTest {
         ImplZeroA::class.java,
         ImplOne::class.java,
         ImplZeroB::class.java,
-      )
+      ),
     )
     Truth.assertThat(pluginFinder.findPlugin(Iface::class.java)).isEqualTo(ImplOne::class.java)
   }
@@ -43,7 +43,7 @@ class PluginFinderTest {
   @Throws(Exception::class)
   fun findPlugin_shouldThrowIfAmbiguous() {
     pluginClasses.addAll(
-      listOf(ImplMinus1::class.java, ImplZeroA::class.java, ImplZeroB::class.java)
+      listOf(ImplMinus1::class.java, ImplZeroA::class.java, ImplZeroB::class.java),
     )
     try {
       pluginFinder.findPlugin(Iface::class.java)
@@ -62,7 +62,7 @@ class PluginFinderTest {
         ImplZeroA::class.java,
         ImplOne::class.java,
         ImplZeroB::class.java,
-      )
+      ),
     )
     Truth.assertThat(pluginFinder.findPlugins(Iface::class.java))
       .containsExactly(
@@ -84,7 +84,7 @@ class PluginFinderTest {
         ImplZeroA::class.java,
         ImplOne::class.java,
         ImplZeroB::class.java,
-      )
+      ),
     )
     val plugins = pluginFinder.findPlugins(Iface::class.java)
     Truth.assertThat(plugins)

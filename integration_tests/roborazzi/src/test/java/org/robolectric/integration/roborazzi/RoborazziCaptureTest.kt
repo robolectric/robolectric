@@ -52,7 +52,7 @@ class RoborazziCaptureTest {
           outputDirectoryPath = OUTPUT_DIRECTORY_PATH,
           roborazziOptions =
             RoborazziOptions(recordOptions = RoborazziOptions.RecordOptions(resizeScale = 0.5)),
-        )
+        ),
     )
 
   @Test
@@ -126,7 +126,7 @@ private class RoborazziViewWithElevationTestActivity : Activity() {
             )
             .apply { setMargins(10.toDp(), 10.toDp(), 10.toDp(), 10.toDp()) },
         )
-      }
+      },
     )
   }
 }
@@ -149,7 +149,7 @@ private class RoborazziDialogTestActivity : Activity() {
             )
             .apply { setMargins(10.toDp(), 10.toDp(), 10.toDp(), 10.toDp()) },
         )
-      }
+      },
     )
     AlertDialog.Builder(this).setTitle("Dlg").setPositiveButton("OK") { _, _ -> }.show()
   }

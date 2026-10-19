@@ -73,10 +73,10 @@ internal fun generateShadowProviderContent(
   output.writeText("@SuppressWarnings({\"unchecked\", \"deprecation\"})\n")
   output.writeText("public class $GEN_CLASS implements ShadowProvider {\n")
   output.writeText(
-    "  private static final List<Map.Entry<String, String>> SHADOWS = new ArrayList<>(${directShadows.size});\n"
+    "  private static final List<Map.Entry<String, String>> SHADOWS = new ArrayList<>(${directShadows.size});\n",
   )
   output.writeText(
-    "  private static final Map<String, String> SHADOW_PICKER_MAP = new HashMap<>(${shadowPickers.size});\n\n"
+    "  private static final Map<String, String> SHADOW_PICKER_MAP = new HashMap<>(${shadowPickers.size});\n\n",
   )
   output.writeText("  static {\n")
   directShadows.forEach { shadowInfo ->
@@ -85,12 +85,12 @@ internal fun generateShadowProviderContent(
     val actualCanonicalName = shadowInfo.actualName.replace('$', '.')
     output.writeText(
       "    SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(" +
-        "\"$actualCanonicalName\", \"${shadowInfo.shadowBinaryName}\"));\n"
+        "\"$actualCanonicalName\", \"${shadowInfo.shadowBinaryName}\"));\n",
     )
   }
   shadowPickers.forEach { shadowInfo ->
     output.writeText(
-      "    SHADOW_PICKER_MAP.put(\"${shadowInfo.actualName}\", \"${shadowInfo.shadowPickerBinaryName}\");\n"
+      "    SHADOW_PICKER_MAP.put(\"${shadowInfo.actualName}\", \"${shadowInfo.shadowPickerBinaryName}\");\n",
     )
   }
   output.writeText("  }\n\n")
@@ -111,7 +111,7 @@ internal fun generateShadowProviderContent(
       }
     output.writeText(
       "    if (classTracker.isClassLoaded(\"${resetter.shadowClassName}\") " +
-        "|| classTracker.isClassLoaded(\"${resetter.actualBinaryName}\")) {\n"
+        "|| classTracker.isClassLoaded(\"${resetter.actualBinaryName}\")) {\n",
     )
     output.writeText("      $sdkGuard${resetter.methodCall}\n")
     output.writeText("    }\n")
