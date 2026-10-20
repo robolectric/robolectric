@@ -609,7 +609,8 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private static boolean isSupported() {
     return (OsUtil.isMac()
             && (Objects.equals(arch(), "aarch64") || Objects.equals(arch(), "x86_64")))
-        || (OsUtil.isLinux() && Objects.equals(arch(), "x86_64"))
+        || (OsUtil.isLinux()
+            && (Objects.equals(arch(), "x86_64") || Objects.equals(arch(), "aarch64")))
         || (OsUtil.isWindows() && Objects.equals(arch(), "x86_64"));
   }
 

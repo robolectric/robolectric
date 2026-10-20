@@ -114,7 +114,13 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   @Override
   public URL getResource(String name) {
     if (config.shouldAcquireResource(name)) {
-      return getResourceUrl(name);
+      URL url = getResourceUrl(name);
+      if (url == null && name.contains("android_runtime")) {
+        // android-all does not contain this native library (for example, it has no build for the
+        // current platform). Let one on the test runtime classpath be used instead.
+        return super.getResource(name);
+      }
+      return url;
     }
 
     // Some tools (e.g. Android Studio Coverage) load Android class files as resources to perform
