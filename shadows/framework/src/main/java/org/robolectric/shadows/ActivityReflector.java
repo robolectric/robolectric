@@ -28,6 +28,16 @@ public interface ActivityReflector {
   @Accessor("mToken")
   IBinder getToken();
 
+  // >= O
+  void dispatchMovedToDisplay(int displayId, Configuration config);
+
+  // >= O
+  void dispatchMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig);
+
+  // >= O
+  void dispatchPictureInPictureModeChanged(
+      boolean isInPictureInPictureMode, Configuration newConfig);
+
   // <= M
   void attach(
       Context context,
@@ -331,4 +341,7 @@ public interface ActivityReflector {
 
   @Accessor("mInstrumentation")
   Instrumentation getInstrumentation();
+
+  @Accessor("mCurrentConfig")
+  Configuration getCurrentConfig();
 }
