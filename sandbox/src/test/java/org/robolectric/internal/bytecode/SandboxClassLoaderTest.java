@@ -28,6 +28,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -37,7 +39,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -70,6 +74,10 @@ import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(JUnit4.class)
 public class SandboxClassLoaderTest {
+
+  private static final String NATIVE_LIBRARY = "native/linux/aarch64/libandroid_runtime.so";
+
+  @Rule public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private ClassLoader classLoader;
   private final List<String> transcript = new ArrayList<>();
@@ -172,6 +180,31 @@ public class SandboxClassLoaderTest {
     classLoader.loadClass(AnExampleClass.class.getName());
 
     assertThat(classLoader.isClassLoaded(AnExampleClass.class.getName())).isTrue();
+  }
+
+  @Test
+  public void getResource_androidRuntimeMissingFromAndroidAll_usesClasspath() throws Exception {
+    SandboxClassLoader classLoader = createClassLoader(createResourceRoot(NATIVE_LIBRARY), null);
+
+    assertNotNull(classLoader.getResource(NATIVE_LIBRARY));
+  }
+
+  @Test
+  public void getResource_androidRuntimeInAndroidAll_prefersAndroidAll() throws Exception {
+    URL androidAll = createResourceRoot(NATIVE_LIBRARY);
+    SandboxClassLoader classLoader =
+        createClassLoader(createResourceRoot(NATIVE_LIBRARY), androidAll);
+
+    assertThat(classLoader.getResource(NATIVE_LIBRARY).toString())
+        .startsWith(androidAll.toString());
+  }
+
+  @Test
+  public void getResource_otherAcquiredResourceMissingFromAndroidAll_isNotLoadedFromClasspath()
+      throws Exception {
+    SandboxClassLoader classLoader = createClassLoader(createResourceRoot("build.prop"), null);
+
+    assertNull(classLoader.getResource("build.prop"));
   }
 
   @Test
@@ -565,6 +598,24 @@ public class SandboxClassLoaderTest {
     Field field = aClass.getDeclaredField(fieldName);
     field.setAccessible(true);
     return field.get(o);
+  }
+
+  private URL createResourceRoot(String name) throws Exception {
+    Path path = temporaryFolder.newFolder().toPath();
+    Path file = path.resolve(name);
+    Files.createDirectories(file.getParent());
+    Files.write(file, new byte[] {1});
+    return path.toUri().toURL();
+  }
+
+  private SandboxClassLoader createClassLoader(URL classpathRoot, URL androidAllRoot) {
+    ClassLoader parent = new URLClassLoader(new URL[] {classpathRoot}, null);
+    URL[] androidAll = androidAllRoot == null ? new URL[0] : new URL[] {androidAllRoot};
+    return new SandboxClassLoader(
+        parent,
+        configureBuilder().build(),
+        new UrlResourceProvider(androidAll),
+        new ClassInstrumentor(new ShadowDecorator()));
   }
 
   public static class MyClassHandler implements ClassHandler {
