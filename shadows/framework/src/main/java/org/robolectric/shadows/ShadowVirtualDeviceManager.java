@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -33,8 +34,10 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.view.Surface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
@@ -121,7 +124,7 @@ public class ShadowVirtualDeviceManager {
                     virtualDevice.getDeviceId(),
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName);
-              } else {
+              } else if (getApiLevel() <= CINNAMON_BUN) {
                 return accessor.newInstanceC(
                     ReflectionHelpers.createDelegatingProxy(
                         IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
@@ -130,6 +133,16 @@ public class ShadowVirtualDeviceManager {
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName,
                     deviceName);
+              } else {
+                return accessor.newInstancePostC(
+                    ReflectionHelpers.createDelegatingProxy(
+                        IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
+                    virtualDevice.getDeviceId(),
+                    0, /* profile */
+                    virtualDeviceReflector.getPersistentDeviceId(),
+                    deviceName,
+                    deviceName,
+                    Collections.emptySet());
               }
             })
         .collect(Collectors.toList());
@@ -556,6 +569,16 @@ public class ShadowVirtualDeviceManager {
         String persistentId,
         String name,
         CharSequence displayName);
+
+    @Constructor
+    VirtualDevice newInstancePostC(
+        IVirtualDevice virtualDevice,
+        int id,
+        int profileId,
+        String persistentId,
+        String name,
+        CharSequence displayName,
+        Set<String> requiredDisplayCategories);
 
     @Constructor
     VirtualDevice newInstance(int id, String name);
