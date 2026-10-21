@@ -7,6 +7,9 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
+import static java.nio.file.Files.copy;
+import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import android.database.CursorWindow;
@@ -21,23 +24,32 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -46,12 +58,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 import javax.annotation.Priority;
+import org.robolectric.internal.NativeRuntimeLibraryClaims;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
@@ -534,18 +548,12 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private Path sharedAssetDirectory(String group, URL source, AssetCopier copier) {
     Path directory;
     try {
-      String identity = archiveIdentity(source);
-      if (identity == null) {
-        Logger.info(
-            "Not sharing native runtime %s: %s is not supplied by an archive", group, source);
-        return null;
-      }
-      String key =
-          Hashing.sha256().hashString(identity, StandardCharsets.UTF_8).toString().substring(0, 32);
-      directory =
-          Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME, group + "-" + key);
-    } catch (RuntimeException e) {
+      directory = assetCacheDirectory(group, source, null);
+    } catch (IOException | RuntimeException e) {
       Logger.info("Unable to determine native runtime asset cache directory: " + e.getMessage());
+      return null;
+    }
+    if (directory == null) {
       return null;
     }
     Path marker = directory.resolve(ASSET_CACHE_MARKER);
@@ -576,6 +584,65 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   /**
+   * Returns the shared cache directory for the named group, keyed by the archive that supplies it,
+   * or {@code null} if no archive supplies it. The cache root is created if needed and must be
+   * private to the current user.
+   */
+  private static Path assetCacheDirectory(String group, URL source, Path cacheRoot)
+      throws IOException {
+    String identity = archiveIdentity(source);
+    if (identity == null) {
+      Logger.info("Not sharing native runtime %s: %s is not supplied by an archive", group, source);
+      return null;
+    }
+    String key =
+        Hashing.sha256().hashString(identity, StandardCharsets.UTF_8).toString().substring(0, 32);
+    Path root =
+        cacheRoot != null
+            ? cacheRoot
+            : Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME);
+    ensurePrivateCacheRoot(root);
+    return root.resolve(group + "-" + key);
+  }
+
+  /**
+   * Creates the cache root if it is missing, and otherwise checks that it is a directory owned by
+   * the current user and removes write access for everyone else. Native code is loaded from the
+   * cache, and {@code java.io.tmpdir} is shared by every user on Linux, so a root another user
+   * created must not be used.
+   */
+  private static void ensurePrivateCacheRoot(Path root) throws IOException {
+    if (!root.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+      // Without POSIX permissions (Windows), the temporary directory is already per user.
+      java.nio.file.Files.createDirectories(root);
+      return;
+    }
+    try {
+      java.nio.file.Files.createDirectory(
+          root, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
+    } catch (FileAlreadyExistsException e) {
+      // Checked below, like any existing root.
+    }
+    PosixFileAttributes attributes =
+        java.nio.file.Files.readAttributes(
+            root, PosixFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+    UserPrincipal user =
+        root.getFileSystem()
+            .getUserPrincipalLookupService()
+            .lookupPrincipalByName(System.getProperty("user.name"));
+    if (!attributes.isDirectory() || !attributes.owner().equals(user)) {
+      throw new IOException(root + " must be a directory owned by " + user);
+    }
+    Set<PosixFilePermission> permissions = attributes.permissions();
+    if (permissions.contains(PosixFilePermission.GROUP_WRITE)
+        || permissions.contains(PosixFilePermission.OTHERS_WRITE)) {
+      // Roots created before this check got the user's umask, such as 0775 under umask 002.
+      java.nio.file.Files.setPosixFilePermissions(
+          root, PosixFilePermissions.fromString("rwx------"));
+    }
+  }
+
+  /**
    * Identifies the archive that supplies the given resource by its location plus its size and
    * modification time, so that a rebuilt archive is not mistaken for a cached one. Returns {@code
    * null} if no archive supplies it.
@@ -602,10 +669,9 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
-    Path libraryPath = tempDirectory.getBasePath().resolve(libraryName());
     URL libraryResource = Resources.getResource(nativeLibraryPath());
-    Logger.info("Loading android native library from: %s", libraryResource);
-    Resources.asByteSource(libraryResource).copyTo(Files.asByteSink(libraryPath.toFile()));
+    Path libraryPath = prepareLibrary(libraryResource, libraryName(), tempDirectory);
+    Logger.info("Loading android native library from: %s", libraryPath);
     try {
       System.load(libraryPath.toAbsolutePath().toString());
     } catch (IllegalCallerException e) {
@@ -620,6 +686,111 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               + "    jvmArgs '--enable-native-access=ALL-UNNAMED'\n"
               + "  }",
           e);
+    }
+  }
+
+  private Path prepareLibrary(URL resource, String name, TempDirectory tempDirectory)
+      throws IOException {
+    return prepareLibrary(resource, name, tempDirectory, null);
+  }
+
+  @VisibleForTesting
+  Path prepareLibrary(URL resource, String name, TempDirectory tempDirectory, Path cacheRoot)
+      throws IOException {
+    try {
+      Path cached = cachedLibrary(resource, name, cacheRoot);
+      if (cached != null) {
+        // Native libraries belong to one ClassLoader, even after that loader is closed.
+        if (NativeRuntimeLibraryClaims.claim(cached)) {
+          return cached;
+        }
+        Path copy = tempDirectory.getBasePath().resolve(name);
+        // Path-to-path copying can use filesystem cloning while preserving distinct file
+        // identity.
+        copy(cached, copy, COPY_ATTRIBUTES, REPLACE_EXISTING);
+        return copy;
+      }
+    } catch (IOException | RuntimeException e) {
+      Logger.info("Unable to use the cached native library, extracting it instead: " + e);
+    }
+    Path library = tempDirectory.getBasePath().resolve(name);
+    copyLibraryResource(resource, library);
+    return library;
+  }
+
+  /**
+   * Returns the native library from the shared cache, extracting it there first if it is missing or
+   * its size does not match the archive entry, or {@code null} if it is not supplied by an archive.
+   *
+   * <p>Temporary-file cleaners delete files one at a time, so the library is checked itself rather
+   * than trusting a marker. It is never rewritten in place, since another JVM may have it loaded: a
+   * replacement is extracted beside it and atomically moved over it, leaving any loaded copy
+   * intact.
+   */
+  private static Path cachedLibrary(URL resource, String name, Path cacheRoot) throws IOException {
+    Path directory =
+        assetCacheDirectory("library-" + osName() + "-" + arch() + "-" + name, resource, cacheRoot);
+    if (directory == null) {
+      return null;
+    }
+    long size = entrySize(resource);
+    Path library = directory.resolve(name);
+    if (hasSize(library, size)) {
+      return library;
+    }
+    java.nio.file.Files.createDirectories(directory);
+    Path lockFile = directory.resolveSibling(directory.getFileName() + ".lock");
+    try (RandomAccessFile lockHandle = new RandomAccessFile(lockFile.toFile(), "rw");
+        FileChannel channel = lockHandle.getChannel();
+        FileLock lock = channel.lock()) {
+      // Another process may have extracted it while this one waited for the lock.
+      if (hasSize(library, size)) {
+        return library;
+      }
+      Path extracted = java.nio.file.Files.createTempFile(directory, name, ".tmp");
+      try {
+        copyLibraryResource(resource, extracted);
+        if (!hasSize(extracted, size)) {
+          throw new IOException("Extracted " + name + " does not match its archive entry");
+        }
+        java.nio.file.Files.move(extracted, library, ATOMIC_MOVE);
+      } finally {
+        java.nio.file.Files.deleteIfExists(extracted);
+      }
+      Logger.info("Copied native library to %s", library);
+      return library;
+    }
+  }
+
+  private static long entrySize(URL resource) throws IOException {
+    URLConnection connection = resource.openConnection();
+    if (!(connection instanceof JarURLConnection)) {
+      throw new IOException(resource + " is not an archive entry");
+    }
+    JarURLConnection jarConnection = (JarURLConnection) connection;
+    // Rebuilt archives must not be read through a stale JarURLConnection cache.
+    jarConnection.setUseCaches(false);
+    try (JarFile jar = jarConnection.getJarFile()) {
+      long size = jarConnection.getJarEntry().getSize();
+      if (size < 0) {
+        throw new IOException("Unknown size for " + resource);
+      }
+      return size;
+    }
+  }
+
+  private static boolean hasSize(Path file, long size) throws IOException {
+    return java.nio.file.Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
+        && java.nio.file.Files.size(file) == size;
+  }
+
+  private static void copyLibraryResource(URL source, Path destination) throws IOException {
+    URLConnection connection = source.openConnection();
+    // Rebuilt archives must not be read through a stale JarURLConnection cache.
+    connection.setUseCaches(false);
+    try (InputStream input = connection.getInputStream();
+        var output = Files.asByteSink(destination.toFile()).openStream()) {
+      ByteStreams.copy(input, output);
     }
   }
 
