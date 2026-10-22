@@ -216,8 +216,8 @@ public class AttributeResolution10 {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
           }
           newCookie =
-              assetManager.ResolveReference(
-                  newCookie, valueRef, configRef, typeSetFlagsRef, residRef);
+              assetManager.resolveReference(
+                  newCookie, valueRef, configRef, typeSetFlagsRef, residRef, true /* cacheValue */);
           if (newCookie.intValue() != kInvalidCookie) {
             cookie = newCookie;
           }
@@ -433,7 +433,8 @@ public class AttributeResolution10 {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
           }
           new_cookie =
-              assetManager.ResolveReference(new_cookie, value, config, type_set_flags, resId);
+              assetManager.resolveReference(
+                  new_cookie, value, config, type_set_flags, resId, true /* cacheValue */);
           if (new_cookie.intValue() != kInvalidCookie) {
             cookie = new_cookie;
           }
