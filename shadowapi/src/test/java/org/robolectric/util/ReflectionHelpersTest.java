@@ -326,6 +326,43 @@ public class ReflectionHelpersTest {
   }
 
   @Test
+  public void createDelegatingProxy_keepsHitsAndMissesOnTheirOwnProxy() {
+    DelegatingProxyFixture missing =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Object());
+    DelegatingProxyFixture present =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    for (int i = 0; i < 2; i++) {
+      assertThat(missing.delegateMethod("one")).isNull();
+      assertThat(present.delegateMethod("one")).isEqualTo("called one");
+      assertThat(present.delegateMethod("one", "two")).isEqualTo("called onetwo");
+      assertThat(missing.delegateMethod("one", "two")).isNull();
+    }
+  }
+
+  @Test
+  public void createDelegatingProxy_invokesTheDelegateOnEveryCall() {
+    IllegalStateException failure = new IllegalStateException("second call");
+    Delegate delegate =
+        new Delegate() {
+          private boolean called;
+
+          @Override
+          public String delegateMethod() {
+            if (called) {
+              throw failure;
+            }
+            called = true;
+            return "first call";
+          }
+        };
+    DelegatingProxyFixture proxy =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, delegate);
+    assertThat(proxy.delegateMethod()).isEqualTo("first call");
+    assertThat(assertThrows(IllegalStateException.class, proxy::delegateMethod))
+        .isSameInstanceAs(failure);
+  }
+
+  @Test
   public void createDelegatingProxy_defersToNullProxyIfNoMethodMatches() {
     DelegatingProxyFixture fixture =
         ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Object());
