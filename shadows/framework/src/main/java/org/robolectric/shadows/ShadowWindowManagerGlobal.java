@@ -211,6 +211,14 @@ public class ShadowWindowManagerGlobal {
 
     @Accessor("mViews")
     List<View> getWindowViews();
+
+    // Typed as Object because mRoots and mParams were arrays on pre-JB SDKs and ArrayLists on newer
+    // SDKs; callers (such as ShadowUiAutomation) inspect the runtime type.
+    @Accessor("mRoots")
+    Object getViewRootsObj();
+
+    @Accessor("mParams")
+    Object getParamsObj();
   }
 
   @ForType(className = "android.view.AddWindowResult")
