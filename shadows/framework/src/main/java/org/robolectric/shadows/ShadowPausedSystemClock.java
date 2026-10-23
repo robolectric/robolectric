@@ -193,6 +193,9 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   }
 
   static void internalAdvanceBy(Duration duration) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.RUNNING) {
+      throw new UnsupportedOperationException("advanceBy is not supported in RUNNING mode.");
+    }
     if (duration.toNanos() <= 0) {
       // ignore
       return;

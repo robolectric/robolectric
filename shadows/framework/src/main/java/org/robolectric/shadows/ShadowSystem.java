@@ -14,6 +14,8 @@ public class ShadowSystem {
   public static long nanoTime() {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       return ShadowLegacySystemClock.nanoTime();
+    } else if (ShadowLooper.looperMode() == LooperMode.Mode.RUNNING) {
+      return System.nanoTime();
     } else {
       return ShadowPausedSystemClock.uptimeNanos();
     }
@@ -28,6 +30,8 @@ public class ShadowSystem {
   public static long currentTimeMillis() {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       return ShadowLegacySystemClock.currentTimeMillis();
+    } else if (ShadowLooper.looperMode() == LooperMode.Mode.RUNNING) {
+      return System.currentTimeMillis();
     } else {
       return SystemClock.uptimeMillis();
     }
