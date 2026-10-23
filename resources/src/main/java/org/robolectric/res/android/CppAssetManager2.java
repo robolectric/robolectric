@@ -19,7 +19,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,6 +71,14 @@ public class CppAssetManager2 {
   // enum : ApkAssetsCookie {
   // };
 
+  /** Shares concrete immutable values and preserves the copy contract of extensible subtypes. */
+  private static Res_value copyResourceValue(Res_value value) {
+    if (value.getClass() == Res_value.class) {
+      return value;
+    }
+    return value.copy();
+  }
+
   // Holds a bag that has been merged with its parent, if one exists.
   public static class ResolvedBag {
     // A single key-value entry in a bag.
@@ -79,7 +86,7 @@ public class CppAssetManager2 {
       // The key, as described in ResTable_map.name.
       public int key;
 
-      public Res_value value = new Res_value();
+      public Res_value value;
 
       // The resource ID of the origin style associated with the given entry
       public int style;
@@ -90,10 +97,18 @@ public class CppAssetManager2 {
       ResStringPool key_pool;
       ResStringPool type_pool;
 
+      public Entry() {
+        this(new Res_value());
+      }
+
+      private Entry(Res_value value) {
+        this.value = value;
+      }
+
+      /** A bag copy can replace its value without modifying the source entry. */
       public ResolvedBag.Entry copy() {
-        Entry entry = new Entry();
+        Entry entry = new Entry(copyResourceValue(value));
         entry.key = key;
-        entry.value = value.copy();
         entry.cookie = cookie == null ? null : ApkAssetsCookie.forInt(cookie.intValue());
         entry.key_pool = key_pool;
         entry.type_pool = type_pool;
@@ -883,7 +898,8 @@ public class CppAssetManager2 {
     //     reinterpret_cast<final byte*>(entry.entry) + dtohs(entry.entry.size));
     // out_value.copyFrom_dtoh(*device_value);
     Res_value device_value = entry.get().entry.getResValue();
-    out_value.set(device_value.copy());
+    // Dynamic reference resolution replaces the output value when its package ID changes.
+    out_value.set(copyResourceValue(device_value));
 
     // Convert the package ID to the runtime assigned package ID.
     int err = entry.get().dynamic_ref_table.lookupResourceValue(out_value);
@@ -1132,13 +1148,12 @@ public class CppAssetManager2 {
             return null;
           }
         }
-        Entry new_entry_ = new_entry[i] = new Entry();
+        Entry new_entry_ = new_entry[i] = new Entry(map_entry.value);
         new_entry_.cookie = cookie;
         new_entry_.key = new_key.get();
         new_entry_.key_pool = null;
         new_entry_.type_pool = null;
         new_entry_.style = resid;
-        new_entry_.value = map_entry.value.copy();
         final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
@@ -1211,12 +1226,11 @@ public class CppAssetManager2 {
       if (child_key <= parent_entry.key) {
         // Use the child key if it comes before the parent
         // or is equal to the parent (overrides).
-        Entry new_entry_ = new_entry[newEntryIndex] = new Entry();
+        Entry new_entry_ = new_entry[newEntryIndex] = new Entry(map_entry.value);
         new_entry_.cookie = cookie;
         new_entry_.key = child_key;
         new_entry_.key_pool = null;
         new_entry_.type_pool = null;
-        new_entry_.value = map_entry.value.copy();
         new_entry_.style = resid;
         final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
@@ -1257,12 +1271,11 @@ public class CppAssetManager2 {
           return null;
         }
       }
-      Entry new_entry_ = new_entry[newEntryIndex] = new Entry();
+      Entry new_entry_ = new_entry[newEntryIndex] = new Entry(map_entry.value);
       new_entry_.cookie = cookie;
       new_entry_.key = new_key.get();
       new_entry_.key_pool = null;
       new_entry_.type_pool = null;
-      new_entry_.value = map_entry.value.copy();
       new_entry_.style = resid;
       final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
@@ -1568,9 +1581,8 @@ public class CppAssetManager2 {
       // const auto bag_iter_end = reverse_bag_iterator(begin(bag));
       //     for (auto bag_iter = reverse_bag_iterator(end(bag)); bag_iter != bag_iter_end;
       // ++bag_iter) {
-      List<Entry> bagEntries = new ArrayList<>(Arrays.asList(bag.entries));
-      Collections.reverse(bagEntries);
-      for (ResolvedBag.Entry bag_iter : bagEntries) {
+      for (int i = bag.entries.length - 1; i >= 0; i--) {
+        ResolvedBag.Entry bag_iter = bag.entries[i];
         //   final int attr_resid = bag_iter.key;
         final int attr_resid = bag_iter == null ? 0 : bag_iter.key;
 
@@ -1631,13 +1643,14 @@ public class CppAssetManager2 {
         }
 
         ThemeEntry entry = last_type.entries[entry_idx];
-        if (entry == null) {
-          entry = last_type.entries[entry_idx] = new ThemeEntry();
-          entry.value = new Res_value();
-        }
-        if (force
+        if (entry == null
+            || force
             || (entry.value.dataType == Res_value.TYPE_NULL
                 && entry.value.data != Res_value.DATA_NULL_EMPTY)) {
+          if (entry == null) {
+            // Initialize the entry with its immutable bag value when the attribute is first added.
+            entry = last_type.entries[entry_idx] = new ThemeEntry();
+          }
           entry.cookie = bag_iter.cookie;
           entry.type_spec_flags |= bag.type_spec_flags;
           entry.value = bag_iter.value;
@@ -1824,7 +1837,7 @@ public class CppAssetManager2 {
             ThemeEntry newEntry = new ThemeEntry();
             newEntry.cookie = entry.cookie;
             newEntry.type_spec_flags = entry.type_spec_flags;
-            newEntry.value = entry.value.copy();
+            newEntry.value = copyResourceValue(entry.value);
             newEntries[i] = newEntry;
           }
 
