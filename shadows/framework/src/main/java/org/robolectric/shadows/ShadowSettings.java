@@ -185,8 +185,25 @@ public class ShadowSettings {
           boolean network =
               (value == Settings.Secure.LOCATION_MODE_BATTERY_SAVING
                   || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
-          Settings.Secure.setLocationProviderEnabled(cr, LocationManager.GPS_PROVIDER, gps);
-          Settings.Secure.setLocationProviderEnabled(cr, LocationManager.NETWORK_PROVIDER, network);
+          Set<String> newProvidersSet = new HashSet<>();
+          if (gps) {
+            newProvidersSet.add(LocationManager.GPS_PROVIDER);
+          }
+          if (network) {
+            newProvidersSet.add(LocationManager.NETWORK_PROVIDER);
+          }
+          String newProviders = TextUtils.join(",", newProvidersSet.toArray());
+          String oldProviders =
+              Settings.Secure.getString(cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+          if (!Objects.equals(oldProviders, newProviders)) {
+            dataMap.put(Settings.Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of(newProviders));
+            if (cr != null) {
+              cr.notifyChange(
+                  Settings.Secure.getUriFor(Settings.Secure.LOCATION_PROVIDERS_ALLOWED), null);
+            }
+            Intent providersBroadcast = new Intent(LocationManager.PROVIDERS_CHANGED_ACTION);
+            RuntimeEnvironment.getApplication().sendBroadcast(providersBroadcast);
+          }
         }
 
         Intent modeBroadcast = new Intent(LocationManager.MODE_CHANGED_ACTION);
