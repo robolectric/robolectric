@@ -182,7 +182,8 @@ public class ShadowDisplayManagerGlobal {
   private static class DisplayManagerProxyDelegate {
     private final TreeMap<Integer, DisplayInfo> displayInfos = new TreeMap<>();
     private int nextDisplayId = 0;
-    private final List<IDisplayManagerCallback> callbacks = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<IDisplayManagerCallback> callbacks =
+        new CopyOnWriteArrayList<>();
     private final Map<IVirtualDisplayCallback, Integer> virtualDisplayIds = new HashMap<>();
 
     // @Override
@@ -210,7 +211,9 @@ public class ShadowDisplayManagerGlobal {
     // @Override
     public void registerCallback(IDisplayManagerCallback iDisplayManagerCallback)
         throws RemoteException {
-      this.callbacks.add(iDisplayManagerCallback);
+      // The framework registers the same callback again when its event mask changes.
+      // Keep one delivery per client as listeners are added and removed.
+      this.callbacks.addIfAbsent(iDisplayManagerCallback);
     }
 
     @SuppressWarnings("unused")
