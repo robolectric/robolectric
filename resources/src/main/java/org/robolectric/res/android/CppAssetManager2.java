@@ -1774,7 +1774,8 @@ public class CppAssetManager2 {
         ThemePackage package_ = o.packages_[p];
         if (package_ == null || (copyOnlySystem && p != 0x01)) {
           // The other theme doesn't have this package, clear ours.
-          packages_[p] = new ThemePackage();
+          // ApplyStyle creates package storage when an attribute in this package is added.
+          packages_[p] = null;
           continue;
         }
 
@@ -1803,14 +1804,15 @@ public class CppAssetManager2 {
           ThemeEntry[] newEntries = copied_data.entries = new ThemeEntry[type.entry_count];
           for (int i = 0; i < type.entry_count; i++) {
             ThemeEntry entry = type.entries[i];
-            ThemeEntry newEntry = new ThemeEntry();
-            if (entry != null) {
-              newEntry.cookie = entry.cookie;
-              newEntry.type_spec_flags = entry.type_spec_flags;
-              newEntry.value = entry.value.copy();
-            } else {
-              newEntry.value = Res_value.NULL_VALUE;
+            // AOSP copies unset entries as zeroes. Here they stay null until ApplyStyle sets them.
+            // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp#1087
+            if (entry == null) {
+              continue;
             }
+            ThemeEntry newEntry = new ThemeEntry();
+            newEntry.cookie = entry.cookie;
+            newEntry.type_spec_flags = entry.type_spec_flags;
+            newEntry.value = entry.value.copy();
             newEntries[i] = newEntry;
           }
 
