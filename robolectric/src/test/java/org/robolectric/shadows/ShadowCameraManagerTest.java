@@ -21,9 +21,13 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +55,11 @@ public class ShadowCameraManagerTest {
 
   private final CameraCharacteristics characteristics =
       ShadowCameraCharacteristics.newCameraCharacteristics();
+
+  @After
+  public void tearDown() {
+    ShadowCameraManager.reset();
+  }
 
   @Test
   public void testAddCameraNullCameraId() {
@@ -377,6 +386,121 @@ public class ShadowCameraManagerTest {
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
 
     verify(mockCallback, never()).onCameraUnavailable(CAMERA_ID_0);
+  }
+
+  @Test
+  public void callbackUnregistersSelf_duringOnCameraUnavailable_deliversToRemainingCallbacks() {
+    AtomicInteger callback1Count = new AtomicInteger();
+    CameraManager.AvailabilityCallback callback1 =
+        new CameraManager.AvailabilityCallback() {
+          @Override
+          public void onCameraUnavailable(String cameraId) {
+            callback1Count.incrementAndGet();
+            cameraManager.unregisterAvailabilityCallback(this);
+          }
+        };
+    CameraManager.AvailabilityCallback callback2 = mock(CameraManager.AvailabilityCallback.class);
+
+    cameraManager.registerAvailabilityCallback(callback1, /* handler= */ null);
+    cameraManager.registerAvailabilityCallback(callback2, /* handler= */ null);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    // Remaining callback must still be notified despite callback1 unregistering during iteration
+    verify(callback2).onCameraUnavailable(CAMERA_ID_0);
+
+    // Verify callback1 is unregistered and does not receive subsequent notifications
+    shadowOf(cameraManager).addCamera(CAMERA_ID_1, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_1);
+    verify(callback2).onCameraUnavailable(CAMERA_ID_1);
+    assertThat(callback1Count.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void callbackUnregistersSelf_duringOnCameraAvailable_deliversToRemainingCallbacks() {
+    AtomicInteger callback1Count = new AtomicInteger();
+    CameraManager.AvailabilityCallback callback1 =
+        new CameraManager.AvailabilityCallback() {
+          @Override
+          public void onCameraAvailable(String cameraId) {
+            callback1Count.incrementAndGet();
+            cameraManager.unregisterAvailabilityCallback(this);
+          }
+        };
+    CameraManager.AvailabilityCallback callback2 = mock(CameraManager.AvailabilityCallback.class);
+
+    cameraManager.registerAvailabilityCallback(callback1, /* handler= */ null);
+    cameraManager.registerAvailabilityCallback(callback2, /* handler= */ null);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    // Remaining callback must still be notified despite callback1 unregistering during iteration
+    verify(callback2).onCameraAvailable(CAMERA_ID_0);
+
+    // Verify callback1 is unregistered and does not receive subsequent notifications
+    shadowOf(cameraManager).addCamera(CAMERA_ID_1, characteristics);
+    verify(callback2).onCameraAvailable(CAMERA_ID_1);
+    assertThat(callback1Count.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void concurrentCallbackModificationsAndCameraEvents_executesWithoutException()
+      throws Exception {
+    int threadCount = 4;
+    int iterationsPerThread = 50;
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    CountDownLatch startLatch = new CountDownLatch(1);
+    CountDownLatch doneLatch = new CountDownLatch(threadCount);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    // 4 background threads repeatedly registering and unregistering callbacks
+    for (int t = 0; t < threadCount; t++) {
+      executor.execute(
+          () -> {
+            try {
+              startLatch.await();
+              for (int i = 0; i < iterationsPerThread; i++) {
+                CameraManager.AvailabilityCallback cb = new CameraManager.AvailabilityCallback() {};
+                cameraManager.registerAvailabilityCallback(cb, /* handler= */ null);
+                cameraManager.unregisterAvailabilityCallback(cb);
+              }
+            } catch (Throwable t1) {
+              failure.compareAndSet(null, t1);
+            } finally {
+              doneLatch.countDown();
+            }
+          });
+    }
+
+    startLatch.countDown();
+    // Concurrently trigger camera availability state changes on the test thread
+    for (int i = 0; i < iterationsPerThread; i++) {
+      shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+      shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    }
+
+    assertThat(doneLatch.await(10, SECONDS)).isTrue();
+    executor.shutdown();
+    assertThat(executor.awaitTermination(5, SECONDS)).isTrue();
+
+    // Clean up camera added in test
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    if (failure.get() != null) {
+      throw new AssertionError("Concurrent execution failed", failure.get());
+    }
+
+    // Verify manager remains fully functional and delivers events after concurrent access
+    CameraManager.AvailabilityCallback finalCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+    cameraManager.registerAvailabilityCallback(finalCallback, /* handler= */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_1, characteristics);
+    verify(finalCallback).onCameraAvailable(CAMERA_ID_1);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_1);
+    cameraManager.unregisterAvailabilityCallback(finalCallback);
   }
 
   @Test

@@ -20,12 +20,12 @@ import android.os.Handler;
 import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,9 +54,9 @@ public class ShadowCameraManager {
       new LinkedHashMap<>();
   private static final Map<String, Boolean> cameraTorches = new HashMap<>();
   private static final Set<CameraManager.AvailabilityCallback> registeredCallbacks =
-      new HashSet<>();
+      new CopyOnWriteArraySet<>();
   // Cannot reference the torch callback in < Android M
-  private static final Set<Object> torchCallbacks = new HashSet<>();
+  private static final Set<Object> torchCallbacks = new CopyOnWriteArraySet<>();
   // Most recent camera device opened with openCamera
   private static CameraDevice lastDevice;
   // Most recent callback passed to openCamera

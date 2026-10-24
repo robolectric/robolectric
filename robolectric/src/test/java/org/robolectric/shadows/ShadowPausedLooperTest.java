@@ -766,6 +766,12 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
+  public void resetLooperToInitialState_withNullLooperControlService_doesNotThrow() {
+    ShadowPausedLooper shadowPausedLooper = new ShadowPausedLooper();
+    shadowPausedLooper.resetLooperToInitialState();
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.P)
   public void runOneTask_ignoreSyncBarrier_with_async() {
     int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
