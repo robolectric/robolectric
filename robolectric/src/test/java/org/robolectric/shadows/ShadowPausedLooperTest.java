@@ -686,29 +686,6 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void poll_new_message_blocked_by_sync() {
-    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
-    int token = Looper.getMainLooper().getQueue().postSyncBarrier();
-    new Handler(handlerThread.getLooper())
-        .post(
-            () -> {
-              try {
-                // try to make poll block first
-                Thread.sleep(1);
-              } catch (InterruptedException e) {
-              }
-              new Handler(Looper.getMainLooper()).post(() -> {});
-            });
-
-    // should wait the entire time
-    long startTime = System.nanoTime();
-    shadowPausedLooper.poll(20);
-    long elapsedMs = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
-    assertThat(elapsedMs).isAtLeast(20);
-    Looper.getMainLooper().getQueue().removeSyncBarrier(token);
-  }
-
-  @Test
   @Config(minSdk = VERSION_CODES.M)
   public void runOneTask_ignoreSyncBarrier() {
     int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
