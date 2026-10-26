@@ -23,12 +23,20 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 /**
  * Builds the robolectric engine's test plan: one {@link SandboxDescriptor} per sandbox, containing
- * the tests of JUnit Jupiter classes that use {@code RobolectricExtension} that run in it.
+ * the tests that run in it: JUnit Jupiter classes that use {@code RobolectricExtension}, and,
+ * unless disabled with {@value #JUNIT4_ENABLED_PROPERTY}, JUnit 4 classes that use a Robolectric
+ * runner.
  */
 public final class Planner {
+  /** Set to false to leave JUnit 4 classes to the JUnit Vintage engine. */
+  static final String JUNIT4_ENABLED_PROPERTY = "robolectric.junit.platform.junit4.enabled";
+
+  private static final boolean JUNIT4_AVAILABLE = isJUnit4Available();
+
   private final TestDescriptor engineDescriptor;
   private final EngineDiscoveryRequest request;
   private final JupiterDelegate jupiter;
+  private final boolean junit4Enabled;
   private final Map<SandboxSpec, SandboxDescriptor> sandboxes = new LinkedHashMap<>();
   private final Map<SandboxSpec, List<DiscoverySelector>> jupiterSelectors = new LinkedHashMap<>();
   private final Map<String, Integer> keyCounts = new HashMap<>();
@@ -39,11 +47,16 @@ public final class Planner {
     this.jupiter =
         new JupiterDelegate(
             request.getConfigurationParameters(), request.getOutputDirectoryCreator());
+    this.junit4Enabled =
+        request.getConfigurationParameters().getBoolean(JUNIT4_ENABLED_PROPERTY).orElse(true)
+            && JUNIT4_AVAILABLE;
   }
 
   /** Whether the robolectric engine runs {@code testClass}. */
   public boolean isTestClass(Class<?> testClass) {
-    return isTopLevelClass(testClass) && usesRobolectricExtension(testClass);
+    return isTopLevelClass(testClass)
+        && (usesRobolectricExtension(testClass)
+            || (junit4Enabled && JUnit4Compat.isCandidate(testClass)));
   }
 
   static boolean isTopLevelClass(Class<?> clazz) {
@@ -71,14 +84,26 @@ public final class Planner {
   public void plan(Selection selection) {
     for (Map.Entry<Class<?>, List<Selection.Item>> entry : selection.itemsByClass().entrySet()) {
       Class<?> testClass = entry.getKey();
+      boolean claimed = true;
       try {
-        planJupiterClass(testClass, entry.getValue());
-      } catch (RuntimeException | LinkageError e) {
+        if (usesRobolectricExtension(testClass)) {
+          planJupiterClass(testClass, entry.getValue());
+        } else {
+          List<JUnit4Compat.PlannedTest> tests = JUnit4Compat.plan(testClass, entry.getValue());
+          if (tests == null) {
+            claimed = false; // Not a Robolectric runner: left to other engines.
+          } else {
+            JUnit4Compat.addToSandboxes(tests, this::sandbox);
+          }
+        }
+      } catch (Throwable e) {
         // An invalid configuration (e.g. an unsupported SDK) fails the class, not the whole run.
         UniqueId id = engineDescriptor.getUniqueId().append("invalid-class", testClass.getName());
         engineDescriptor.addChild(new InvalidClassDescriptor(id, testClass, e));
       }
-      ClaimRegistry.claim(testClass);
+      if (claimed) {
+        ClaimRegistry.claim(testClass);
+      }
     }
     for (Map.Entry<SandboxSpec, List<DiscoverySelector>> entry : jupiterSelectors.entrySet()) {
       // Planned with the application class loader: building the test plan needs no sandbox.
@@ -135,6 +160,15 @@ public final class Planner {
           selectors.add(test.selector());
         }
       }
+    }
+  }
+
+  private static boolean isJUnit4Available() {
+    try {
+      Class.forName("org.junit.runner.RunWith", false, Planner.class.getClassLoader());
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
     }
   }
 

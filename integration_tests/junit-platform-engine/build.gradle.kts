@@ -17,9 +17,13 @@ dependencies {
 
   testImplementation(platform(libs.junit.jupiter.bom))
   testImplementation(libs.junit.jupiter)
+  testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(libs.mockito)
   testImplementation(libs.mockito.junit.jupiter)
   testImplementation(variantOf(libs.androidx.test.core) { artifactType("aar") })
+  testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
+  // JUnit 4 classes are run by the robolectric engine, not by JUnit Vintage.
+  testRuntimeOnly(libs.junit.vintage)
   testRuntimeOnly(libs.junit.platform.launcher)
 }

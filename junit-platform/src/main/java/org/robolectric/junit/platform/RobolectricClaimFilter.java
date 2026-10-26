@@ -13,8 +13,9 @@ import org.robolectric.junit.platform.internal.ClaimRegistry;
  * engines.
  *
  * <p>JUnit Jupiter discovers every class with {@code @Test} methods, including the ones that use
- * {@link org.robolectric.junit.jupiter.RobolectricExtension}; without this filter they would run
- * twice. Registered with {@link java.util.ServiceLoader}.
+ * {@link org.robolectric.junit.jupiter.RobolectricExtension}, and JUnit Vintage discovers the JUnit
+ * 4 classes that the robolectric engine runs; without this filter they would run twice. Registered
+ * with {@link java.util.ServiceLoader}.
  */
 public final class RobolectricClaimFilter implements PostDiscoveryFilter {
   @Override

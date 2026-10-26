@@ -44,7 +44,8 @@ import org.robolectric.util.inject.Injector;
  * The parts of {@code RobolectricTestRunner} that do not depend on JUnit 4: resolving a test's
  * configuration, choosing and configuring its sandbox.
  *
- * <p>Used by the {@code robolectric} engine and {@code RobolectricExtension}.
+ * <p>Shared by the Jupiter integration and the JUnit 4 compatibility mode of the {@code
+ * robolectric} engine.
  */
 @SuppressWarnings("deprecation") // SQLiteMode is deprecated but still supported.
 public final class RobolectricRuntime {

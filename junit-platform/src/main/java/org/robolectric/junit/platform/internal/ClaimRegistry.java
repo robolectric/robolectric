@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The test classes the robolectric engine is running in the current discovery, so that other
- * engines that would also pick them up (such as JUnit Jupiter) leave them alone.
+ * engines that would also pick them up (JUnit Jupiter, JUnit Vintage) leave them alone.
  */
 public final class ClaimRegistry {
   private static final Set<String> CLAIMED = ConcurrentHashMap.newKeySet();
