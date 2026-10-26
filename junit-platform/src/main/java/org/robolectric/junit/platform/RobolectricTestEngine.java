@@ -25,6 +25,12 @@ import org.robolectric.junit.platform.internal.Selection;
  * sandbox. Jupiter provides the test semantics: nested classes, parameterized and dynamic tests,
  * and third-party extensions all work as usual.
  *
+ * <p>The engine also runs JUnit 4 classes that use {@code RobolectricTestRunner}, a subclass of it,
+ * {@code ParameterizedRobolectricTestRunner} or {@code AndroidJUnit4}, so that they share sandboxes
+ * with the Jupiter tests. This can be disabled with the {@code
+ * robolectric.junit.platform.junit4.enabled=false} configuration parameter, in which case such
+ * classes are left to the JUnit Vintage engine.
+ *
  * <p>The engine is registered with {@link java.util.ServiceLoader}, so it is found by any JUnit
  * Platform launcher (Gradle, Maven Surefire, IDEs) once it is on the test runtime classpath.
  */
