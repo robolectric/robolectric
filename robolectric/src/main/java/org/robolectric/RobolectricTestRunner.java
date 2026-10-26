@@ -297,6 +297,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
     androidSandbox.updateModes(sqliteMode);
+    if (roboMethod.configuration != null) {
+      // Class-level code (@BeforeClass, class rules) runs before any test sets up its environment.
+      androidSandbox.updateConfigurationRegistry(roboMethod.configuration);
+    }
     super.configureSandbox(sandbox, method);
   }
 
