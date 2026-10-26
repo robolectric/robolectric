@@ -26,7 +26,8 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 /**
  * The tests that run in one Robolectric sandbox: one SDK, looper, graphics and resources mode, and
- * class loader configuration. Tests from different classes share the sandbox.
+ * class loader configuration. Tests from different classes, JUnit Jupiter and JUnit 4, share the
+ * sandbox.
  */
 public final class SandboxDescriptor extends AbstractTestDescriptor {
   static final String SEGMENT_TYPE = "sandbox";
@@ -107,6 +108,18 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
     try {
       AtomicReference<Throwable> failure = new AtomicReference<>();
       sandbox.runOnMainThreadWithClassLoader(() -> executeJupiterTests(request, jupiter, failure));
+      for (TestDescriptor child : new ArrayList<>(getChildren())) {
+        if (!(child instanceof CompatClassDescriptor)) {
+          continue;
+        }
+        CompatClassDescriptor compatClass = (CompatClassDescriptor) child;
+        if (request.getCancellationToken().isCancellationRequested()) {
+          listener.executionSkipped(child, "Execution cancelled");
+        } else {
+          sandbox.runOnMainThreadWithClassLoader(
+              () -> JUnit4Compat.execute(compatClass, sandbox, listener));
+        }
+      }
       result =
           failure.get() == null
               ? TestExecutionResult.successful()

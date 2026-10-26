@@ -22,10 +22,15 @@ dependencies {
   runtimeOnly(libs.junit.jupiter.engine)
 
   compileOnly(libs.findbugs.jsr305)
+  // Only needed to run JUnit 4 classes, which bring JUnit 4 with them.
+  compileOnly(libs.junit4)
 
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.junit.platform.testkit)
+  testImplementation(libs.junit4)
   testImplementation(libs.truth)
+  testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
+  testRuntimeOnly(libs.junit.vintage)
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)
 }
