@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.telephony.satellite.SatelliteManager.SATELLITE_MODEM_STATE_OFF;
 import static android.telephony.satellite.SatelliteManager.SATELLITE_RESULT_ERROR;
 import static android.telephony.satellite.SatelliteManager.SATELLITE_RESULT_SUCCESS;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
@@ -16,6 +17,7 @@ import android.os.ServiceManager;
 import android.telephony.satellite.ISatelliteModemStateCallback;
 import android.telephony.satellite.SatelliteManager;
 import android.telephony.satellite.SatelliteManager.SatelliteException;
+import android.telephony.satellite.SatelliteStateChangeListener;
 import android.telephony.satellite.SatelliteSubscriberProvisionStatus;
 import com.android.internal.telephony.ITelephony;
 import com.google.common.base.Preconditions;
@@ -28,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,6 +43,7 @@ import org.robolectric.annotation.Resetter;
 @Implements(
     value = SatelliteManager.class,
     minSdk = VERSION_CODES.VANILLA_ICE_CREAM,
+    // TODO: set true minimum compileSdk >= 36 (made public in Baklava)
     isInAndroidSdk = false)
 public class ShadowSatelliteManager {
 
@@ -59,6 +63,25 @@ public class ShadowSatelliteManager {
   private static final List<String> satelliteDataOptimizedApps = new ArrayList<>();
   private static final Map<Consumer<Boolean>, Executor> supportedStateChangedCallbacks =
       new HashMap<>();
+
+  /** Convenience wrapper around {@link SatelliteStateChangeListener}. */
+  private static class SatelliteStateChangeListenerWrapper {
+    private final SatelliteStateChangeListener listener;
+    private final Executor executor;
+
+    SatelliteStateChangeListenerWrapper(SatelliteStateChangeListener listener, Executor executor) {
+      this.listener = listener;
+      this.executor = executor;
+    }
+
+    void dispatch(boolean isEnabled) {
+      executor.execute(() -> listener.onEnabledStateChanged(isEnabled));
+    }
+  }
+
+  private static final List<SatelliteStateChangeListenerWrapper> stateChangeListeners =
+      new CopyOnWriteArrayList<>();
+  private static final AtomicReference<Boolean> lastEnabledState = new AtomicReference<>();
 
   /** Test helper: set the provision status that will be returned by requests. */
   public void setSatelliteSubscriberProvisionStatus(
@@ -171,6 +194,51 @@ public class ShadowSatelliteManager {
     }
   }
 
+  /**
+   * Registers a {@link SatelliteStateChangeListener} to be notified of satellite state changes.
+   *
+   * <p>Tests can mutate state via {@link #setEnabledState}. If state has already been set at least
+   * once, this function also immediately dispatches a callback with that sticky value.
+   */
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void registerStateChangeListener(
+      @NonNull @CallbackExecutor Executor executor,
+      @NonNull SatelliteStateChangeListener listener) {
+    Preconditions.checkNotNull(executor);
+    Preconditions.checkNotNull(listener);
+    unregisterStateChangeListener(listener); // Replace if already registered (e.g. executor change)
+    SatelliteStateChangeListenerWrapper wrapper =
+        new SatelliteStateChangeListenerWrapper(listener, executor);
+    stateChangeListeners.add(wrapper);
+    Boolean enabled = lastEnabledState.get();
+    if (enabled != null) {
+      wrapper.dispatch(enabled);
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void unregisterStateChangeListener(@NonNull SatelliteStateChangeListener listener) {
+    Preconditions.checkNotNull(listener);
+    stateChangeListeners.removeIf(wrapper -> wrapper.listener == listener);
+  }
+
+  /**
+   * Changes the current satellite state and triggers registered listeners ({@link
+   * #registerStateChangeListener}), and caches the state to immediately notify any subsequently
+   * registered listeners.
+   */
+  public void setEnabledState(boolean isEnabled) {
+    lastEnabledState.set(isEnabled);
+    for (SatelliteStateChangeListenerWrapper wrapper : stateChangeListeners) {
+      wrapper.dispatch(isEnabled);
+    }
+  }
+
+  /** Returns an immutable set of all currently registered {@link SatelliteStateChangeListener}s. */
+  public Set<SatelliteStateChangeListener> getStateChangeListeners() {
+    return stateChangeListeners.stream().map(w -> w.listener).collect(toImmutableSet());
+  }
+
   @Implementation(minSdk = VERSION_CODES.BAKLAVA)
   protected void requestSatelliteSubscriberProvisionStatus(
       @NonNull @CallbackExecutor Executor executor,
@@ -259,5 +327,7 @@ public class ShadowSatelliteManager {
     attachRestrictionReasons.clear();
     satelliteDataOptimizedApps.clear();
     supportedStateChangedCallbacks.clear();
+    stateChangeListeners.clear();
+    lastEnabledState.set(null);
   }
 }
