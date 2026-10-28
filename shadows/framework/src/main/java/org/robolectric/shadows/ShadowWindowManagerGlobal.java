@@ -469,15 +469,11 @@ public class ShadowWindowManagerGlobal {
     }
 
     public Object performDrag(Object[] args) {
-      // extract the clipData param
-      for (int i = args.length - 1; i >= 0; i--) {
-        if (args[i] instanceof ClipData) {
-          lastDragClipData = (ClipData) args[i];
-          // In P (SDK 28), the return type changed from boolean to Binder.
-          return getApiLevel() >= P ? new Binder() : true;
-        }
-      }
-      throw new AssertionError("Missing ClipData param");
+      // Extract the clipData param. It is null if the drag was started without any data, which
+      // View#startDragAndDrop allows.
+      lastDragClipData = findFirstOpt(ClipData.class, args).orElse(null);
+      // In P (SDK 28), the return type changed from boolean to Binder.
+      return getApiLevel() >= P ? new Binder() : true;
     }
 
     public void updateInsets(Object[] args) {
