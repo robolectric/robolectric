@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -391,19 +390,6 @@ public class ShadowPaint {
     return Math.max(0f, textScaleX) * textWidth;
   }
 
-  @Implementation(maxSdk = M)
-  protected static int native_breakText(
-      long native_object,
-      long native_typeface,
-      char[] text,
-      int index,
-      int count,
-      float maxWidth,
-      int bidiFlags,
-      float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
-  }
-
   @Implementation(minSdk = N, maxSdk = O_MR1)
   protected static int nBreakText(
       long nObject,
@@ -434,18 +420,6 @@ public class ShadowPaint {
       measuredWidth[0] = maxWidth;
     }
     return text.length;
-  }
-
-  @Implementation(maxSdk = M)
-  protected static int native_breakText(
-      long native_object,
-      long native_typeface,
-      String text,
-      boolean measureForwards,
-      float maxWidth,
-      int bidiFlags,
-      float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
   }
 
   @Implementation(minSdk = N, maxSdk = O_MR1)
@@ -513,11 +487,6 @@ public class ShadowPaint {
       long nativeTypeface,
       @ClassName("android.graphics.Paint$FontMetricsInt") Object fmi) {
     return nGetFontMetricsInt(nativePaint, (FontMetricsInt) fmi);
-  }
-
-  @Implementation(maxSdk = M)
-  protected int getFontMetricsInt(FontMetricsInt fmi) {
-    return nGetFontMetricsInt(0, fmi);
   }
 
   @Implementation(minSdk = P)
@@ -588,20 +557,6 @@ public class ShadowPaint {
       boolean isRtl,
       int offset) {
     return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
-  }
-
-  @Implementation(minSdk = M, maxSdk = M)
-  protected static float native_getRunAdvance(
-      long nativeObject,
-      long nativeTypeface,
-      char[] text,
-      int start,
-      int end,
-      int contextStart,
-      int contextEnd,
-      boolean isRtl,
-      int offset) {
-    return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
 
   @Implementation(minSdk = O)

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -703,17 +702,12 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getSimCountryIso() {
-    String simCountryIso;
-    if (VERSION.SDK_INT < N) {
-      simCountryIso = simCountryIsoMap.get(0);
-    } else {
-      int subId = getSubscriptionIdInternal();
-      simCountryIso = simCountryIsoMap.get(getSubscriptionIdInternal());
-      if (simCountryIso == null && subId == SubscriptionManager.getDefaultSubscriptionId()) {
-        // Previously this shadow unconditionally returns the country set on subId 0  (which
-        // defaults to "" instead of null), even if the default subId is not 0.
-        return "";
-      }
+    int subId = getSubscriptionIdInternal();
+    String simCountryIso = simCountryIsoMap.get(getSubscriptionIdInternal());
+    if (simCountryIso == null && subId == SubscriptionManager.getDefaultSubscriptionId()) {
+      // Previously this shadow unconditionally returns the country set on subId 0  (which
+      // defaults to "" instead of null), even if the default subId is not 0.
+      return "";
     }
     return simCountryIso == null ? null : Ascii.toLowerCase(simCountryIso);
   }
@@ -1176,7 +1170,7 @@ public class ShadowTelephonyManager {
   }
 
   /** Returns 1 by default or the value specified via {@link #setPhoneCount(int)}. */
-  @Implementation(minSdk = M)
+  @Implementation
   protected int getPhoneCount() {
     return phoneCount;
   }
@@ -1200,7 +1194,7 @@ public class ShadowTelephonyManager {
   /**
    * Returns {@code null} by default or the value specified via {@link #setDeviceId(int, String)}.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected String getDeviceId(int slot) {
     checkReadPhoneStatePermission();
     return slotIndexToDeviceId.get(slot);
@@ -1404,7 +1398,7 @@ public class ShadowTelephonyManager {
     this.isNetworkRoaming = isNetworkRoaming;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   protected int getCurrentPhoneType(int subId) {
     return currentPhoneTypes.getOrDefault(subId, TelephonyManager.PHONE_TYPE_NONE);
@@ -1420,7 +1414,7 @@ public class ShadowTelephonyManager {
     currentPhoneTypes.clear();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   protected List<String> getCarrierPackageNamesForIntentAndPhone(Intent intent, int phoneId) {
     return carrierPackageNames.get(phoneId);
@@ -1782,7 +1776,7 @@ public class ShadowTelephonyManager {
    *
    * @return False by default, unless set with {@link #setTtyModeSupported(boolean)}.
    */
-  @Implementation(minSdk = Build.VERSION_CODES.M)
+  @Implementation
   protected boolean isTtyModeSupported() {
     checkReadPhoneStatePermission();
     return isTtyModeSupported;
@@ -1842,7 +1836,7 @@ public class ShadowTelephonyManager {
    * @return False by default, unless set with {@link
    *     #setHearingAidCompatibilitySupported(boolean)}.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isHearingAidCompatibilitySupported() {
     return hearingAidCompatibilitySupported;
   }

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -755,7 +754,7 @@ public class ShadowUserManager {
   /**
    * @return 'true' by default, or the value specified via {@link #setIsSystemUser(boolean)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isSystemUser() {
     if (!userManagerState.isSystemUser) {
       return false;

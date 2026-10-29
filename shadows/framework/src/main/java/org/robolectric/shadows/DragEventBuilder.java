@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
@@ -70,10 +69,7 @@ public class DragEventBuilder {
 
   public DragEvent build() {
     int api = RuntimeEnvironment.getApiLevel();
-    if (api <= M) {
-      return reflector(DragEventReflector.class)
-          .obtain(action, x, y, localState, clipDescription, clipData, result);
-    } else if (api <= R) {
+    if (api <= R) {
       return reflector(DragEventReflector.class)
           .obtain(action, x, y, localState, clipDescription, clipData, null, result);
     } else if (api <= UPSIDE_DOWN_CAKE) {
@@ -122,16 +118,6 @@ public class DragEventBuilder {
 
   @ForType(DragEvent.class)
   interface DragEventReflector {
-    @Static
-    DragEvent obtain(
-        int action,
-        float x,
-        float y,
-        Object localState,
-        ClipDescription clipDescription,
-        ClipData clipData,
-        boolean result);
-
     @Static
     DragEvent obtain(
         int action,

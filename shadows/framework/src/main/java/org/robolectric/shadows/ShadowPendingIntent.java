@@ -5,7 +5,6 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
@@ -188,7 +187,7 @@ public class ShadowPendingIntent {
     send(context, code, intent, onFinished, handler, requiredPermission, null);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void send(
       Context context,
       int code,

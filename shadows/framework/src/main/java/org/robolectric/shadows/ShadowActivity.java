@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -869,7 +868,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return streamType;
   }
 
-  @Implementation(minSdk = M, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void requestPermissions(String[] permissions, int requestCode) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
     reflector(DirectActivityReflector.class, realActivity)
@@ -993,9 +992,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * will return a {@link android.app.VoiceInteractor} instance
    */
   public void initializeVoiceInteractor() {
-    if (RuntimeEnvironment.getApiLevel() < N) {
-      throw new IllegalStateException("initializeVoiceInteractor requires API " + N);
-    }
     reflector(ActivityReflector.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
   }

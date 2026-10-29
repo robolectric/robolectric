@@ -1,6 +1,5 @@
 package org.robolectric.android.controller;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -290,9 +289,7 @@ public class ActivityController<T extends Activity>
     // Instrumentation#callActivityOnStop internally so the dependency direction is the opposite.
     invokeWhilePaused(
         () -> {
-          if (RuntimeEnvironment.getApiLevel() <= M) {
-            activityReflector.performStop();
-          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
             activityReflector.performStop(true);
           } else {
             activityReflector.performStop(true, "stop()");
@@ -497,12 +494,8 @@ public class ActivityController<T extends Activity>
             getInstrumentation().callActivityOnPause(component);
             if (RuntimeEnvironment.getApiLevel() < P) {
               this.activityReflector.performSaveInstanceState(outState);
-              if (RuntimeEnvironment.getApiLevel() <= M) {
-                this.activityReflector.performStop();
-              } else {
-                // API from N to O_MR1(both including)
-                this.activityReflector.performStop(true);
-              }
+              // API from N to O_MR1(both including)
+              this.activityReflector.performStop(true);
             } else {
               this.activityReflector.performStop(true, "configurationChange");
               this.activityReflector.performSaveInstanceState(outState);

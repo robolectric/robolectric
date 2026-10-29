@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -16,7 +14,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public abstract class ShadowNotificationBuilderTestBase {
@@ -77,7 +74,6 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(minSdk = M)
   public void build_setsIconOnNotification() {
     Notification notification = builder.setSmallIcon(R.drawable.an_image).build();
 
@@ -124,32 +120,14 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(maxSdk = M)
   public void build_handlesNullContentTitle() {
-    Notification notification = builder.setContentTitle(null).build();
-
-    assertThat(shadowOf(notification).getContentTitle().toString()).isEmpty();
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void build_handlesNullContentTitle_atLeastN() {
     Notification notification = builder.setContentTitle(null).build();
 
     assertThat(shadowOf(notification).getContentTitle()).isNull();
   }
 
   @Test
-  @Config(maxSdk = M)
   public void build_handlesNullContentText() {
-    Notification notification = builder.setContentText(null).build();
-
-    assertThat(shadowOf(notification).getContentText().toString()).isEmpty();
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void build_handlesNullContentText_atLeastN() {
     Notification notification = builder.setContentText(null).build();
 
     assertThat(shadowOf(notification).getContentText()).isNull();
@@ -163,23 +141,13 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(maxSdk = M)
   public void build_handlesNullContentInfo() {
-    Notification notification = builder.setContentInfo(null).build();
-
-    assertThat(shadowOf(notification).getContentInfo().toString()).isEmpty();
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void build_handlesNullContentInfo_atLeastN() {
     Notification notification = builder.setContentInfo(null).build();
 
     assertThat(shadowOf(notification).getContentInfo()).isNull();
   }
 
   @Test
-  @Config(maxSdk = M)
   public void build_handlesNonStringContentText() {
     Notification notification = builder.setContentText(new SpannableString("Hello")).build();
 
@@ -187,24 +155,7 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(minSdk = N)
-  public void build_handlesNonStringContentText_atLeastN() {
-    Notification notification = builder.setContentText(new SpannableString("Hello")).build();
-
-    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello");
-  }
-
-  @Test
-  @Config(maxSdk = M)
   public void build_handlesNonStringContentTitle() {
-    Notification notification = builder.setContentTitle(new SpannableString("My title")).build();
-
-    assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("My title");
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void build_handlesNonStringContentTitle_atLeastN() {
     Notification notification = builder.setContentTitle(new SpannableString("My title")).build();
 
     assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("My title");
@@ -237,7 +188,6 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(minSdk = M)
   public void withBigPictureStyle() {
     Bitmap bigPicture =
         BitmapFactory.decodeResource(

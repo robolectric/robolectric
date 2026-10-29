@@ -13,7 +13,6 @@ import static android.media.session.PlaybackState.ACTION_SKIP_TO_PREVIOUS;
 import static android.media.session.PlaybackState.ACTION_SKIP_TO_QUEUE_ITEM;
 import static android.media.session.PlaybackState.ACTION_STOP;
 import static android.media.session.PlaybackState.STATE_NONE;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 
 import android.media.Rating;
@@ -70,7 +69,7 @@ public class ShadowTransportControls {
     lastPerformedAction = ACTION_PLAY_FROM_SEARCH;
   }
 
-  @Filter(minSdk = M)
+  @Filter
   protected void playFromUri(Uri uri, Bundle extras) {
     lastPerformedAction = ACTION_PLAY_FROM_URI;
     this.uri = uri;

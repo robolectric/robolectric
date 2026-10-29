@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -259,7 +258,7 @@ public class ShadowInputMethodManager {
   @Implementation(maxSdk = Q)
   protected void focusIn(View view) {}
 
-  @Implementation(minSdk = M, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   protected void onViewDetachedFromWindow(View view) {}
 
   @Implementation
@@ -275,7 +274,7 @@ public class ShadowInputMethodManager {
     return true;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void sendAppPrivateCommand(View view, String action, Bundle data) {
     if (privateCommandListener.isPresent()) {
       privateCommandListener.get().onPrivateCommand(view, action, data);

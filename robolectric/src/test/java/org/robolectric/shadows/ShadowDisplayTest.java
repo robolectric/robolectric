@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -9,7 +7,6 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 import android.graphics.Insets;
 import android.graphics.Point;
@@ -155,7 +152,6 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setDisplayHdrCapabilities_shouldReturnHdrCapabilities() {
     Display display = ShadowDisplay.getDefaultDisplay();
     int[] hdrCapabilities =
@@ -177,27 +173,7 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  @Config(maxSdk = M)
-  public void setDisplayHdrCapabilities_shouldThrowUnSupportedOperationExceptionPreN() {
-    Display display = ShadowDisplay.getDefaultDisplay();
-    int[] hdrCapabilities =
-        new int[] {HdrCapabilities.HDR_TYPE_HDR10, HdrCapabilities.HDR_TYPE_DOLBY_VISION};
-    try {
-      shadow.setDisplayHdrCapabilities(
-          display.getDisplayId(),
-          /* maxLuminance= */ 100f,
-          /* maxAverageLuminance= */ 100f,
-          /* minLuminance= */ 100f,
-          hdrCapabilities);
-      fail();
-    } catch (UnsupportedOperationException e) {
-      assertThat(e).hasMessageThat().contains("HDR capabilities are not supported below Android N");
-    }
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void setDisplayHdrCapabilities_shouldntThrowUnSupportedOperationExceptionNPlus() {
+  public void setDisplayHdrCapabilities_shouldntThrowUnSupportedOperationException() {
     Display display = ShadowDisplay.getDefaultDisplay();
     int[] hdrCapabilities =
         new int[] {HdrCapabilities.HDR_TYPE_HDR10, HdrCapabilities.HDR_TYPE_DOLBY_VISION};

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -312,12 +311,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   //    throw new UnsupportedOperationException("implement me");
   //  }
   //
-
-  @HiddenApi
-  @Implementation(maxSdk = M)
-  protected final int addAssetPathNative(String path) {
-    return addAssetPathNative(path, false);
-  }
 
   @HiddenApi
   @Implementation(minSdk = VERSION_CODES.N)

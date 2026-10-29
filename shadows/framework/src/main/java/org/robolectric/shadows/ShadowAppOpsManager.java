@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -188,7 +187,7 @@ public class ShadowAppOpsManager {
    * called afterward with the {@code op}, {@code ui}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   protected void setUidMode(int op, int uid, int mode) {
     Integer oldMode = appModeMap.put(Key.create(uid, null, op), mode);
@@ -439,7 +438,7 @@ public class ShadowAppOpsManager {
     return noteOpNoThrow(op, uid, packageName);
   }
 
-  @Implementation(minSdk = M, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   @HiddenApi
   protected int noteProxyOpNoThrow(int op, String proxiedPackageName) {
     storedOps.put(Key.create(Binder.getCallingUid(), proxiedPackageName, null), op);
@@ -615,15 +614,7 @@ public class ShadowAppOpsManager {
   }
 
   protected OpEntry toOpEntry(Integer op, int mode) {
-    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.M) {
-      return ReflectionHelpers.callConstructor(
-          OpEntry.class,
-          ClassParameter.from(int.class, op),
-          ClassParameter.from(int.class, mode),
-          ClassParameter.from(long.class, OP_TIME),
-          ClassParameter.from(long.class, REJECT_TIME),
-          ClassParameter.from(int.class, DURATION));
-    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
+    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
           ClassParameter.from(int.class, op),

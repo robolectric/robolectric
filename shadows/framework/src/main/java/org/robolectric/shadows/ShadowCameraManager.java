@@ -115,7 +115,7 @@ public class ShadowCameraManager {
     return characteristics;
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected void setTorchMode(@Nonnull String cameraId, boolean enabled) {
     Objects.requireNonNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
@@ -295,13 +295,13 @@ public class ShadowCameraManager {
     registeredCallbacks.remove(callback);
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected void registerTorchCallback(CameraManager.TorchCallback callback, Handler handler) {
     Objects.requireNonNull(callback);
     torchCallbacks.add(callback);
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected void unregisterTorchCallback(CameraManager.TorchCallback callback) {
     Objects.requireNonNull(callback);
     torchCallbacks.remove(callback);

@@ -97,10 +97,7 @@ public class CellIdentityLteBuilder {
   public CellIdentityLte build() {
     CellIdentityLteReflector cellIdentityLteReflector = reflector(CellIdentityLteReflector.class);
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel < Build.VERSION_CODES.N) {
-      return cellIdentityLteReflector.newCellIdentityLte(
-          mccOrMncToInt(mcc), mccOrMncToInt(mnc), ci, pci, tac);
-    } else if (apiLevel < Build.VERSION_CODES.P) {
+    if (apiLevel < Build.VERSION_CODES.P) {
       return cellIdentityLteReflector.newCellIdentityLte(
           mccOrMncToInt(mcc), mccOrMncToInt(mnc), ci, pci, tac, earfcn);
     } else if (apiLevel < Build.VERSION_CODES.R) {
@@ -131,9 +128,6 @@ public class CellIdentityLteBuilder {
   private interface CellIdentityLteReflector {
     @Constructor
     CellIdentityLte newCellIdentityLte();
-
-    @Constructor
-    CellIdentityLte newCellIdentityLte(int mcc, int mnc, int ci, int pci, int tac);
 
     @Constructor
     CellIdentityLte newCellIdentityLte(int mcc, int mnc, int ci, int pci, int tac, int earfcn);

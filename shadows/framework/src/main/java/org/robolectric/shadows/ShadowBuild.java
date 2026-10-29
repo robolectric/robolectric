@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -158,11 +157,10 @@ public class ShadowBuild {
   }
 
   /**
-   * Sets the value of the {@link Build.VERSION#SECURITY_PATCH} field. Available in Android M+.
+   * Sets the value of the {@link Build.VERSION#SECURITY_PATCH} field.
    *
    * <p>It will be reset for the next test.
    */
-  @RequiresApi(M)
   public static void setVersionSecurityPatch(String securityPatch) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "SECURITY_PATCH", securityPatch);
   }

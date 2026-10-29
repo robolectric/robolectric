@@ -145,7 +145,7 @@ public class ShadowTelephonyManagerTest {
   private TelephonyManager newTelephonyManager(Integer subId) {
     Class<?>[] parameters;
     Object[] arguments;
-    if (subId == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+    if (subId == null) {
       parameters = new Class<?>[] {Context.class};
       arguments = new Object[] {ApplicationProvider.getApplicationContext()};
     } else {

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.app.backup.BackupManager;
@@ -111,7 +110,7 @@ public class ShadowBackupManager {
         ClassParameter.from(IRestoreSession.class, new FakeRestoreSession()));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi // SystemApi
   protected long getAvailableRestoreToken(String packageName) {
     enforceBackupPermission("getAvailableRestoreToken");

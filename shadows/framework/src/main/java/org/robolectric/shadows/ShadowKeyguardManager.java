@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 
@@ -124,18 +123,17 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(boolean)}, or
-   * false by default.
+   * Returns the value set by {@link #setIsDeviceSecure(boolean)}, or false by default.
    *
    * @see #setIsDeviceSecure(boolean)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isDeviceSecure() {
     return isDeviceSecure;
   }
 
   /**
-   * For tests on Android >=M, sets the value to be returned by {@link #isDeviceSecure()}.
+   * Sets the value to be returned by {@link #isDeviceSecure()}.
    *
    * @see #isDeviceSecure()
    */
@@ -144,18 +142,17 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or
-   * false by default.
+   * Returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or false by default.
    *
    * @see #setIsDeviceSecure(int, boolean)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isDeviceSecure(int userId) {
     return deviceSecureForUsers.contains(userId);
   }
 
   /**
-   * For tests on Android >=M, sets the value to be returned by {@link #isDeviceSecure(int)}.
+   * Sets the value to be returned by {@link #isDeviceSecure(int)}.
    *
    * @see #isDeviceSecure(int)
    */

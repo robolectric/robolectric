@@ -1,12 +1,9 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.util.EventLog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -89,13 +86,8 @@ public class ShadowEventLog {
     }
 
     public EventLog.Event build() {
-      EventLog.Event event;
-      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-        // Prefer a real factory method over reflection for construction.
-        event = EventLog.Event.fromBytes(new byte[0]);
-      } else {
-        event = Shadow.newInstanceOf(EventLog.Event.class);
-      }
+      // Prefer a real factory method over reflection for construction.
+      EventLog.Event event = EventLog.Event.fromBytes(new byte[0]);
       ShadowEvent shadowEvent = Shadow.extract(event);
       shadowEvent.data = data;
       shadowEvent.tag = tag;
@@ -145,7 +137,7 @@ public class ShadowEventLog {
   }
 
   /** Writes an event log message, returning an approximation of the bytes written. */
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected static int writeEvent(int tag, float value) {
     addEvent(new EventBuilder(tag, value).build());
     return Integer.BYTES + Float.BYTES;

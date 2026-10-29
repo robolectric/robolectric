@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -947,7 +946,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void requestsPermissions() {
     TestActivity activity = Robolectric.setupActivity(TestActivity.class);
     activity.requestPermissions(new String[] {Manifest.permission.CAMERA}, 1007);
@@ -1439,7 +1437,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void getPermission_shouldReturnRequestedPermissions() {
     // GIVEN
     String[] permission = {Manifest.permission.CAMERA};
@@ -1549,7 +1546,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void initializeVoiceInteractor_succeeds() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     shadowOf(activity).initializeVoiceInteractor();

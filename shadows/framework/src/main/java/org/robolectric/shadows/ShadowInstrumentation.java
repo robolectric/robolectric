@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -162,7 +161,7 @@ public class ShadowInstrumentation {
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
@@ -217,11 +216,6 @@ public class ShadowInstrumentation {
   @Implementation
   protected void setInTouchMode(boolean inTouchMode) {
     ShadowWindowManagerGlobal.setInTouchMode(inTouchMode);
-  }
-
-  @Implementation(maxSdk = M)
-  protected UiAutomation getUiAutomation() {
-    return getUiAutomation(0);
   }
 
   @Implementation(minSdk = N)

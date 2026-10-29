@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -101,7 +100,7 @@ public class ShadowSurface {
     return canvas;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected Canvas lockHardwareCanvas() {
     checkNotReleasedOrLocked();
     canvasLocked.set(true);

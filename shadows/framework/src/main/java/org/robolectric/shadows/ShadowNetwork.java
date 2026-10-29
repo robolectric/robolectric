@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -83,7 +82,7 @@ public class ShadowNetwork {
    * Simulates a socket bind. isSocketBound can be called to verify that the fd was bound to this
    * network interface, and boundSocketCount() will increment for any unique socket.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void bindSocket(FileDescriptor fd) {
     boundFileDescriptors.add(fd);
   }

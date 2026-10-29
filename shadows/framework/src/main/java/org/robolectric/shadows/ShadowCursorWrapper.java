@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
-
 import android.content.ContentResolver;
 import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
@@ -245,7 +243,7 @@ public class ShadowCursorWrapper implements Cursor {
   }
 
   @Override
-  @Implementation(minSdk = M)
+  @Implementation
   public void setExtras(Bundle extras) {
     wrappedCursor.setExtras(extras);
   }

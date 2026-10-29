@@ -11,7 +11,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.BrightnessChangeEvent;
@@ -139,9 +138,7 @@ public class ShadowDisplayManager {
 
     DisplayInfo displayInfo = new DisplayInfo();
     displayInfo.name = name;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      displayInfo.uniqueId = "screen0";
-    }
+    displayInfo.uniqueId = "screen0";
     displayInfo.appWidth = widthPx;
     displayInfo.appHeight = heightPx;
     fixNominalDimens(displayInfo);
@@ -151,11 +148,9 @@ public class ShadowDisplayManager {
         configuration.orientation == ORIENTATION_PORTRAIT
             ? (isNaturallyPortrait ? Surface.ROTATION_0 : Surface.ROTATION_90)
             : (isNaturallyPortrait ? Surface.ROTATION_90 : Surface.ROTATION_0);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      displayInfo.modeId = 0;
-      displayInfo.defaultModeId = 0;
-      displayInfo.supportedModes = new Display.Mode[] {new Display.Mode(0, widthPx, heightPx, 60)};
-    }
+    displayInfo.modeId = 0;
+    displayInfo.defaultModeId = 0;
+    displayInfo.supportedModes = new Display.Mode[] {new Display.Mode(0, widthPx, heightPx, 60)};
     displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
@@ -268,9 +263,6 @@ public class ShadowDisplayManager {
    * @param supportedModes the display's supported modes
    */
   public static void setSupportedModes(int displayId, Display.Mode... supportedModes) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-      throw new UnsupportedOperationException("multiple display modes not supported before M");
-    }
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
     if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM
         && RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
@@ -367,13 +359,11 @@ public class ShadowDisplayManager {
     return extract(DisplayManagerGlobal.getInstance());
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   static Display.Mode displayModeOf(int modeId, int width, int height, float refreshRate) {
     return new Display.Mode(modeId, width, height, refreshRate);
   }
 
   /** Builder class for {@link Display.Mode} */
-  @RequiresApi(api = Build.VERSION_CODES.M)
   @AutoBuilder(callMethod = "displayModeOf")
   public abstract static class ModeBuilder {
     public static ModeBuilder modeBuilder(int modeId) {

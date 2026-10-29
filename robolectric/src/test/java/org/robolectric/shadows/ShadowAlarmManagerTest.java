@@ -66,13 +66,11 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_abbreviateTimeZone_ignore() {
     assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("PST"));
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_invalidTimeZone_ignore() {
     assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("-07:00"));
   }
@@ -398,7 +396,6 @@ public class ShadowAlarmManagerTest {
     verify(onFire, times(2)).run();
   }
 
-  @Config(minSdk = VERSION_CODES.M)
   @Test
   public void setAndAllowWhileIdle_pendingIntent() {
     Runnable onFire = mock(Runnable.class);
@@ -419,7 +416,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.M)
   @Test
   public void setExactAndAllowWhileIdle_pendingIntent() {
     Runnable onFire = mock(Runnable.class);

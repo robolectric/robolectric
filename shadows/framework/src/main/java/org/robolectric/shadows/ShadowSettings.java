@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -359,7 +358,7 @@ public class ShadowSettings {
   /**
    * @return false by default, or the value specified via {@link #setCanDrawOverlays(boolean)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected static boolean canDrawOverlays(Context context) {
     return canDrawOverlays;
   }

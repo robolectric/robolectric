@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.content.ComponentName;
@@ -41,7 +40,7 @@ public class ShadowVoiceInteractionService extends ShadowService {
     hintBundles.add(hints);
   }
 
-  @Filter(order = Order.AFTER, minSdk = M)
+  @Filter(order = Order.AFTER)
   protected void showSession(Bundle args, int flags) {
     sessionBundles.add(args);
   }

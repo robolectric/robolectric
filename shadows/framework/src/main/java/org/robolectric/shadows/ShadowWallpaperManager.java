@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
@@ -77,12 +76,7 @@ public class ShadowWallpaperManager {
    * <p>This only caches the resource id in memory. Calling this will override any previously set
    * resource and does not differentiate between users.
    */
-  @Implementation(maxSdk = M)
-  protected void setResource(int resid) {
-    setResource(resid, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
-  }
-
-  @Implementation(minSdk = N)
+  @Implementation
   protected int setResource(int resid, int which) {
     if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
       return 0;
@@ -380,7 +374,7 @@ public class ShadowWallpaperManager {
     isWallpaperAllowed = allowed;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isWallpaperSupported() {
     return isWallpaperSupported;
   }
@@ -441,7 +435,7 @@ public class ShadowWallpaperManager {
    * previously set static wallpaper.
    */
   @SystemApi
-  @Implementation(minSdk = M)
+  @Implementation
   @RequiresPermission(permission.SET_WALLPAPER_COMPONENT)
   protected boolean setWallpaperComponent(ComponentName wallpaperService)
       throws IOException, XmlPullParserException {

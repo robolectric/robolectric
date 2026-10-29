@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -91,39 +90,15 @@ public class ShadowSubscriptionManager {
   }
 
   /** Returns value set with {@link #setDefaultSmsSubscriptionId(int)}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected static int getDefaultSmsSubscriptionId() {
     return defaultSmsSubscriptionId;
   }
 
   /** Returns value set with {@link #setDefaultVoiceSubscriptionId(int)}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected static int getDefaultVoiceSubscriptionId() {
     return defaultVoiceSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultSubId() {
-    return defaultSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultVoiceSubId() {
-    return defaultVoiceSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultSmsSubId() {
-    return defaultSmsSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultDataSubId() {
-    return defaultDataSubscriptionId;
   }
 
   /** Sets the value that will be returned by {@link #getActiveDataSubscriptionId()}. */

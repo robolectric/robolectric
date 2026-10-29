@@ -84,52 +84,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(maxSdk = Build.VERSION_CODES.M)
-  @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.M)
-  public void testGetOpacityPreO() {
-    GradientDrawable gradientDrawable = new GradientDrawable();
-    assertEquals(
-        "Default opacity is TRANSLUCENT", PixelFormat.TRANSLUCENT, gradientDrawable.getOpacity());
-
-    gradientDrawable.setColor(Color.TRANSPARENT);
-    assertEquals(
-        "Color.TRANSPARENT is TRANSLUCENT", PixelFormat.TRANSLUCENT, gradientDrawable.getOpacity());
-
-    gradientDrawable.setColor(0x80FFFFFF);
-    assertEquals(
-        "0x80FFFFFF is TRANSLUCENT", PixelFormat.TRANSLUCENT, gradientDrawable.getOpacity());
-
-    gradientDrawable.setColors(new int[] {Color.RED, Color.TRANSPARENT});
-    assertEquals(
-        "{ RED, TRANSPARENT } is TRANSLUCENT",
-        PixelFormat.TRANSLUCENT,
-        gradientDrawable.getOpacity());
-
-    gradientDrawable.setColors(new int[] {Color.RED, Color.BLUE});
-    assertEquals(
-        "{ RED, BLUE } is TRANSLUCENT", PixelFormat.TRANSLUCENT, gradientDrawable.getOpacity());
-
-    gradientDrawable.setColor(Color.RED);
-    assertEquals("RED is OPAQUE", PixelFormat.OPAQUE, gradientDrawable.getOpacity());
-
-    gradientDrawable.setCornerRadius(10);
-    assertEquals(
-        "RED with corner radius is OPAQUE", PixelFormat.OPAQUE, gradientDrawable.getOpacity());
-
-    gradientDrawable.setCornerRadius(0);
-    assertEquals(
-        "RED with no corner radius is OPAQUE", PixelFormat.OPAQUE, gradientDrawable.getOpacity());
-
-    gradientDrawable.setCornerRadii(new float[] {2, 2, 0, 0, 0, 0, 0, 0});
-    assertEquals(
-        "RED with corner radii is OPAQUE", PixelFormat.OPAQUE, gradientDrawable.getOpacity());
-
-    gradientDrawable.setCornerRadii(null);
-    assertEquals(
-        "RED with no corner radii is OPAQUE", PixelFormat.OPAQUE, gradientDrawable.getOpacity());
-  }
-
-  @Test
   @Config(minSdk = Build.VERSION_CODES.O, maxSdk = Build.VERSION_CODES.O_MR1)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.O, maxSdkVersion = Build.VERSION_CODES.O_MR1)
   public void testGetOpacityFromOToOMR1() {

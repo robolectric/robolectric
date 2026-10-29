@@ -88,7 +88,7 @@ public class ShadowCameraDeviceImpl {
               CameraCaptureSession.SESSION_ID_NONE,
               cameraId, /*physicalCameraIdSet*/
               null);
-    } else if (VERSION.SDK_INT >= VERSION_CODES.M) {
+    } else {
       builder =
           ReflectionHelpers.callConstructor(
               CaptureRequest.Builder.class,
@@ -96,11 +96,6 @@ public class ShadowCameraDeviceImpl {
               ReflectionHelpers.ClassParameter.from(Boolean.TYPE, false),
               ReflectionHelpers.ClassParameter.from(
                   Integer.TYPE, CameraCaptureSession.SESSION_ID_NONE));
-    } else {
-      builder =
-          ReflectionHelpers.callConstructor(
-              CaptureRequest.Builder.class,
-              ReflectionHelpers.ClassParameter.from(CameraMetadataNative.class, templatedRequest));
     }
     return builder;
   }

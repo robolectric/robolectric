@@ -4,7 +4,6 @@ import static android.media.MediaFormat.MIMETYPE_AUDIO_AAC;
 import static android.media.MediaFormat.MIMETYPE_AUDIO_OPUS;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_VP9;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
@@ -13,7 +12,6 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaCodecInfo.CodecProfileLevel;
-import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.util.Range;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -364,9 +362,6 @@ public class MediaCodecInfoBuilderTest {
 
   @Test
   public void mediaCodecInfo_preQ() {
-    if (getApiLevel() <= M) {
-      MediaCodecList.getCodecCount();
-    }
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
             .setMediaFormat(AAC_MEDIA_FORMAT)

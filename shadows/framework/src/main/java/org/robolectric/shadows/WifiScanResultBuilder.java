@@ -166,7 +166,6 @@ public final class WifiScanResultBuilder {
    *
    * @return this builder, for chaining
    */
-  @RequiresApi(VERSION_CODES.M)
   @CanIgnoreReturnValue
   public WifiScanResultBuilder setChannelWidth(int channelWidth) {
     if (USE_NATIVE_BUILDER) {
@@ -182,7 +181,6 @@ public final class WifiScanResultBuilder {
    *
    * @return this builder, for chaining
    */
-  @RequiresApi(VERSION_CODES.M)
   @CanIgnoreReturnValue
   public WifiScanResultBuilder setCenterFreq0(int centerFreq0) {
     if (USE_NATIVE_BUILDER) {
@@ -199,7 +197,6 @@ public final class WifiScanResultBuilder {
    * @return this builder, for chaining
    */
   @CanIgnoreReturnValue
-  @RequiresApi(VERSION_CODES.M)
   public WifiScanResultBuilder setCenterFreq1(int centerFreq1) {
     if (USE_NATIVE_BUILDER) {
       ensureRealBuilder().setCenterFreq1(centerFreq1);
@@ -215,7 +212,6 @@ public final class WifiScanResultBuilder {
    * @return this builder, for chaining
    */
   @CanIgnoreReturnValue
-  @RequiresApi(VERSION_CODES.M)
   public WifiScanResultBuilder setIs80211McRttResponder(boolean is80211McRttResponder) {
     if (USE_NATIVE_BUILDER) {
       ensureRealBuilder().setIs80211McRTTResponder(is80211McRttResponder);
@@ -299,13 +295,11 @@ public final class WifiScanResultBuilder {
       scanResult.timestamp = timestampMicros;
     }
 
-    if (VERSION.SDK_INT >= VERSION_CODES.M) {
-      scanResult.channelWidth = channelWidth;
-      scanResult.centerFreq0 = centerFreq0;
-      scanResult.centerFreq1 = centerFreq1;
-      if (is80211McRttResponder) {
-        scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
-      }
+    scanResult.channelWidth = channelWidth;
+    scanResult.centerFreq0 = centerFreq0;
+    scanResult.centerFreq1 = centerFreq1;
+    if (is80211McRttResponder) {
+      scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
     }
 
     if (VERSION.SDK_INT >= VERSION_CODES.R) {

@@ -254,8 +254,6 @@ public class ShadowDisplay {
   /**
    * Set HDR capabilities to the display sourced with displayId. see {@link HdrCapabilities} for
    * supportedHdrTypes.
-   *
-   * @throws UnsupportedOperationException if the method is called below Android version N.
    */
   public void setDisplayHdrCapabilities(
       int displayId,
@@ -263,10 +261,6 @@ public class ShadowDisplay {
       float maxAverageLuminance,
       float minLuminance,
       int... supportedHdrTypes) {
-    if (Build.VERSION.SDK_INT < VERSION_CODES.N) {
-      throw new UnsupportedOperationException("HDR capabilities are not supported below Android N");
-    }
-
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
       reflector(DisplayModeReflector.class, realObject.getMode())
           .setSupportedHdrTypes(supportedHdrTypes);

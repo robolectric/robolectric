@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -153,10 +152,6 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   public void canGetBluetoothLeScanner() {
-    if (RuntimeEnvironment.getApiLevel() < M) {
-      // On SDK < 23, bluetooth has to be in STATE_ON in order to get a BluetoothLeScanner.
-      shadowOf(bluetoothAdapter).setState(BluetoothAdapter.STATE_ON);
-    }
     BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     assertThat(bluetoothLeScanner).isNotNull();
   }
@@ -170,7 +165,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void canGetAndSetBleScanAlwaysAvailable() {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -358,7 +352,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void isLeEnabled() {
     // Le is enabled when either BT or BLE is enabled. Check all states.
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

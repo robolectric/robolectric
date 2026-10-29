@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -26,7 +25,7 @@ public class ShadowStorageManager {
   private static boolean isFileEncryptionSupported = true;
   private static final List<StorageVolume> storageVolumeList = new ArrayList<>();
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected static StorageVolume[] getVolumeList(int userId, int flags) {
     return storageVolumeList.toArray(new StorageVolume[0]);
   }

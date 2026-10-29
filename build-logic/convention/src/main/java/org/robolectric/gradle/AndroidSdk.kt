@@ -52,7 +52,6 @@ class AndroidSdk(
   companion object {
     private const val PREINSTRUMENTED_VERSION = 7
 
-    val M = AndroidSdk(23, "6.0.1_r3", "r1")
     val N = AndroidSdk(24, "7.0.0_r1", "r1")
     val N_MR1 = AndroidSdk(25, "7.1.0_r7", "r1")
     val O = AndroidSdk(26, "8.0.0_r4", "r1")
@@ -69,7 +68,7 @@ class AndroidSdk(
     val CINNAMON_BUN = AndroidSdk(37, "17", "15733970")
 
     val ALL_SDKS =
-      listOf(M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2, TIRAMISU, U, V, BAKLAVA, CINNAMON_BUN)
+      listOf(N, N_MR1, O, O_MR1, P, Q, R, S, S_V2, TIRAMISU, U, V, BAKLAVA, CINNAMON_BUN)
 
     val MAX_SDK = ALL_SDKS.maxBy { it.apiLevel }
   }

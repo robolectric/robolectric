@@ -37,15 +37,7 @@ public class CellIdentityLteBuilderTest {
   }
 
   @Test
-  @Config(maxSdk = Build.VERSION_CODES.M)
-  public void build_sdkJtoM() {
-    CellIdentityLte cellIdentity = getCellIdentityLte();
-
-    assertCellIdentityFieldsForAllSdks(cellIdentity);
-  }
-
-  @Test
-  @Config(minSdk = Build.VERSION_CODES.N, maxSdk = Build.VERSION_CODES.O_MR1)
+  @Config(maxSdk = Build.VERSION_CODES.O_MR1)
   public void build_sdkNtoO() {
     CellIdentityLte cellIdentity = getCellIdentityLte();
 

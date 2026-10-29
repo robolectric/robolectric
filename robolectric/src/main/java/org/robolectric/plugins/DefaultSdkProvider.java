@@ -2,7 +2,6 @@ package org.robolectric.plugins;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -63,7 +62,6 @@ public class DefaultSdkProvider implements SdkProvider {
   }
 
   protected void populateSdks(TreeMap<Integer, Sdk> knownSdks) {
-    knownSdks.put(M, new DefaultSdk(M, "6.0.1_r3", "r1", "REL", 8));
     knownSdks.put(N, new DefaultSdk(N, "7.0.0_r1", "r1", "REL", 8));
     knownSdks.put(N_MR1, new DefaultSdk(N_MR1, "7.1.0_r7", "r1", "REL", 8));
     knownSdks.put(O, new DefaultSdk(O, "8.0.0_r4", "r1", "REL", 8));

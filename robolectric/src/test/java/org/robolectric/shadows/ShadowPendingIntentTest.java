@@ -711,7 +711,6 @@ public class ShadowPendingIntentTest {
 
   /** Verify options are sent along with the PendingIntent. */
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
   public void send_broadcastWithOptions() throws CanceledException {
     Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent pendingIntent =
@@ -740,7 +739,6 @@ public class ShadowPendingIntentTest {
 
   /** Verify options are sent along with the Activity PendingIntent. */
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
   public void send_activityWithOptions() throws CanceledException {
     Intent intent = new Intent().setPackage("dummy.package");
     Bundle creatorOptions = new Bundle();

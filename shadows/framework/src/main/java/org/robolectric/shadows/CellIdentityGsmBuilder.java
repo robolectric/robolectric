@@ -88,12 +88,7 @@ public class CellIdentityGsmBuilder {
   public CellIdentityGsm build() {
     CellIdentityGsmReflector cellIdentityReflector = reflector(CellIdentityGsmReflector.class);
 
-    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.N) {
-      int mcc = parseInt(mccStr, Integer.MAX_VALUE);
-      int mnc = parseInt(mncStr, Integer.MAX_VALUE);
-
-      return cellIdentityReflector.newCellIdentityGsm(mcc, mnc, lac, cid);
-    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.P) {
+    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.P) {
       int mcc = parseInt(mccStr, Integer.MAX_VALUE);
       int mnc = parseInt(mncStr, Integer.MAX_VALUE);
 
@@ -129,9 +124,6 @@ public class CellIdentityGsmBuilder {
 
     @Constructor
     CellIdentityGsm newCellIdentityGsm();
-
-    @Constructor
-    CellIdentityGsm newCellIdentityGsm(int mcc, int mnc, int lac, int cid);
 
     @Constructor
     CellIdentityGsm newCellIdentityGsm(int mcc, int mnc, int lac, int cid, int arfcn, int bsic);

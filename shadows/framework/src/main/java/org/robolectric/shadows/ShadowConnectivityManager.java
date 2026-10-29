@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
@@ -173,7 +172,7 @@ public class ShadowConnectivityManager {
     historicallyRegisteredCallbacks.add(networkCallback);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void registerNetworkCallback(NetworkRequest request, PendingIntent pendingIntent) {
     networkCallbackPendingIntents.add(pendingIntent);
     historicallyRegisteredPendingIntents.add(pendingIntent);
@@ -247,7 +246,7 @@ public class ShadowConnectivityManager {
     }
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void unregisterNetworkCallback(PendingIntent pendingIntent) {
     if (pendingIntent == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
@@ -272,7 +271,7 @@ public class ShadowConnectivityManager {
    * @see #setActiveNetworkInfo(NetworkInfo)
    * @see #setNetworkInfo(int, NetworkInfo)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected Network getActiveNetwork() {
     if (defaultNetworkActive && activeNetworkInfo != null) {
       return netIdToNetwork.get(activeNetworkInfo.getType());
@@ -344,13 +343,13 @@ public class ShadowConnectivityManager {
     }
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean bindProcessToNetwork(Network network) {
     processBoundNetwork = network;
     return true;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected Network getBoundNetworkForProcess() {
     return processBoundNetwork;
   }
@@ -503,7 +502,7 @@ public class ShadowConnectivityManager {
     onNetworkActiveListeners.remove(l);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void reportNetworkConnectivity(Network network, boolean hasConnectivity) {
     reportedNetworkConnectivity.put(network, hasConnectivity);
   }
@@ -592,7 +591,7 @@ public class ShadowConnectivityManager {
    * <p>In order {@link ConnectivityManager#getDefaultProxy()} to work the default network should be
    * set using {@link ConnectivityManager#bindProcessToNetwork(Network)}.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected ProxyInfo getProxyForNetwork(Network network) {
     return proxyInfoMap.get(network);
   }
