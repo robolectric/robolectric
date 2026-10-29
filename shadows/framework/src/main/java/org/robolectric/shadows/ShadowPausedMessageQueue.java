@@ -158,9 +158,21 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     checkQueueState();
     boolean result = reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
     if (result) {
+      logPostedMessageIfEnabled();
       updateListener();
     }
     return result;
+  }
+
+  /**
+   * When {@code -Drobolectric.logPostedMessages=true}, print a stack trace for each enqueued
+   * message so a failing test can show where remaining looper work was posted.
+   */
+  private void logPostedMessageIfEnabled() {
+    if (!Boolean.getBoolean("robolectric.logPostedMessages")) {
+      return;
+    }
+    new Throwable("Message posted to MessageQueue").printStackTrace(System.out);
   }
 
   void poll(long timeout) {
