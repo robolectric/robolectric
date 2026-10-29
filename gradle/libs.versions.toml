@@ -181,7 +181,11 @@ icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupiter" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit-platform-testkit = { module = "org.junit.platform:junit-platform-testkit" }
 junit-vintage = { module = "org.junit.vintage:junit-vintage-engine" }
 
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
@@ -214,6 +218,7 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-subclass = { module = "org.mockito:mockito-subclass", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
