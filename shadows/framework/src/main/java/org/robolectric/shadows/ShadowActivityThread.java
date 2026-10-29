@@ -159,7 +159,11 @@ public class ShadowActivityThread {
               String permission = (String) args[1];
               Application app = RuntimeEnvironment.getApplication();
               if (app != null) {
-                int result = app.getPackageManager().checkPermission(permission, packageName);
+                // PackageManager#checkPermission grants all permissions the test package declares.
+                int result =
+                    packageName.equals(app.getPackageName())
+                        ? app.checkSelfPermission(permission)
+                        : app.getPackageManager().checkPermission(permission, packageName);
                 return (result == PackageManager.PERMISSION_GRANTED)
                     ? Context.PERMISSION_REQUEST_STATE_GRANTED
                     : Context.PERMISSION_REQUEST_STATE_REQUESTABLE;
