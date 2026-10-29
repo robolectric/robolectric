@@ -1648,7 +1648,8 @@ public class CppAssetManager2 {
         ThemePackage package_ = o.packages_[p];
         if (package_ == null || (copy_only_system && p != 0x01)) {
           // The other theme doesn't have this package, clear ours.
-          packages_[p] = new ThemePackage();
+          // ApplyStyle creates package storage when an attribute in this package is added.
+          packages_[p] = null;
           continue;
         }
 
@@ -1677,14 +1678,14 @@ public class CppAssetManager2 {
           ThemeEntry[] newEntries = copied_data.entries = new ThemeEntry[type.entry_count];
           for (int i = 0; i < type.entry_count; i++) {
             ThemeEntry entry = type.entries[i];
-            ThemeEntry newEntry = new ThemeEntry();
-            if (entry != null) {
-              newEntry.cookie = entry.cookie;
-              newEntry.type_spec_flags = entry.type_spec_flags;
-              newEntry.value = entry.value.copy();
-            } else {
-              newEntry.value = Res_value.NULL_VALUE;
+            // Missing attributes stay sparse; ApplyStyle initializes them when a style supplies one.
+            if (entry == null) {
+              continue;
             }
+            ThemeEntry newEntry = new ThemeEntry();
+            newEntry.cookie = entry.cookie;
+            newEntry.type_spec_flags = entry.type_spec_flags;
+            newEntry.value = entry.value.copy();
             newEntries[i] = newEntry;
           }
 
