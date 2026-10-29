@@ -49,6 +49,36 @@ public final class DefaultNativeRuntimeLoaderTest {
   }
 
   @Test
+  public void extracts_nativeLibrary_whenCacheIsDisabled() {
+    setSystemPropertyRule.set("robolectric.nativeruntime.cacheNativeLibrary", "false");
+    DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
+
+    loader.ensureLoaded();
+
+    assertThat(
+            Files.isRegularFile(
+                loader.getDirectory().resolve(DefaultNativeRuntimeLoader.libraryName())))
+        .isTrue();
+  }
+
+  @Test
+  public void copies_nativeLibrary_whenAlreadyLoaded() {
+    setSystemPropertyRule.set("robolectric.nativeruntime.cacheNativeLibrary", "true");
+    DefaultNativeRuntimeLoader first = new DefaultNativeRuntimeLoader();
+    first.ensureLoaded();
+    DefaultNativeRuntimeLoader.resetLoaded();
+    DefaultNativeRuntimeLoader second = new DefaultNativeRuntimeLoader();
+
+    second.ensureLoaded();
+
+    assertThat((Object) second.getDirectory()).isNotEqualTo(first.getDirectory());
+    assertThat(
+            Files.isRegularFile(
+                second.getDirectory().resolve(DefaultNativeRuntimeLoader.libraryName())))
+        .isTrue();
+  }
+
+  @Test
   public void extracts_fontsAndIcuData() {
     assume().that(hasResource("fonts")).isTrue();
     assume().that(hasResource("icu/icudt68l.dat")).isTrue();
@@ -144,8 +174,8 @@ public final class DefaultNativeRuntimeLoaderTest {
     DefaultNativeRuntimeLoader second = new DefaultNativeRuntimeLoader();
     second.ensureLoaded();
 
-    // The assets are reused rather than extracted again, while the native library stays per
-    // instance because System.load() rejects the same path from a second ClassLoader.
+    // The assets are reused rather than extracted again, while each loader retains its own
+    // temporary directory for native library copies.
     assertThat(fontsXml()).isEqualTo(firstFontsXml);
     assertThat((Object) second.getHyphenDataDirectory()).isEqualTo(firstHyphenData);
     assertThat((Object) second.getDirectory()).isNotEqualTo(first.getDirectory());

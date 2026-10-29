@@ -6,6 +6,8 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
+import static java.nio.file.Files.copy;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import android.database.CursorWindow;
@@ -20,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import java.io.File;
@@ -29,6 +32,7 @@ import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
@@ -54,6 +58,7 @@ import javax.annotation.Priority;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
+import org.robolectric.util.NativeRuntimeLibraryClaims;
 import org.robolectric.util.OsUtil;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -515,6 +520,10 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
    * is only written once the copy has finished, so a partially populated directory is never used.
    */
   private Path sharedAssetDirectory(String group, URL source, AssetCopier copier) {
+    return sharedAssetDirectory(group, source, copier, null);
+  }
+
+  private Path sharedAssetDirectory(String group, URL source, AssetCopier copier, Path cacheRoot) {
     Path directory;
     try {
       String identity = archiveIdentity(source);
@@ -525,8 +534,11 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
       }
       String key =
           Hashing.sha256().hashString(identity, StandardCharsets.UTF_8).toString().substring(0, 32);
-      directory =
-          Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME, group + "-" + key);
+      Path root =
+          cacheRoot != null
+              ? cacheRoot
+              : Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME);
+      directory = root.resolve(group + "-" + key);
     } catch (RuntimeException e) {
       Logger.info("Unable to determine native runtime asset cache directory: " + e.getMessage());
       return null;
@@ -585,10 +597,9 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
-    Path libraryPath = tempDirectory.getBasePath().resolve(libraryName());
     URL libraryResource = Resources.getResource(nativeLibraryPath());
-    Logger.info("Loading android native library from: %s", libraryResource);
-    Resources.asByteSource(libraryResource).copyTo(Files.asByteSink(libraryPath.toFile()));
+    Path libraryPath = prepareLibrary(libraryResource, libraryName(), tempDirectory);
+    Logger.info("Loading android native library from: %s", libraryPath);
     try {
       System.load(libraryPath.toAbsolutePath().toString());
     } catch (IllegalCallerException e) {
@@ -603,6 +614,49 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               + "    jvmArgs '--enable-native-access=ALL-UNNAMED'\n"
               + "  }",
           e);
+    }
+  }
+
+  private Path prepareLibrary(URL resource, String name, TempDirectory tempDirectory)
+      throws IOException {
+    return prepareLibrary(resource, name, tempDirectory, null);
+  }
+
+  @VisibleForTesting
+  Path prepareLibrary(URL resource, String name, TempDirectory tempDirectory, Path cacheRoot)
+      throws IOException {
+    if (Boolean.parseBoolean(
+        System.getProperty("robolectric.nativeruntime.cacheNativeLibrary", "true"))) {
+      Path cached =
+          sharedAssetDirectory(
+              "library-" + osName() + "-" + arch() + "-" + name,
+              resource,
+              directory -> copyLibraryResource(resource, directory.resolve(name)),
+              cacheRoot);
+      if (cached != null) {
+        Path library = cached.resolve(name);
+        // Native libraries belong to one ClassLoader, even after that loader is closed.
+        if (NativeRuntimeLibraryClaims.claim(library)) {
+          return library;
+        }
+        Path copy = tempDirectory.getBasePath().resolve(name);
+        // Path-to-path copying can use filesystem cloning while preserving distinct file identity.
+        copy(library, copy, COPY_ATTRIBUTES);
+        return copy;
+      }
+    }
+    Path library = tempDirectory.getBasePath().resolve(name);
+    copyLibraryResource(resource, library);
+    return library;
+  }
+
+  private static void copyLibraryResource(URL source, Path destination) throws IOException {
+    URLConnection connection = source.openConnection();
+    // Rebuilt archives must not be read through a stale JarURLConnection cache.
+    connection.setUseCaches(false);
+    try (InputStream input = connection.getInputStream();
+        var output = Files.asByteSink(destination.toFile()).openStream()) {
+      ByteStreams.copy(input, output);
     }
   }
 
