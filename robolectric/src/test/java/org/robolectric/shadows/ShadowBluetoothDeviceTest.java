@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
@@ -1019,5 +1020,45 @@ public class ShadowBluetoothDeviceTest {
   @ForType(BluetoothDevice.class)
   interface BluetoothDeviceCinnamonBunReflector {
     boolean isConnected(int transport);
+  }
+
+  @Test
+  @Config(minSdk = POST_CINNAMON_BUN)
+  public void canSetAndGetLeAppearance() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    assertThat(getLeAppearanceThroughReflection(device)).isEqualTo(0);
+
+    shadowOf(device).setLeAppearance(1234);
+    assertThat(getLeAppearanceThroughReflection(device)).isEqualTo(1234);
+  }
+
+  @Test
+  @Config(minSdk = POST_CINNAMON_BUN)
+  public void getLeAppearance_noPermission_throwsException() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+    shadowOf(device).setShouldThrowSecurityExceptions(true);
+
+    assertThrows(SecurityException.class, () -> getLeAppearanceThroughReflection(device));
+  }
+
+  @Test
+  @Config(minSdk = POST_CINNAMON_BUN)
+  public void getLeAppearance_noPermission_defaultDoesNotThrow() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setLeAppearance(5678);
+    assertThat(getLeAppearanceThroughReflection(device)).isEqualTo(5678);
+  }
+
+  private static int getLeAppearanceThroughReflection(BluetoothDevice device) {
+    // TODO: Eliminate reflection once this test compiles against a POST_CINNAMON_BUN SDK
+    return ReflectionHelpers.callInstanceMethod(device, "getLeAppearance");
   }
 }
