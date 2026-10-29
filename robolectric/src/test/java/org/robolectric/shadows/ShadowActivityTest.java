@@ -25,6 +25,7 @@ import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.RuntimeEnvironment.systemContext;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.Manifest;
 import android.app.ActionBar;
@@ -1458,6 +1459,30 @@ public class ShadowActivityTest {
     assertThat(intent.getAction()).isEqualTo("android.content.pm.action.REQUEST_PERMISSIONS");
     assertThat(intent.getStringArrayExtra("android.content.pm.extra.REQUEST_PERMISSIONS_NAMES"))
         .isEqualTo(permission);
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void requestPermissions_declaredButNotGranted_startsRequestIntent() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    activity.requestPermissions(
+        new String[] {Manifest.permission.INTERNET}, /* requestCode= */ 1007);
+
+    assertThat(shadowOf(activity).getNextStartedActivity().getAction())
+        .isEqualTo("android.content.pm.action.REQUEST_PERMISSIONS");
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void requestPermissions_granted_doesNotStartRequestIntent() {
+    String[] permission = {Manifest.permission.INTERNET};
+    shadowOf(getApplication()).grantPermissions(permission);
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    activity.requestPermissions(permission, /* requestCode= */ 1007);
+
+    assertThat(shadowOf(activity).getNextStartedActivity()).isNull();
   }
 
   @Test
