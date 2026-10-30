@@ -9,14 +9,19 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.view.Display;
 import android.view.Surface;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Button;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.app.InstrumentationRegistry;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.TestActivity;
 
@@ -79,6 +84,50 @@ public class UiAutomationTest {
             assertThat(configuration.screenWidthDp).isLessThan(configuration.screenHeightDp);
           });
     }
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getRootInActiveWindow_returnsRootAndPerformsClick() {
+    AtomicBoolean clicked = new AtomicBoolean(false);
+    try (ActivityScenario<? extends TestActivity> scenario =
+        ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            Button button = new Button(activity);
+            button.setText("Click me");
+            button.setOnClickListener(v -> clicked.set(true));
+            activity.setContentView(button);
+          });
+      InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+      AccessibilityNodeInfo buttonNode = waitForNodeWithText("Click me");
+      assertThat(buttonNode).isNotNull();
+      assertThat(buttonNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)).isTrue();
+      InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+      assertThat(clicked.get()).isTrue();
+    }
+  }
+
+  private AccessibilityNodeInfo waitForNodeWithText(String text) {
+    long startMs = SystemClock.uptimeMillis();
+    do {
+      AccessibilityNodeInfo root = uiAutomation.getRootInActiveWindow();
+      if (root != null) {
+        List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(text);
+        if (!nodes.isEmpty()) {
+          return nodes.get(0);
+        }
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        break;
+      }
+    } while (SystemClock.uptimeMillis() - startMs <= WAIT_TIMEOUT_MS);
+    return null;
   }
 
   private static void waitDisplayRotation(

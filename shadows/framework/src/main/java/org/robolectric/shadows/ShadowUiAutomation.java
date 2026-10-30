@@ -4,6 +4,8 @@ import static android.app.UiAutomation.ROTATION_FREEZE_0;
 import static android.app.UiAutomation.ROTATION_FREEZE_180;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
@@ -39,6 +41,7 @@ import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
+import android.view.accessibility.AccessibilityNodeInfo;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
@@ -46,9 +49,11 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -68,6 +73,9 @@ public class ShadowUiAutomation {
       IS_TOUCH_MODAL.negate().and(hasLayoutFlag(FLAG_WATCH_OUTSIDE_TOUCH));
   private static final Predicate<Root> IS_VISIBLE =
       root -> root.getRootView().getWidth() > 0 && root.getRootView().getHeight() > 0;
+  private static final Predicate<Root> IS_SHOWN =
+      root ->
+          root.getRootView().getWindowVisibility() == View.VISIBLE && root.getRootView().isShown();
 
   /**
    * Sets the animation scale, see {@link UiAutomation#setAnimationScale(float)}. Provides backwards
@@ -126,6 +134,36 @@ public class ShadowUiAutomation {
 
   @Implementation
   protected void throwIfNotConnectedLocked() {}
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected AccessibilityNodeInfo getRootInActiveWindow() {
+    AtomicReference<AccessibilityNodeInfo> result = new AtomicReference<>();
+    ShadowInstrumentation.runOnMainSyncNoIdle(
+        () -> {
+          Optional<Root> activeRoot =
+              getViewRoots().stream()
+                  .filter(IS_FOCUSABLE.and(IS_VISIBLE).and(IS_SHOWN))
+                  .findFirst();
+          if (activeRoot.isEmpty()) {
+            return;
+          }
+          View rootView = activeRoot.get().getRootView();
+          if (!rootView.isAttachedToWindow()) {
+            return;
+          }
+          AccessibilityNodeInfo rootNode = new AccessibilityNodeInfo(rootView);
+          rootNode.setQueryFromAppProcessEnabled(rootView, true);
+          if (rootNode.refresh()) {
+            result.set(rootNode);
+          }
+        });
+    return result.get();
+  }
+
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected AccessibilityNodeInfo getRootInActiveWindow(int prefetchingStrategy) {
+    return getRootInActiveWindow();
+  }
 
   /**
    * Real Android will via a series of IPCs that eventually obtain an image from SurfaceFlinger.
