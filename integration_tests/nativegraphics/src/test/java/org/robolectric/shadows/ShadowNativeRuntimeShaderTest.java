@@ -4,9 +4,20 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.HardwareRenderer;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.RecordingCanvas;
+import android.graphics.RenderNode;
 import android.graphics.RuntimeShader;
+import android.media.Image;
+import android.media.ImageReader;
+import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,5 +89,86 @@ public class ShadowNativeRuntimeShaderTest {
   @Test
   public void rippleShader_ctor() throws Exception {
     ReflectionHelpers.callConstructor(Class.forName("android.graphics.drawable.RippleShader"));
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setFloatUniform_scalarValues_areUsedByShader() {
+    RuntimeShader shader =
+        new RuntimeShader(
+            "uniform float in_red;\n"
+                + "uniform float2 in_green;\n"
+                + "uniform float3 in_blue;\n"
+                + "uniform float4 in_alpha;\n"
+                + "half4 main(float2 p) {\n"
+                + "  return half4(in_red, in_green.y, in_blue.z, in_alpha.w);\n"
+                + "}");
+    // Set every uniform with the array setter first, so that a scalar setter that does nothing
+    // leaves a known color instead of whatever the uniform memory held.
+    shader.setFloatUniform("in_red", new float[] {0});
+    shader.setFloatUniform("in_green", new float[] {0, 0});
+    shader.setFloatUniform("in_blue", new float[] {0, 0, 0});
+    shader.setFloatUniform("in_alpha", new float[] {0, 0, 0, 0});
+    assertThat(Integer.toHexString(drawPixel(shader)))
+        .isEqualTo(Integer.toHexString(Color.TRANSPARENT));
+
+    shader.setFloatUniform("in_red", 1);
+    shader.setFloatUniform("in_green", 0, 1);
+    shader.setFloatUniform("in_blue", 0, 0, 1);
+    shader.setFloatUniform("in_alpha", 0, 0, 0, 1);
+    assertThat(Integer.toHexString(drawPixel(shader))).isEqualTo(Integer.toHexString(Color.WHITE));
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setIntUniform_scalarValues_areUsedByShader() {
+    RuntimeShader shader =
+        new RuntimeShader(
+            "uniform int in_red;\n"
+                + "uniform int2 in_green;\n"
+                + "uniform int3 in_blue;\n"
+                + "uniform int4 in_alpha;\n"
+                + "half4 main(float2 p) {\n"
+                + "  return half4(\n"
+                + "      half(in_red), half(in_green.y), half(in_blue.z), half(in_alpha.w));\n"
+                + "}");
+    shader.setIntUniform("in_red", new int[] {0});
+    shader.setIntUniform("in_green", new int[] {0, 0});
+    shader.setIntUniform("in_blue", new int[] {0, 0, 0});
+    shader.setIntUniform("in_alpha", new int[] {0, 0, 0, 0});
+    assertThat(Integer.toHexString(drawPixel(shader)))
+        .isEqualTo(Integer.toHexString(Color.TRANSPARENT));
+
+    shader.setIntUniform("in_red", 1);
+    shader.setIntUniform("in_green", 0, 1);
+    shader.setIntUniform("in_blue", 0, 0, 1);
+    shader.setIntUniform("in_alpha", 0, 0, 0, 1);
+    assertThat(Integer.toHexString(drawPixel(shader))).isEqualTo(Integer.toHexString(Color.WHITE));
+  }
+
+  /** Draws {@code shader} with hardware rendering, which RuntimeShader requires from T. */
+  private static int drawPixel(RuntimeShader shader) {
+    try (ImageReader imageReader = ImageReader.newInstance(1, 1, PixelFormat.RGBA_8888, 1)) {
+      RenderNode renderNode = new RenderNode("RuntimeShaderNode");
+      renderNode.setPosition(0, 0, 1, 1);
+      RecordingCanvas canvas = renderNode.beginRecording();
+      Paint paint = new Paint();
+      paint.setShader(shader);
+      canvas.drawPaint(paint);
+      renderNode.endRecording();
+      HardwareRenderer renderer = new HardwareRenderer();
+      Surface surface = imageReader.getSurface();
+      renderer.setSurface(surface);
+      renderer.setContentRoot(renderNode);
+      renderer.createRenderRequest().syncAndDraw();
+      try (Image image = imageReader.acquireNextImage()) {
+        Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        bitmap.copyPixelsFromBuffer(image.getPlanes()[0].getBuffer());
+        return bitmap.getPixel(0, 0);
+      } finally {
+        renderer.destroy();
+        surface.release();
+      }
+    }
   }
 }
