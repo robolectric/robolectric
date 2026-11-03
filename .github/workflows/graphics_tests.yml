@@ -10,8 +10,12 @@ on:
     # Do not add `paths-ignore` here, this is required to be run on every PR for the `google` branch.
     branches: [ master, google ]
 
+  # Run by the release workflow.
+  workflow_call:
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # When called by another workflow, github.workflow is the caller's name.
+  group: graphics-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
