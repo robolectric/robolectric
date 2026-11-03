@@ -1,0 +1,299 @@
+# Stages a Robolectric release on the Central Portal and checks it. Publishing the release is left
+# to a maintainer. See "Performing a Release" in the wiki for the manual steps this automates.
+#
+# Run it from the Actions tab, choosing the branch under "Use workflow from":
+#
+# * `master`: stages the first version of the next release line. With `4.18-SNAPSHOT` in
+#   gradle.properties, that's `4.18-beta-1` (or `4.18` if "beta" is unchecked), for a new
+#   `robolectric-4.18.x` branch.
+# * `robolectric-X.Y.x`: stages the next version of that line: the next beta (`X.Y-beta-N`) or
+#   `X.Y` until `X.Y` is released, then the next patch release (`X.Y.1`, `X.Y.2`...).
+#
+# The version comes from gradle.properties and the existing `robolectric-*` tags. The workflow runs
+# the tests, stages the signed artifacts on the Central Portal, and checks the staged artifacts
+# with a small project on Linux, macOS and Windows. If the checks pass, the run summary lists the
+# deployment to publish and the commands to push the version commit and tag. If they fail, the
+# deployment is dropped. The workflow pushes, tags and publishes nothing.
+#
+# Secrets: SONATYPE_LOGIN and SONATYPE_PASSWORD (a Central Portal user token, as for snapshots),
+# SIGNING_KEY_ID, SIGNING_PASSWORD and SIGNING_SECRET_KEY_RING (the base64-encoded legacy
+# `secring.gpg` described in the wiki).
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      beta:
+        description: 'Release a beta (X.Y-beta-N) instead of X.Y. Ignored for patch releases.'
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Determine the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      branch: ${{ steps.version.outputs.branch }}
+      new-branch: ${{ steps.version.outputs.new-branch }}
+      next-snapshot: ${{ steps.version.outputs.next-snapshot }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine the version
+        id: version
+        env:
+          BETA: ${{ inputs.beta }}
+          REF_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*"; exit 1; }
+
+          [[ "$REPOSITORY" == robolectric/robolectric ]] || fail "Releases are only made from robolectric/robolectric."
+
+          if [[ "$REF_NAME" == master ]]; then
+            current=$(sed -n 's/^thisVersion=//p' gradle.properties)
+            [[ "$current" =~ ^([0-9]+)\.([0-9]+)-SNAPSHOT$ ]] ||
+              fail "master's gradle.properties has thisVersion=$current, expected X.Y-SNAPSHOT."
+            series="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+            next_snapshot="${BASH_REMATCH[1]}.$((BASH_REMATCH[2] + 1))-SNAPSHOT"
+            branch="robolectric-$series.x"
+            if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+              fail "$branch already exists. Run this workflow from $branch to release its next version."
+            fi
+            new_branch=true
+          elif [[ "$REF_NAME" =~ ^robolectric-([0-9]+\.[0-9]+)\.x$ ]]; then
+            series="${BASH_REMATCH[1]}"
+            branch="$REF_NAME"
+            new_branch=false
+            next_snapshot=""
+          else
+            fail "Run this workflow from master or from a robolectric-X.Y.x branch, not $REF_NAME."
+          fi
+
+          # The highest N of the tags robolectric-<prefix>N, or 0.
+          last() {
+            git tag --list "robolectric-$1*" | sed "s/^robolectric-$1//" | grep -E '^[0-9]+$' |
+              sort -n | tail -1 || true
+          }
+
+          if git rev-parse --quiet --verify "refs/tags/robolectric-$series" > /dev/null; then
+            [[ "$BETA" != true ]] || echo "::warning::$series is already released, so this is a patch release, not a beta."
+            n=$(last "$series.")
+            version="$series.$(( ${n:-0} + 1 ))"
+          elif [[ "$BETA" == true ]]; then
+            n=$(last "$series-beta-")
+            version="$series-beta-$(( ${n:-0} + 1 ))"
+          else
+            version="$series"
+          fi
+
+          ! git rev-parse --quiet --verify "refs/tags/robolectric-$version" > /dev/null ||
+            fail "The tag robolectric-$version already exists."
+
+          {
+            echo "version=$version"
+            echo "branch=$branch"
+            echo "new-branch=$new_branch"
+            echo "next-snapshot=$next_snapshot"
+          } >> "$GITHUB_OUTPUT"
+          echo "### Releasing Robolectric $version from $branch" >> "$GITHUB_STEP_SUMMARY"
+
+  tests:
+    name: Tests
+    needs: version
+    uses: ./.github/workflows/tests.yml
+
+  graphics-tests:
+    name: Graphics tests
+    needs: version
+    uses: ./.github/workflows/graphics_tests.yml
+
+  stage:
+    name: Stage on the Central Portal
+    needs: [version, tests, graphics-tests]
+    runs-on: ubuntu-latest
+    outputs:
+      deployment-id: ${{ steps.upload.outputs.deployment-id }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set the version
+        run: sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Build the release from scratch.
+          cache-disabled: true
+
+      - name: Build and upload to the staging area
+        env:
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_SECRET_KEY_RING: ${{ secrets.SIGNING_SECRET_KEY_RING }}
+        run: |
+          set -euo pipefail
+          keyring="$RUNNER_TEMP/secring.gpg"
+          echo "$SIGNING_SECRET_KEY_RING" | base64 --decode > "$keyring"
+          ./gradlew publish --stacktrace \
+            "-Psigning.keyId=$SIGNING_KEY_ID" \
+            "-Psigning.password=$SIGNING_PASSWORD" \
+            "-Psigning.secretKeyRingFile=$keyring"
+          rm -f "$keyring"
+
+      - name: Move the upload to the Central Portal
+        id: upload
+        run: |
+          set -euo pipefail
+          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
+          staging=https://ossrh-staging-api.central.sonatype.com
+          portal=https://central.sonatype.com/api/v1/publisher
+          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+
+          repositories=$(api "$staging/manual/search/repositories?ip=any")
+          keys=$(jq -r '.repositories[] | select(.state == "open") | .key' <<< "$repositories")
+          if [[ $(grep -c . <<< "$keys") -ne 1 ]]; then
+            echo "$repositories"
+            echo "::error::Expected exactly one open staging repository. Drop stale ones on https://central.sonatype.com and re-run."
+            exit 1
+          fi
+          api -X POST "$staging/manual/upload/repository/$keys?publishing_type=user_managed"
+
+          id=""
+          for _ in $(seq 60); do
+            id=$(api "$staging/manual/search/repositories?ip=any" |
+              jq -r --arg key "$keys" '.repositories[] | select(.key == $key) | .portal_deployment_id // empty')
+            [[ -n "$id" ]] && break
+            sleep 10
+          done
+          [[ -n "$id" ]] || { echo "::error::The upload did not create a Central Portal deployment."; exit 1; }
+          echo "deployment-id=$id" >> "$GITHUB_OUTPUT"
+
+          for _ in $(seq 180); do
+            status=$(api -X POST "$portal/status?id=$id")
+            state=$(jq -r .deploymentState <<< "$status")
+            case "$state" in
+              VALIDATED) echo "Deployment $id is validated."; exit 0 ;;
+              FAILED) echo "$status" | jq .; echo "::error::Central Portal validation failed."; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::Deployment $id was not validated within 30 minutes (state: $state)."
+          exit 1
+
+  check-staged:
+    name: Check the staged artifacts (${{ matrix.os }})
+    needs: [version, stage]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-26-intel, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+          # The Intel macOS image ships an older JDK.
+          check-latest: true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Run the release check project against the staged version
+        shell: bash
+        env:
+          SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: ./gradlew -p .github/release-check test --stacktrace "-ProbolectricVersion=$VERSION"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-check-${{ matrix.os }}
+          path: .github/release-check/build/test-results/**/TEST-*.xml
+
+  next-steps:
+    name: Next steps
+    needs: [version, stage, check-staged]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Describe how to release
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          BRANCH: ${{ needs.version.outputs.branch }}
+          NEW_BRANCH: ${{ needs.version.outputs.new-branch }}
+          NEXT_SNAPSHOT: ${{ needs.version.outputs.next-snapshot }}
+          DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
+          SHA: ${{ github.sha }}
+        run: |
+          {
+            echo "### Robolectric $VERSION is staged and checked"
+            echo
+            echo "Deployment \`$DEPLOYMENT_ID\` is validated on the [Central Portal](https://central.sonatype.com/publishing/deployments)."
+            echo "To release it:"
+            echo
+            echo "1. Push the version commit and the tag (built from $SHA):"
+            echo
+            echo '   ```sh'
+            echo "   git fetch origin && git checkout $SHA"
+            echo "   sed -i 's/^thisVersion=.*/thisVersion=$VERSION/' gradle.properties"
+            echo "   git commit -am 'Bump version to $VERSION.'"
+            echo "   git tag -a -m 'Version $VERSION' robolectric-$VERSION"
+            echo "   git push origin HEAD:refs/heads/$BRANCH robolectric-$VERSION"
+            echo '   ```'
+            echo
+            echo "2. Publish the deployment on the Central Portal."
+            echo "3. Publish the [GitHub release notes](https://github.com/${{ github.repository }}/releases/new?tag=robolectric-$VERSION)."
+            if [[ "$NEW_BRANCH" == true ]]; then
+              echo "4. Bump master to $NEXT_SNAPSHOT."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  drop-staged:
+    name: Drop the staged deployment
+    needs: [stage, check-staged]
+    if: always() && needs.stage.result == 'success' && needs.check-staged.result != 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Drop the deployment
+        env:
+          DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
+          SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
+          curl --fail-with-body --silent --show-error -X DELETE -H "Authorization: Bearer $token" \
+            "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID"
+          echo "Dropped deployment $DEPLOYMENT_ID because the checks of the staged artifacts failed." >> "$GITHUB_STEP_SUMMARY"

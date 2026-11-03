@@ -11,8 +11,12 @@ on:
     paths-ignore:
       - '**.md'
 
+  # Run by the release workflow.
+  workflow_call:
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # When called by another workflow, github.workflow is the caller's name.
+  group: tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -156,7 +160,7 @@ jobs:
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
     needs: unit-tests
-    if: github.repository == 'robolectric/robolectric' && github.ref == 'refs/heads/master'
+    if: github.repository == 'robolectric/robolectric' && github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
         uses: actions/checkout@v7

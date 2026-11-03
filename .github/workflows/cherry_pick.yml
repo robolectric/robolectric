@@ -1,0 +1,140 @@
+# Cherry-picks commits from master into a release branch (robolectric-X.Y.x).
+#
+# * Add the `cherry-pick` label to a PR, before or after it's merged: once it's merged, its
+#   commits are cherry-picked into the newest release branch, and the PR gets a comment.
+# * Or run it from the Actions tab with commit SHAs and/or PR numbers, e.g. `#11619 1a2b3c4`,
+#   oldest first, and optionally the release branch.
+#
+# The commits are pushed directly to the release branch. If a commit doesn't apply cleanly,
+# nothing is pushed and the run (and the PR comment) lists the conflicting files. Pushes made with
+# the default GITHUB_TOKEN don't trigger the tests on the release branch; the release workflow
+# runs them before staging a release.
+
+name: Cherry-pick
+
+on:
+  workflow_dispatch:
+    inputs:
+      commits:
+        description: 'Commit SHAs and/or PR numbers to cherry-pick, oldest first, e.g. "#11619 1a2b3c4"'
+        required: true
+        type: string
+      branch:
+        description: 'Release branch to cherry-pick into (default: the newest robolectric-X.Y.x)'
+        required: false
+        type: string
+
+  # Only git commands run on the merged commits; no code from the PR is built or run.
+  pull_request_target:
+    types: [ closed, labeled ]
+    branches: [ master ]
+
+concurrency:
+  group: cherry-pick
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  cherry-pick:
+    if: >
+      github.repository == 'robolectric/robolectric' && (
+        github.event_name == 'workflow_dispatch' || (
+          github.event.pull_request.merged == true && (
+            (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'cherry-pick')) ||
+            (github.event.action == 'labeled' && github.event.label.name == 'cherry-pick'))))
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Cherry-pick
+        id: pick
+        env:
+          ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.commits || format('#{0}', github.event.pull_request.number) }}
+          BRANCH: ${{ inputs.branch }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*"; echo "message=$*" >> "$GITHUB_OUTPUT"; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          if [[ -z "$BRANCH" ]]; then
+            BRANCH=$(git branch -r --list 'origin/robolectric-*.x' | sed 's|^ *origin/||' |
+              grep -E '^robolectric-[0-9]+\.[0-9]+\.x$' | sort -V | tail -1 || true)
+            [[ -n "$BRANCH" ]] || fail "There is no robolectric-X.Y.x release branch."
+          fi
+          [[ "$BRANCH" =~ ^robolectric-[0-9]+\.[0-9]+\.x$ ]] || fail "$BRANCH is not a release branch."
+          git rev-parse --quiet --verify "origin/$BRANCH" > /dev/null || fail "$BRANCH doesn't exist."
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+          # Turn the items into the commits to pick, oldest first.
+          commits=()
+          for item in ${ITEMS//,/ }; do
+            if [[ "$item" =~ ^#?([0-9]{1,6})$ ]]; then
+              number="${BASH_REMATCH[1]}"
+              pr=$(gh api "repos/$REPOSITORY/pulls/$number")
+              merge=$(jq -r 'if .merged then .merge_commit_sha else "" end' <<< "$pr")
+              [[ -n "$merge" ]] || fail "PR #$number isn't merged."
+              git merge-base --is-ancestor "$merge" origin/master || fail "PR #$number isn't on master."
+              if [[ $(git rev-list --parents -n 1 "$merge" | wc -w) -gt 2 ]]; then
+                commits+=("$merge")
+              else
+                # Rebase merges put the PR's commits on master, ending with the merge commit SHA.
+                count=$(jq -r .commits <<< "$pr")
+                mapfile -t -O "${#commits[@]}" commits < <(git rev-list --reverse -n "$count" "$merge")
+              fi
+            else
+              sha=$(git rev-parse --quiet --verify "$item^{commit}") || fail "$item isn't a commit."
+              git merge-base --is-ancestor "$sha" origin/master || fail "$item isn't on master."
+              commits+=("$sha")
+            fi
+          done
+          [[ ${#commits[@]} -gt 0 ]] || fail "Nothing to cherry-pick."
+
+          git switch --quiet --detach "origin/$BRANCH"
+          for commit in "${commits[@]}"; do
+            if git merge-base --is-ancestor "$commit" HEAD; then
+              echo "$(git log -1 --format='%h %s' "$commit") is already in $BRANCH."
+              continue
+            fi
+            args=(-x)
+            [[ $(git rev-list --parents -n 1 "$commit" | wc -w) -gt 2 ]] && args+=(-m 1)
+            if ! git cherry-pick "${args[@]}" "$commit" > /dev/null; then
+              conflicts=$(git diff --name-only --diff-filter=U | sed 's/^/`/; s/$/`/' | paste -sd, - | sed 's/,/, /g')
+              git cherry-pick --abort
+              fail "$(git log -1 --format='%h (%s)' "$commit") doesn't apply cleanly to $BRANCH. Conflicts: $conflicts. Nothing was pushed."
+            fi
+          done
+
+          picked=$(git log --format='* %h %s' "origin/$BRANCH..HEAD")
+          if [[ -z "$picked" ]]; then
+            echo "message=Everything was already in $BRANCH." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Fails, without changing anything, if the branch moved in the meantime.
+          git push --quiet origin "HEAD:refs/heads/$BRANCH"
+          {
+            echo "message<<EOF"
+            echo "Cherry-picked into \`$BRANCH\`:"
+            echo
+            echo "$picked"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          { echo "### Cherry-picked into $BRANCH"; echo; echo "$picked"; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the PR
+        if: always() && github.event_name == 'pull_request_target' && steps.pick.outputs.message != ''
+        env:
+          MESSAGE: ${{ steps.pick.outputs.message }}
+          REPOSITORY: ${{ github.repository }}
+        run: gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" --body "$MESSAGE"
