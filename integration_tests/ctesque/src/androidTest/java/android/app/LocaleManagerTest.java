@@ -25,26 +25,24 @@ public class LocaleManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.LOCALE_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            LocaleManager activityLocaleManager =
-                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
-            assertThat(applicationLocaleManager).isNotSameInstanceAs(activityLocaleManager);
-          });
+      scenario.onActivity(activity -> {
+        LocaleManager activityLocaleManager =
+            (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+        assertThat(applicationLocaleManager).isNotSameInstanceAs(activityLocaleManager);
+      });
     }
   }
 
   @Test
   public void localeManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            LocaleManager activityLocaleManager =
-                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
-            LocaleManager anotherActivityLocaleManager =
-                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
-            assertThat(anotherActivityLocaleManager).isSameInstanceAs(activityLocaleManager);
-          });
+      scenario.onActivity(activity -> {
+        LocaleManager activityLocaleManager =
+            (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+        LocaleManager anotherActivityLocaleManager =
+            (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+        assertThat(anotherActivityLocaleManager).isSameInstanceAs(activityLocaleManager);
+      });
     }
   }
 
@@ -55,16 +53,15 @@ public class LocaleManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.LOCALE_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            LocaleManager activityLocaleManager =
-                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+      scenario.onActivity(activity -> {
+        LocaleManager activityLocaleManager =
+            (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
 
-            LocaleList applicationLocales = applicationLocaleManager.getApplicationLocales();
-            LocaleList activityLocales = activityLocaleManager.getApplicationLocales();
+        LocaleList applicationLocales = applicationLocaleManager.getApplicationLocales();
+        LocaleList activityLocales = activityLocaleManager.getApplicationLocales();
 
-            assertThat(activityLocales).isEqualTo(applicationLocales);
-          });
+        assertThat(activityLocales).isEqualTo(applicationLocales);
+      });
     }
   }
 }

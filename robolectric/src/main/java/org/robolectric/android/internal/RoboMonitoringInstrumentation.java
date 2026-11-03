@@ -127,29 +127,28 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
     AtomicReference<ActivityController<? extends Activity>> activityControllerReference =
         new AtomicReference<>();
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          ActivityController<? extends Activity> controller =
-              Robolectric.buildActivity(activityClass, intent, activityOptions);
-          if (callingPackageName != null) {
-            ShadowActivity shadowActivity = Shadow.extract(controller.get());
-            shadowActivity.setCallingPackage(callingPackageName);
-          }
-          activityControllerReference.set(controller);
-          controller.create();
-          if (controller.get().isFinishing()) {
-            controller.destroy();
-          } else {
-            createdActivities.add(controller);
-            controller
-                .start()
-                .postCreate(null)
-                .resume()
-                .visible()
-                .windowFocusChanged(true)
-                .topActivityResumed(true);
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      ActivityController<? extends Activity> controller =
+          Robolectric.buildActivity(activityClass, intent, activityOptions);
+      if (callingPackageName != null) {
+        ShadowActivity shadowActivity = Shadow.extract(controller.get());
+        shadowActivity.setCallingPackage(callingPackageName);
+      }
+      activityControllerReference.set(controller);
+      controller.create();
+      if (controller.get().isFinishing()) {
+        controller.destroy();
+      } else {
+        createdActivities.add(controller);
+        controller
+            .start()
+            .postCreate(null)
+            .resume()
+            .visible()
+            .windowFocusChanged(true)
+            .topActivityResumed(true);
+      }
+    });
     return activityControllerReference.get();
   }
 
@@ -280,10 +279,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   private void postDispatchActivityResult(
       ShadowActivity shadowActivity, String target, int requestCode, ActivityResult ar) {
     new Handler(Looper.getMainLooper())
-        .post(
-            () ->
-                shadowActivity.internalCallDispatchActivityResult(
-                    target, requestCode, ar.getResultCode(), ar.getResultData()));
+        .post(() ->
+            shadowActivity.internalCallDispatchActivityResult(
+                target, requestCode, ar.getResultCode(), ar.getResultData()));
   }
 
   protected ActivityResult stubResultFor(Intent intent) {

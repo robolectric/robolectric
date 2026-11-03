@@ -21,26 +21,24 @@ public class PowerManagerTest {
         (PowerManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            PowerManager activityPowerManager =
-                (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
-            assertThat(applicationPowerManager).isNotSameInstanceAs(activityPowerManager);
-          });
+      scenario.onActivity(activity -> {
+        PowerManager activityPowerManager =
+            (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+        assertThat(applicationPowerManager).isNotSameInstanceAs(activityPowerManager);
+      });
     }
   }
 
   @Test
   public void powerManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            PowerManager activityPowerManager =
-                (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
-            PowerManager anotherActivityPowerManager =
-                (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
-            assertThat(anotherActivityPowerManager).isSameInstanceAs(activityPowerManager);
-          });
+      scenario.onActivity(activity -> {
+        PowerManager activityPowerManager =
+            (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+        PowerManager anotherActivityPowerManager =
+            (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+        assertThat(anotherActivityPowerManager).isSameInstanceAs(activityPowerManager);
+      });
     }
   }
 
@@ -50,16 +48,15 @@ public class PowerManagerTest {
         (PowerManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            PowerManager activityPowerManager =
-                (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+      scenario.onActivity(activity -> {
+        PowerManager activityPowerManager =
+            (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
 
-            boolean applicationIsInteractive = applicationPowerManager.isInteractive();
-            boolean activityIsInteractive = activityPowerManager.isInteractive();
+        boolean applicationIsInteractive = applicationPowerManager.isInteractive();
+        boolean activityIsInteractive = activityPowerManager.isInteractive();
 
-            assertThat(activityIsInteractive).isEqualTo(applicationIsInteractive);
-          });
+        assertThat(activityIsInteractive).isEqualTo(applicationIsInteractive);
+      });
     }
   }
 }

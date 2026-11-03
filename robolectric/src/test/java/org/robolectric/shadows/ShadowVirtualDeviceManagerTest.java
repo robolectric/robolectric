@@ -587,10 +587,9 @@ public class ShadowVirtualDeviceManagerTest {
           virtualDeviceManager.getVirtualDevices().stream()
               .filter(device -> virtualDeviceName.equals(device.getName()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new AssertionError(
-                          "Virtual device with name '" + virtualDeviceName + "' not found"));
+              .orElseThrow(() ->
+                  new AssertionError(
+                      "Virtual device with name '" + virtualDeviceName + "' not found"));
 
       assertThat(secondVirtualDisplay).isNotNull();
       assertThat(firstVirtualDisplay).isNotNull();

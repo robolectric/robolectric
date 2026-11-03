@@ -625,14 +625,13 @@ public class ShadowAlarmManagerTest {
   @Test
   public void reentrant() {
     AtomicReference<OnAlarmListener> listenerRef = new AtomicReference<>();
-    listenerRef.set(
-        () ->
-            alarmManager.set(
-                AlarmManager.ELAPSED_REALTIME,
-                SystemClock.elapsedRealtime() + 10,
-                "tag",
-                listenerRef.get(),
-                null));
+    listenerRef.set(() ->
+        alarmManager.set(
+            AlarmManager.ELAPSED_REALTIME,
+            SystemClock.elapsedRealtime() + 10,
+            "tag",
+            listenerRef.get(),
+            null));
     alarmManager.set(
         AlarmManager.ELAPSED_REALTIME_WAKEUP,
         SystemClock.elapsedRealtime() + 10,

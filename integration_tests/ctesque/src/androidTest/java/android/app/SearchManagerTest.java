@@ -21,26 +21,24 @@ public class SearchManagerTest {
         (SearchManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.SEARCH_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SearchManager activitySearchManager =
-                (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-            assertThat(applicationSearchManager).isNotSameInstanceAs(activitySearchManager);
-          });
+      scenario.onActivity(activity -> {
+        SearchManager activitySearchManager =
+            (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+        assertThat(applicationSearchManager).isNotSameInstanceAs(activitySearchManager);
+      });
     }
   }
 
   @Test
   public void searchManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SearchManager activitySearchManager =
-                (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-            SearchManager anotherActivitySearchManager =
-                (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-            assertThat(anotherActivitySearchManager).isSameInstanceAs(activitySearchManager);
-          });
+      scenario.onActivity(activity -> {
+        SearchManager activitySearchManager =
+            (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+        SearchManager anotherActivitySearchManager =
+            (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+        assertThat(anotherActivitySearchManager).isSameInstanceAs(activitySearchManager);
+      });
     }
   }
 
@@ -51,18 +49,17 @@ public class SearchManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.SEARCH_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SearchManager activitySearchManager =
-                (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+      scenario.onActivity(activity -> {
+        SearchManager activitySearchManager =
+            (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
 
-            ComponentName applicationGlobalSearchActivity =
-                applicationSearchManager.getGlobalSearchActivity();
-            ComponentName activityGlobalSearchActivity =
-                activitySearchManager.getGlobalSearchActivity();
+        ComponentName applicationGlobalSearchActivity =
+            applicationSearchManager.getGlobalSearchActivity();
+        ComponentName activityGlobalSearchActivity =
+            activitySearchManager.getGlobalSearchActivity();
 
-            assertThat(applicationGlobalSearchActivity).isEqualTo(activityGlobalSearchActivity);
-          });
+        assertThat(applicationGlobalSearchActivity).isEqualTo(activityGlobalSearchActivity);
+      });
     }
   }
 }

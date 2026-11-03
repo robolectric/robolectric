@@ -61,12 +61,11 @@ public class ShadowDisplayManagerGlobalTest {
     CountDownLatch latch = new CountDownLatch(1);
 
     Thread bgThread =
-        new Thread(
-            () -> {
-              bgDisplayInfo.set(
-                  DisplayManagerGlobal.getInstance().getDisplayInfo(Display.DEFAULT_DISPLAY));
-              latch.countDown();
-            });
+        new Thread(() -> {
+          bgDisplayInfo.set(
+              DisplayManagerGlobal.getInstance().getDisplayInfo(Display.DEFAULT_DISPLAY));
+          latch.countDown();
+        });
     bgThread.start();
     latch.await(5, TimeUnit.SECONDS);
 

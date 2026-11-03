@@ -48,16 +48,15 @@ public class UiAutomationTest {
     try (ActivityScenario<? extends TestActivity> scenario =
         ActivityScenario.launch(TestActivity.class)) {
 
-      scenario.onActivity(
-          activity -> {
-            waitDisplayRotation(activity, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
-            Display display = activity.getWindowManager().getDefaultDisplay();
-            Configuration configuration = activity.getResources().getConfiguration();
-            assertThat(display.getRotation()).isEqualTo(Surface.ROTATION_90);
-            assertThat(display.getWidth()).isGreaterThan(display.getHeight());
-            assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
-            assertThat(configuration.screenWidthDp).isGreaterThan(configuration.screenHeightDp);
-          });
+      scenario.onActivity(activity -> {
+        waitDisplayRotation(activity, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        Configuration configuration = activity.getResources().getConfiguration();
+        assertThat(display.getRotation()).isEqualTo(Surface.ROTATION_90);
+        assertThat(display.getWidth()).isGreaterThan(display.getHeight());
+        assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+        assertThat(configuration.screenWidthDp).isGreaterThan(configuration.screenHeightDp);
+      });
     }
   }
 
@@ -68,16 +67,15 @@ public class UiAutomationTest {
     uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_180);
     try (ActivityScenario<? extends TestActivity> scenario =
         ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            waitDisplayRotation(activity, Surface.ROTATION_180, Configuration.ORIENTATION_PORTRAIT);
-            Display display = activity.getWindowManager().getDefaultDisplay();
-            Configuration configuration = activity.getResources().getConfiguration();
-            assertThat(display.getRotation()).isEqualTo(Surface.ROTATION_180);
-            assertThat(display.getWidth()).isLessThan(display.getHeight());
-            assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
-            assertThat(configuration.screenWidthDp).isLessThan(configuration.screenHeightDp);
-          });
+      scenario.onActivity(activity -> {
+        waitDisplayRotation(activity, Surface.ROTATION_180, Configuration.ORIENTATION_PORTRAIT);
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        Configuration configuration = activity.getResources().getConfiguration();
+        assertThat(display.getRotation()).isEqualTo(Surface.ROTATION_180);
+        assertThat(display.getWidth()).isLessThan(display.getHeight());
+        assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+        assertThat(configuration.screenWidthDp).isLessThan(configuration.screenHeightDp);
+      });
     }
   }
 

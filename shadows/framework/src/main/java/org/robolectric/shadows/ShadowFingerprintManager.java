@@ -111,11 +111,10 @@ public class ShadowFingerprintManager {
         Log.w(TAG, "authentication already canceled");
         return;
       } else {
-        cancel.setOnCancelListener(
-            () -> {
-              pendingCallback = null;
-              pendingCryptoObject = null;
-            });
+        cancel.setOnCancelListener(() -> {
+          pendingCallback = null;
+          pendingCryptoObject = null;
+        });
       }
     }
 
@@ -169,13 +168,12 @@ public class ShadowFingerprintManager {
   public void setDefaultFingerprints(int num) {
     setEnrolledFingerprints(
         IntStream.range(0, num)
-            .mapToObj(
-                i ->
-                    new Fingerprint(
-                        /* name= */ "Fingerprint " + i,
-                        /* groupId= */ 0,
-                        /* fingerId= */ i,
-                        /* deviceId= */ 0))
+            .mapToObj(i ->
+                new Fingerprint(
+                    /* name= */ "Fingerprint " + i,
+                    /* groupId= */ 0,
+                    /* fingerId= */ i,
+                    /* deviceId= */ 0))
             .toArray(Fingerprint[]::new));
   }
 

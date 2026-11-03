@@ -85,10 +85,9 @@ public class ShadowInstrumentationTestLooperTest {
     ShadowLooper shadowMainLooper = shadowOf(Looper.getMainLooper());
     Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    mainHandler.post(
-        () -> {
-          throw new RuntimeException("Exception should be propagated!");
-        });
+    mainHandler.post(() -> {
+      throw new RuntimeException("Exception should be propagated!");
+    });
     assertThrows(RuntimeException.class, shadowMainLooper::idle);
 
     // Restore main looper and main thread to avoid error at tear down
@@ -100,10 +99,9 @@ public class ShadowInstrumentationTestLooperTest {
     HandlerThread ht = new HandlerThread("backgroundLooperCrash");
     ht.start();
     Handler handler = new Handler(ht.getLooper());
-    handler.post(
-        () -> {
-          throw new RuntimeException();
-        });
+    handler.post(() -> {
+      throw new RuntimeException();
+    });
     ht.join();
 
     assertThrows(IllegalStateException.class, () -> handler.post(() -> {}));
@@ -115,10 +113,9 @@ public class ShadowInstrumentationTestLooperTest {
     Handler handler = new Handler(Looper.getMainLooper());
     AtomicBoolean didRun = new AtomicBoolean();
 
-    handler.post(
-        () -> {
-          throw new RuntimeException();
-        });
+    handler.post(() -> {
+      throw new RuntimeException();
+    });
     RuntimeException exception = null;
     try {
       shadowLooper.idle();
@@ -142,11 +139,10 @@ public class ShadowInstrumentationTestLooperTest {
     AtomicBoolean thirdTaskRan = new AtomicBoolean();
 
     new Handler(Looper.getMainLooper()).post(() -> firstTaskRan.set(true));
-    shadowLooper.postSync(
-        () -> {
-          new Handler(Looper.getMainLooper()).post(() -> thirdTaskRan.set(true));
-          secondTaskRan.set(true);
-        });
+    shadowLooper.postSync(() -> {
+      new Handler(Looper.getMainLooper()).post(() -> thirdTaskRan.set(true));
+      secondTaskRan.set(true);
+    });
 
     assertThat(firstTaskRan.get()).isTrue();
     assertThat(secondTaskRan.get()).isTrue();
@@ -158,10 +154,9 @@ public class ShadowInstrumentationTestLooperTest {
     ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
 
     new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              throw new RuntimeException();
-            });
+        .post(() -> {
+          throw new RuntimeException();
+        });
 
     assertThrows(RuntimeException.class, () -> shadowLooper.postSync(() -> {}));
 

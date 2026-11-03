@@ -721,30 +721,29 @@ public class ShadowAlarmManager {
         executor = Objects.requireNonNull(this.executor);
       }
 
-      executor.execute(
-          () -> {
-            synchronized (scheduledAlarms) {
-              if (!scheduledAlarms.remove(this)) {
-                return;
-              }
-              if (interval > 0) {
-                scheduledAlarms.add(
-                    new InternalScheduledAlarm(triggerAtTime + interval, this).schedule());
-              }
-            }
-            if (operation != null) {
-              try {
-                operation.send();
-              } catch (CanceledException e) {
-                // only necessary in case this is a repeated alarm and we've already rescheduled
-                cancel(operation);
-              }
-            } else if (VERSION.SDK_INT >= VERSION_CODES.N) {
-              Objects.requireNonNull(onAlarmListener).onAlarm();
-            } else {
-              throw new IllegalStateException();
-            }
-          });
+      executor.execute(() -> {
+        synchronized (scheduledAlarms) {
+          if (!scheduledAlarms.remove(this)) {
+            return;
+          }
+          if (interval > 0) {
+            scheduledAlarms.add(
+                new InternalScheduledAlarm(triggerAtTime + interval, this).schedule());
+          }
+        }
+        if (operation != null) {
+          try {
+            operation.send();
+          } catch (CanceledException e) {
+            // only necessary in case this is a repeated alarm and we've already rescheduled
+            cancel(operation);
+          }
+        } else if (VERSION.SDK_INT >= VERSION_CODES.N) {
+          Objects.requireNonNull(onAlarmListener).onAlarm();
+        } else {
+          throw new IllegalStateException();
+        }
+      });
     }
   }
 

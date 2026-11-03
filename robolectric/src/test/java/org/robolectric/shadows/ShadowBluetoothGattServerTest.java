@@ -93,7 +93,7 @@ public class ShadowBluetoothGattServerTest {
       };
 
   @Before
-  @Config()
+  @Config
   public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
     BluetoothManager manager =

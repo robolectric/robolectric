@@ -23,13 +23,12 @@ public class BitmapLoadingTest {
   public void bitmapLoading_backgroundThreads_doesNotRace() throws Exception {
     ExecutorService executorService = Executors.newFixedThreadPool(4);
     for (int i = 0; i < 10; i++) {
-      executorService.execute(
-          () -> {
-            Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-            // createScaledBitmap triggers lazy ColorSpace member initialization in hwui
-            // Graphics.cpp.
-            Bitmap.createScaledBitmap(bitmap, 200, 200, false);
-          });
+      executorService.execute(() -> {
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        // createScaledBitmap triggers lazy ColorSpace member initialization in hwui
+        // Graphics.cpp.
+        Bitmap.createScaledBitmap(bitmap, 200, 200, false);
+      });
     }
     executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);

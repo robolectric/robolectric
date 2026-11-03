@@ -251,12 +251,11 @@ public class ShadowContextHubManager {
       entry
           .getValue()
           .getExecutor()
-          .execute(
-              () ->
-                  entry
-                      .getValue()
-                      .getCallback()
-                      .onMessageFromNanoApp(entry.getKey(), (NanoAppMessage) message));
+          .execute(() ->
+              entry
+                  .getValue()
+                  .getCallback()
+                  .onMessageFromNanoApp(entry.getKey(), (NanoAppMessage) message));
     }
   }
 
@@ -266,12 +265,11 @@ public class ShadowContextHubManager {
       entry
           .getValue()
           .getExecutor()
-          .execute(
-              () ->
-                  entry
-                      .getValue()
-                      .getCallback()
-                      .onNanoAppAborted(entry.getKey(), nanoAppId, abortCode));
+          .execute(() ->
+              entry
+                  .getValue()
+                  .getCallback()
+                  .onNanoAppAborted(entry.getKey(), nanoAppId, abortCode));
     }
   }
 
@@ -325,12 +323,11 @@ public class ShadowContextHubManager {
       entry
           .getValue()
           .getExecutor()
-          .execute(
-              () ->
-                  entry
-                      .getValue()
-                      .getCallback()
-                      .onClientAuthorizationChanged(entry.getKey(), nanoAppId, authorization));
+          .execute(() ->
+              entry
+                  .getValue()
+                  .getCallback()
+                  .onClientAuthorizationChanged(entry.getKey(), nanoAppId, authorization));
     }
   }
 

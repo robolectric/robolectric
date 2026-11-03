@@ -202,29 +202,28 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private void performSuccessfulPageLoad(String url) {
     new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              if (webChromeClient != null) {
-                webChromeClient.onProgressChanged(realWebView, 10);
-              }
-              if (webViewClient != null) {
-                webViewClient.onPageStarted(realWebView, url, /* favicon= */ null);
-              }
-              if (webChromeClient != null) {
-                webChromeClient.onProgressChanged(realWebView, 40);
-                webChromeClient.onProgressChanged(realWebView, 80);
-              }
-              if (webViewClient != null) {
-                webViewClient.onPageCommitVisible(realWebView, url);
-              }
-              if (webChromeClient != null) {
-                webChromeClient.onReceivedTitle(realWebView, url);
-                webChromeClient.onProgressChanged(realWebView, 100);
-              }
-              if (webViewClient != null) {
-                webViewClient.onPageFinished(realWebView, url);
-              }
-            });
+        .post(() -> {
+          if (webChromeClient != null) {
+            webChromeClient.onProgressChanged(realWebView, 10);
+          }
+          if (webViewClient != null) {
+            webViewClient.onPageStarted(realWebView, url, /* favicon= */ null);
+          }
+          if (webChromeClient != null) {
+            webChromeClient.onProgressChanged(realWebView, 40);
+            webChromeClient.onProgressChanged(realWebView, 80);
+          }
+          if (webViewClient != null) {
+            webViewClient.onPageCommitVisible(realWebView, url);
+          }
+          if (webChromeClient != null) {
+            webChromeClient.onReceivedTitle(realWebView, url);
+            webChromeClient.onProgressChanged(realWebView, 100);
+          }
+          if (webViewClient != null) {
+            webViewClient.onPageFinished(realWebView, url);
+          }
+        });
   }
 
   /**

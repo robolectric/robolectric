@@ -117,11 +117,10 @@ public class AndroidTestEnvironmentTest {
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
-        new Thread(
-            () -> {
-              bootstrapWrapper.callSetUpApplicationState();
-              res.set(RuntimeEnvironment.isMainThread());
-            });
+        new Thread(() -> {
+          bootstrapWrapper.callSetUpApplicationState();
+          res.set(RuntimeEnvironment.isMainThread());
+        });
     t.start();
     t.join();
     assertThat(res.get()).isTrue();

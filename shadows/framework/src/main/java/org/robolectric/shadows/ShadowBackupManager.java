@@ -165,20 +165,19 @@ public class ShadowBackupManager {
     @Override
     public int getAvailableRestoreSets(IRestoreObserver observer, IBackupManagerMonitor monitor)
         throws RemoteException {
-      post(
-          () -> {
-            if (serviceState.nullRestoreData) {
-              observer.restoreSetsAvailable(null);
-              return;
-            }
+      post(() -> {
+        if (serviceState.nullRestoreData) {
+          observer.restoreSetsAvailable(null);
+          return;
+        }
 
-            Set<Long> restoreTokens = serviceState.restoreData.keySet();
-            Set<RestoreSet> restoreSets = new HashSet<>();
-            for (long token : restoreTokens) {
-              restoreSets.add(new RestoreSet("RestoreSet-" + token, "device", token));
-            }
-            observer.restoreSetsAvailable(restoreSets.toArray(new RestoreSet[0]));
-          });
+        Set<Long> restoreTokens = serviceState.restoreData.keySet();
+        Set<RestoreSet> restoreSets = new HashSet<>();
+        for (long token : restoreTokens) {
+          restoreSets.add(new RestoreSet("RestoreSet-" + token, "device", token));
+        }
+        observer.restoreSetsAvailable(restoreSets.toArray(new RestoreSet[0]));
+      });
       return BackupManager.SUCCESS;
     }
 
@@ -263,14 +262,13 @@ public class ShadowBackupManager {
 
     private void post(RemoteRunnable runnable) {
       new Handler(Looper.getMainLooper())
-          .post(
-              () -> {
-                try {
-                  runnable.run();
-                } catch (RemoteException e) {
-                  throw new RuntimeException(e);
-                }
-              });
+          .post(() -> {
+            try {
+              runnable.run();
+            } catch (RemoteException e) {
+              throw new RuntimeException(e);
+            }
+          });
     }
   }
 

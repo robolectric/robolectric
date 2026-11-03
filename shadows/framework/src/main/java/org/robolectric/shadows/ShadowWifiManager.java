@@ -483,11 +483,10 @@ public class ShadowWifiManager {
   protected boolean startScan() {
     if (getScanResults() != null && !getScanResults().isEmpty()) {
       new Handler(Looper.getMainLooper())
-          .post(
-              () -> {
-                Intent intent = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-                RuntimeEnvironment.getApplication().sendBroadcast(intent);
-              });
+          .post(() -> {
+            Intent intent = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+            RuntimeEnvironment.getApplication().sendBroadcast(intent);
+          });
     }
     return startScanSucceeds;
   }
@@ -973,10 +972,9 @@ public class ShadowWifiManager {
       List<ScanResult> scanResultsCopy = List.copyOf(scanResults);
       if (outstandingPnoScanRequest == null
           || outstandingPnoScanRequest.ssids.stream()
-              .noneMatch(
-                  ssid ->
-                      scanResultsCopy.stream()
-                          .anyMatch(scanResult -> scanResult.getWifiSsid().equals(ssid)))) {
+              .noneMatch(ssid ->
+                  scanResultsCopy.stream()
+                      .anyMatch(scanResult -> scanResult.getWifiSsid().equals(ssid)))) {
         return;
       }
       Executor executor = outstandingPnoScanRequest.executor;
@@ -984,10 +982,8 @@ public class ShadowWifiManager {
       executor.execute(() -> callback.onScanResultsAvailable(scanResultsCopy));
       Intent intent = createPnoScanResultsBroadcastIntent();
       getContext().sendBroadcast(intent);
-      executor.execute(
-          () ->
-              callback.onRemoved(
-                  InternalPnoScanResultsCallback.REMOVE_PNO_CALLBACK_RESULTS_DELIVERED));
+      executor.execute(() ->
+          callback.onRemoved(InternalPnoScanResultsCallback.REMOVE_PNO_CALLBACK_RESULTS_DELIVERED));
       outstandingPnoScanRequest = null;
     }
   }
@@ -1024,12 +1020,11 @@ public class ShadowWifiManager {
       String packageName = getContext().getPackageName();
 
       if (outstandingPnoScanRequest != null) {
-        executor.execute(
-            () ->
-                pnoCallback.onRegisterFailed(
-                    uid == outstandingPnoScanRequest.uid
-                        ? InternalPnoScanResultsCallback.REGISTER_PNO_CALLBACK_ALREADY_REGISTERED
-                        : InternalPnoScanResultsCallback.REGISTER_PNO_CALLBACK_RESOURCE_BUSY));
+        executor.execute(() ->
+            pnoCallback.onRegisterFailed(
+                uid == outstandingPnoScanRequest.uid
+                    ? InternalPnoScanResultsCallback.REGISTER_PNO_CALLBACK_ALREADY_REGISTERED
+                    : InternalPnoScanResultsCallback.REGISTER_PNO_CALLBACK_RESOURCE_BUSY));
         return;
       }
 
@@ -1046,10 +1041,8 @@ public class ShadowWifiManager {
       if (outstandingPnoScanRequest != null
           && outstandingPnoScanRequest.uid == Binder.getCallingUid()) {
         InternalPnoScanResultsCallback callback = outstandingPnoScanRequest.callback;
-        outstandingPnoScanRequest.executor.execute(
-            () ->
-                callback.onRemoved(
-                    InternalPnoScanResultsCallback.REMOVE_PNO_CALLBACK_UNREGISTERED));
+        outstandingPnoScanRequest.executor.execute(() ->
+            callback.onRemoved(InternalPnoScanResultsCallback.REMOVE_PNO_CALLBACK_UNREGISTERED));
         outstandingPnoScanRequest = null;
       }
     }

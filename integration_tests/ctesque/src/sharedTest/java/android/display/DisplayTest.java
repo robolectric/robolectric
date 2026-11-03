@@ -26,13 +26,12 @@ public class DisplayTest {
   public void display_realSizeIsSameAsDefaultWidthHeight() {
     assumeThat(Build.VERSION.SDK_INT, greaterThan(Build.VERSION_CODES.O));
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DisplayManager activityDisplayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-            Display display = activityDisplayManager.getDisplay(Display.DEFAULT_DISPLAY);
-            assertRealSize(display, display.getWidth(), display.getHeight());
-          });
+      scenario.onActivity(activity -> {
+        DisplayManager activityDisplayManager =
+            (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+        Display display = activityDisplayManager.getDisplay(Display.DEFAULT_DISPLAY);
+        assertRealSize(display, display.getWidth(), display.getHeight());
+      });
     }
   }
 
@@ -46,34 +45,33 @@ public class DisplayTest {
     final String name = "TestVirtualDisplay";
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DisplayManager activityDisplayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-            VirtualDisplay virtualDisplay = null;
+      scenario.onActivity(activity -> {
+        DisplayManager activityDisplayManager =
+            (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+        VirtualDisplay virtualDisplay = null;
 
-            try {
-              virtualDisplay =
-                  activityDisplayManager.createVirtualDisplay(
-                      name,
-                      width,
-                      height,
-                      density,
-                      null, /* surface */
-                      DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY);
+        try {
+          virtualDisplay =
+              activityDisplayManager.createVirtualDisplay(
+                  name,
+                  width,
+                  height,
+                  density,
+                  null, /* surface */
+                  DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY);
 
-              assertNotNull("VirtualDisplay object should not be null", virtualDisplay);
-              Display display = virtualDisplay.getDisplay();
-              assertNotNull("Display from VirtualDisplay should not be null", display);
+          assertNotNull("VirtualDisplay object should not be null", virtualDisplay);
+          Display display = virtualDisplay.getDisplay();
+          assertNotNull("Display from VirtualDisplay should not be null", display);
 
-              assertRealSize(display, width, height);
+          assertRealSize(display, width, height);
 
-            } finally {
-              if (virtualDisplay != null) {
-                virtualDisplay.release();
-              }
-            }
-          });
+        } finally {
+          if (virtualDisplay != null) {
+            virtualDisplay.release();
+          }
+        }
+      });
     }
   }
 

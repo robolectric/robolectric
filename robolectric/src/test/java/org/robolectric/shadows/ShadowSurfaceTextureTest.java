@@ -30,7 +30,7 @@ public class ShadowSurfaceTextureTest {
     Handler handler = new Handler(cbHandlerThread.getLooper());
 
     surfaceTexture.setOnFrameAvailableListener(
-        (texture) -> {
+        texture -> {
           frameCallback.set(true);
           latch.countDown();
         },

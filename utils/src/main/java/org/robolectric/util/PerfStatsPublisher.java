@@ -46,17 +46,16 @@ public class PerfStatsPublisher {
     }
     Runtime.getRuntime()
         .addShutdownHook(
-            new Thread(
-                () -> {
-                  preFinalReportTask.run();
-                  for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
-                    try {
-                      perfStatsReporter.finalReport();
-                    } catch (RuntimeException e) {
-                      e.printStackTrace();
-                    }
-                  }
-                }));
+            new Thread(() -> {
+              preFinalReportTask.run();
+              for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
+                try {
+                  perfStatsReporter.finalReport();
+                } catch (RuntimeException e) {
+                  e.printStackTrace();
+                }
+              }
+            }));
   }
 
   /**

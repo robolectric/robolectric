@@ -77,11 +77,10 @@ public class ShadowIcon {
   @Implementation
   protected void loadDrawableAsync(Context context, Message andThen) {
     if (executorOverride != null) {
-      executorOverride.execute(
-          () -> {
-            andThen.obj = realIcon.loadDrawable(context);
-            andThen.sendToTarget();
-          });
+      executorOverride.execute(() -> {
+        andThen.obj = realIcon.loadDrawable(context);
+        andThen.sendToTarget();
+      });
     } else {
       reflector(IconReflector.class, realIcon).loadDrawableAsync(context, andThen);
     }
@@ -91,11 +90,10 @@ public class ShadowIcon {
   protected void loadDrawableAsync(
       Context context, final OnDrawableLoadedListener listener, Handler handler) {
     if (executorOverride != null) {
-      executorOverride.execute(
-          () -> {
-            Drawable result = realIcon.loadDrawable(context);
-            handler.post(() -> listener.onDrawableLoaded(result));
-          });
+      executorOverride.execute(() -> {
+        Drawable result = realIcon.loadDrawable(context);
+        handler.post(() -> listener.onDrawableLoaded(result));
+      });
     } else {
       reflector(IconReflector.class, realIcon).loadDrawableAsync(context, listener, handler);
     }

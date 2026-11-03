@@ -105,17 +105,16 @@ public class EspressoWithWindowLayersTest {
   public void click_twoDialogs_clicksOnTopMost() {
     AtomicBoolean clicked = new AtomicBoolean();
     try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            new AlertDialog.Builder(activity)
-                .setPositiveButton("Hello", (dialog, which) -> {})
-                .create()
-                .show();
-            new AlertDialog.Builder(activity)
-                .setPositiveButton("Hello", (dialog, which) -> clicked.set(true))
-                .create()
-                .show();
-          });
+      scenario.onActivity(activity -> {
+        new AlertDialog.Builder(activity)
+            .setPositiveButton("Hello", (dialog, which) -> {})
+            .create()
+            .show();
+        new AlertDialog.Builder(activity)
+            .setPositiveButton("Hello", (dialog, which) -> clicked.set(true))
+            .create()
+            .show();
+      });
 
       onView(withText("Hello")).inRoot(isDialog()).perform(click());
 
@@ -152,33 +151,31 @@ public class EspressoWithWindowLayersTest {
    * popup window will be cleared of its touch and focus flags so they reflect the flags configured.
    */
   private void showPopupOver(ActivityScenario<EspressoActivity> scenario, int viewId, int flags) {
-    scenario.onActivity(
-        activity -> {
-          View view = activity.findViewById(viewId);
-          int[] viewLocation = new int[2];
-          view.getLocationOnScreen(viewLocation);
+    scenario.onActivity(activity -> {
+      View view = activity.findViewById(viewId);
+      int[] viewLocation = new int[2];
+      view.getLocationOnScreen(viewLocation);
 
-          // Create an edit text with the same id as the edit text in EspressoActivity so we can
-          // test that the correct window receives the text input.
-          EditText popupContentView = new EditText(view.getContext());
-          popupContentView.setId(R.id.edit_text);
+      // Create an edit text with the same id as the edit text in EspressoActivity so we can
+      // test that the correct window receives the text input.
+      EditText popupContentView = new EditText(view.getContext());
+      popupContentView.setId(R.id.edit_text);
 
-          PopupWindow popup = new PopupWindow(popupContentView, view.getWidth(), view.getHeight());
-          popup.setFocusable((flags & FOCUSABLE) != 0);
-          popup.setTouchable((flags & TOUCHABLE) != 0);
-          popup.setTouchModal((flags & TOUCH_MODAL) != 0);
-          popup.setOutsideTouchable((flags & TOUCH_OUTSIDE) != 0);
-          // On sdk <=22 the touch interceptor is only used if the popup has a background configured
-          popup.setBackgroundDrawable(new ColorDrawable(Color.RED));
-          popup.setTouchInterceptor(
-              (v, e) -> {
-                if (e.getActionMasked() == MotionEvent.ACTION_OUTSIDE) {
-                  popupTouchOutside = true;
-                }
-                return true;
-              });
-          popup.showAtLocation(view, Gravity.LEFT | Gravity.TOP, viewLocation[0], viewLocation[1]);
-        });
+      PopupWindow popup = new PopupWindow(popupContentView, view.getWidth(), view.getHeight());
+      popup.setFocusable((flags & FOCUSABLE) != 0);
+      popup.setTouchable((flags & TOUCHABLE) != 0);
+      popup.setTouchModal((flags & TOUCH_MODAL) != 0);
+      popup.setOutsideTouchable((flags & TOUCH_OUTSIDE) != 0);
+      // On sdk <=22 the touch interceptor is only used if the popup has a background configured
+      popup.setBackgroundDrawable(new ColorDrawable(Color.RED));
+      popup.setTouchInterceptor((v, e) -> {
+        if (e.getActionMasked() == MotionEvent.ACTION_OUTSIDE) {
+          popupTouchOutside = true;
+        }
+        return true;
+      });
+      popup.showAtLocation(view, Gravity.LEFT | Gravity.TOP, viewLocation[0], viewLocation[1]);
+    });
   }
 
   /** Performs a click at the location from the coordinates provider (ignoring the matched view). */
@@ -196,10 +193,8 @@ public class EspressoWithWindowLayersTest {
       ActivityScenario<EspressoActivity> scenario, int viewId) {
     return v -> {
       AtomicReference<float[]> result = new AtomicReference<>();
-      scenario.onActivity(
-          activity ->
-              result.set(
-                  GeneralLocation.CENTER.calculateCoordinates(activity.findViewById(viewId))));
+      scenario.onActivity(activity ->
+          result.set(GeneralLocation.CENTER.calculateCoordinates(activity.findViewById(viewId))));
       return result.get();
     };
   }

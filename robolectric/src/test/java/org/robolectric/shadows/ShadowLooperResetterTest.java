@@ -348,11 +348,10 @@ public class ShadowLooperResetterTest {
         handlerThread.start();
         CountDownLatch latch = new CountDownLatch(1);
         new Handler(handlerThread.getLooper())
-            .post(
-                () -> {
-                  choreographer = Choreographer.getInstance();
-                  latch.countDown();
-                });
+            .post(() -> {
+              choreographer = Choreographer.getInstance();
+              latch.countDown();
+            });
         latch.await();
       }
     }

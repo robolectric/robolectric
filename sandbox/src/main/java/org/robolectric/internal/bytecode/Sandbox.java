@@ -96,25 +96,23 @@ public class Sandbox {
   }
 
   public void runOnMainThread(Runnable runnable) {
-    runOnMainThread(
-        () -> {
-          runnable.run();
-          return null;
-        });
+    runOnMainThread(() -> {
+      runnable.run();
+      return null;
+    });
   }
 
   public void runOnMainThreadWithClassLoader(Runnable runnable) {
-    runOnMainThread(
-        () -> {
-          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-          try {
-            Thread.currentThread().setContextClassLoader(getRobolectricClassLoader());
-            runnable.run();
-          } finally {
-            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-          }
-          return null;
-        });
+    runOnMainThread(() -> {
+      ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+      try {
+        Thread.currentThread().setContextClassLoader(getRobolectricClassLoader());
+        runnable.run();
+      } finally {
+        Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+      }
+      return null;
+    });
   }
 
   // check if the sandbox is shutdown

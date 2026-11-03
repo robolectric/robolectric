@@ -355,10 +355,9 @@ public class ShadowUIModeManager {
       final Executor executor = entry.getValue();
 
       if (listener != null && executor != null) {
-        executor.execute(
-            () -> {
-              listener.onContrastChanged(contrast);
-            });
+        executor.execute(() -> {
+          listener.onContrastChanged(contrast);
+        });
       }
     }
   }

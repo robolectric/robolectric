@@ -113,10 +113,9 @@ public class ShadowMagnificationController {
   private void notifyListeners() {
     for (MagnificationController.OnMagnificationChangedListener listener : listeners.keySet()) {
       Handler handler = listeners.get(listener);
-      handler.post(
-          () ->
-              listener.onMagnificationChanged(
-                  realObject, magnificationRegion, scale, centerX, centerY));
+      handler.post(() ->
+          listener.onMagnificationChanged(
+              realObject, magnificationRegion, scale, centerX, centerY));
     }
   }
 }

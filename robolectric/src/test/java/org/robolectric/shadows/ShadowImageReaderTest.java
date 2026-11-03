@@ -69,7 +69,7 @@ public class ShadowImageReaderTest {
     Handler handler = new Handler(cbHandlerThread.getLooper());
 
     imageReader.setOnImageAvailableListener(
-        (reader) -> {
+        reader -> {
           listenerCalled.set(true);
           latch.countDown();
         },

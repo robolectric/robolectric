@@ -62,7 +62,7 @@ public class ShadowNativeRadialGradientTest {
     canvas.drawPaint(paint);
 
     final ColorSpace bitmapColorSpace = bitmap.getColorSpace();
-    Function<Long, Color> convert = (l) -> Color.valueOf(Color.convert(l, bitmapColorSpace));
+    Function<Long, Color> convert = l -> Color.valueOf(Color.convert(l, bitmapColorSpace));
 
     final Color centerColor = bitmap.getColor(50, 50);
     ColorUtils.verifyColor("Center color should be red!", convert.apply(red), centerColor, 0.034f);

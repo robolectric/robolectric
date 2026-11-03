@@ -1654,19 +1654,17 @@ public class ShadowMediaPlayerTest {
   public void instantiateOnBackgroundThread() throws ExecutionException, InterruptedException {
     ShadowMediaPlayer shadowMediaPlayer =
         Executors.newSingleThreadExecutor()
-            .submit(
-                () -> {
-                  // This thread does not have a prepared looper, so the main looper is used
-                  MediaPlayer mediaPlayer = Shadow.newInstanceOf(MediaPlayer.class);
-                  return shadowOf(mediaPlayer);
-                })
+            .submit(() -> {
+              // This thread does not have a prepared looper, so the main looper is used
+              MediaPlayer mediaPlayer = Shadow.newInstanceOf(MediaPlayer.class);
+              return shadowOf(mediaPlayer);
+            })
             .get();
     AtomicBoolean ran = new AtomicBoolean(false);
-    shadowMediaPlayer.postEvent(
-        (mp, smp) -> {
-          assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
-          ran.set(true);
-        });
+    shadowMediaPlayer.postEvent((mp, smp) -> {
+      assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
+      ran.set(true);
+    });
     shadowMainLooper().idle();
     assertThat(ran.get()).isTrue();
   }

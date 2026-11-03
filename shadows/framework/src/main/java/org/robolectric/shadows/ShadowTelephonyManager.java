@@ -957,22 +957,20 @@ public class ShadowTelephonyManager {
       // ignore
     } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
       // perform the "failure" callback operation via the specified executor
-      executor.execute(
-          () -> {
-            // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
-            // referring to 'CellInfoCallback'.
-            CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
-            callback.onError(requestCellInfoUpdateErrorCode, requestCellInfoUpdateDetail);
-          });
+      executor.execute(() -> {
+        // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
+        // referring to 'CellInfoCallback'.
+        CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
+        callback.onError(requestCellInfoUpdateErrorCode, requestCellInfoUpdateDetail);
+      });
     } else {
       // perform the "success" callback operation via the specified executor
-      executor.execute(
-          () -> {
-            // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
-            // referring to 'CellInfoCallback'.
-            CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
-            callback.onCellInfo(callbackCellInfos);
-          });
+      executor.execute(() -> {
+        // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
+        // referring to 'CellInfoCallback'.
+        CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
+        callback.onCellInfo(callbackCellInfos);
+      });
     }
   }
 

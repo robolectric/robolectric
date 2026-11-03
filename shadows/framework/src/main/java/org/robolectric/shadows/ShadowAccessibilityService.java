@@ -119,25 +119,23 @@ public class ShadowAccessibilityService extends ShadowService {
   @Implementation(minSdk = R)
   protected void takeScreenshot(
       int displayId, Executor executor, AccessibilityService.TakeScreenshotCallback callback) {
-    executor.execute(
-        () -> {
-          if (isScreenshotError) {
-            callback.onFailure(takeScreenshotErrorCode);
-            return;
-          }
+    executor.execute(() -> {
+      if (isScreenshotError) {
+        callback.onFailure(takeScreenshotErrorCode);
+        return;
+      }
 
-          HardwareBuffer hardwareBuffer =
-              HardwareBuffer.create(1, 1, HardwareBuffer.RGBA_8888, 1, 0L);
-          ColorSpace colorSpace = ColorSpace.get(Named.SRGB);
-          long timestamp = SystemClock.elapsedRealtimeNanos();
-          ScreenshotResult screenshotResult =
-              ReflectionHelpers.callConstructor(
-                  ScreenshotResult.class,
-                  new ClassParameter<>(HardwareBuffer.class, hardwareBuffer),
-                  new ClassParameter<>(ColorSpace.class, colorSpace),
-                  new ClassParameter<>(long.class, timestamp));
-          callback.onSuccess(screenshotResult);
-        });
+      HardwareBuffer hardwareBuffer = HardwareBuffer.create(1, 1, HardwareBuffer.RGBA_8888, 1, 0L);
+      ColorSpace colorSpace = ColorSpace.get(Named.SRGB);
+      long timestamp = SystemClock.elapsedRealtimeNanos();
+      ScreenshotResult screenshotResult =
+          ReflectionHelpers.callConstructor(
+              ScreenshotResult.class,
+              new ClassParameter<>(HardwareBuffer.class, hardwareBuffer),
+              new ClassParameter<>(ColorSpace.class, colorSpace),
+              new ClassParameter<>(long.class, timestamp));
+      callback.onSuccess(screenshotResult);
+    });
   }
 
   @Implementation

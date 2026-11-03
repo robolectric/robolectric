@@ -239,17 +239,14 @@ public class ActivityScenarioTest {
     try (ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class)) {
       assertThat(activityScenario).isNotNull();
-      activityScenario.onActivity(
-          activity ->
-              assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED));
+      activityScenario.onActivity(activity ->
+          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED));
       activityScenario.moveToState(State.STARTED);
-      activityScenario.onActivity(
-          activity ->
-              assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED));
+      activityScenario.onActivity(activity ->
+          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED));
       activityScenario.moveToState(State.CREATED);
-      activityScenario.onActivity(
-          activity ->
-              assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED));
+      activityScenario.onActivity(activity ->
+          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED));
     }
   }
 
@@ -260,22 +257,19 @@ public class ActivityScenarioTest {
     try (ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class)) {
       assertThat(activityScenario).isNotNull();
-      activityScenario.onActivity(
-          activity -> {
-            activity
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .add(android.R.id.content, fragment)
-                .commitNow();
-            assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isSameInstanceAs(fragment);
-          });
+      activityScenario.onActivity(activity -> {
+        activity
+            .getSupportFragmentManager()
+            .beginTransaction()
+            .add(android.R.id.content, fragment)
+            .commitNow();
+        assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+            .isSameInstanceAs(fragment);
+      });
       activityScenario.recreate();
-      activityScenario.onActivity(
-          activity ->
-              assertThat(
-                      activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                  .isSameInstanceAs(fragment));
+      activityScenario.onActivity(activity ->
+          assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+              .isSameInstanceAs(fragment));
     }
   }
 
@@ -286,22 +280,19 @@ public class ActivityScenarioTest {
     try (ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class)) {
       assertThat(activityScenario).isNotNull();
-      activityScenario.onActivity(
-          activity -> {
-            activity
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .add(android.R.id.content, fragment)
-                .commitNow();
-            assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isSameInstanceAs(fragment);
-          });
+      activityScenario.onActivity(activity -> {
+        activity
+            .getSupportFragmentManager()
+            .beginTransaction()
+            .add(android.R.id.content, fragment)
+            .commitNow();
+        assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+            .isSameInstanceAs(fragment);
+      });
       activityScenario.recreate();
-      activityScenario.onActivity(
-          activity ->
-              assertThat(
-                      activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                  .isNotSameInstanceAs(fragment));
+      activityScenario.onActivity(activity ->
+          assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+              .isNotSameInstanceAs(fragment));
     }
   }
 
@@ -325,12 +316,11 @@ public class ActivityScenarioTest {
 
       uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90);
 
-      activityScenario.onActivity(
-          activity -> {
-            assertThat(activity.getResources().getConfiguration().orientation)
-                .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
-            assertThat(activity).isNotSameInstanceAs(originalActivity);
-          });
+      activityScenario.onActivity(activity -> {
+        assertThat(activity.getResources().getConfiguration().orientation)
+            .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+        assertThat(activity).isNotSameInstanceAs(originalActivity);
+      });
     }
   }
 
@@ -341,10 +331,9 @@ public class ActivityScenarioTest {
       assertThrows(
           IllegalStateException.class,
           () ->
-              activityScenario.onActivity(
-                  activity -> {
-                    throw new IllegalStateException("test");
-                  }));
+              activityScenario.onActivity(activity -> {
+                throw new IllegalStateException("test");
+              }));
     }
   }
 
@@ -352,9 +341,8 @@ public class ActivityScenarioTest {
   public void onActivity_runsOnMainLooperThread() {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launch(TranscriptActivity.class)) {
-      activityScenario.onActivity(
-          activity ->
-              assertThat(Looper.getMainLooper().getThread()).isEqualTo(Thread.currentThread()));
+      activityScenario.onActivity(activity ->
+          assertThat(Looper.getMainLooper().getThread()).isEqualTo(Thread.currentThread()));
     }
   }
 
@@ -370,10 +358,9 @@ public class ActivityScenarioTest {
   public void getCallingActivity_isSet() {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launchActivityForResult(TranscriptActivity.class)) {
-      activityScenario.onActivity(
-          activity ->
-              assertThat(activity.getCallingActivity().getPackageName())
-                  .isEqualTo("org.robolectric.integrationtests.axt"));
+      activityScenario.onActivity(activity ->
+          assertThat(activity.getCallingActivity().getPackageName())
+              .isEqualTo("org.robolectric.integrationtests.axt"));
     }
   }
 
@@ -384,10 +371,9 @@ public class ActivityScenarioTest {
 
     try (ActivityScenario<OnCreatePackageNameActivity> scenario =
         ActivityScenario.launchActivityForResult(startActivityIntent, null)) {
-      scenario.onActivity(
-          activity -> {
-            assertThat(activity.getCallingPackageOnCreate()).isEqualTo(context.getPackageName());
-          });
+      scenario.onActivity(activity -> {
+        assertThat(activity.getCallingPackageOnCreate()).isEqualTo(context.getPackageName());
+      });
     }
   }
 
@@ -405,12 +391,11 @@ public class ActivityScenarioTest {
   public void testUid_uidMatchesApplicationUid() {
     try (ActivityScenario<TranscriptActivity> scenario =
         ActivityScenario.launch(TranscriptActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            assertThat(activity.getApplicationInfo().uid).isEqualTo(Process.myUid());
-            assertThat(ApplicationProvider.getApplicationContext().getApplicationInfo().uid)
-                .isEqualTo(Process.myUid());
-          });
+      scenario.onActivity(activity -> {
+        assertThat(activity.getApplicationInfo().uid).isEqualTo(Process.myUid());
+        assertThat(ApplicationProvider.getApplicationContext().getApplicationInfo().uid)
+            .isEqualTo(Process.myUid());
+      });
     }
   }
 }

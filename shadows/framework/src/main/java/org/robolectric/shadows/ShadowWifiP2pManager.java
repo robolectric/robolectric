@@ -96,15 +96,14 @@ public class ShadowWifiP2pManager {
       return;
     }
 
-    handler.post(
-        () -> {
-          if (nextActionFailure == -1) {
-            al.onSuccess();
-          } else {
-            al.onFailure(nextActionFailure);
-          }
-          nextActionFailure = NO_FAILURE;
-        });
+    handler.post(() -> {
+      if (nextActionFailure == -1) {
+        al.onSuccess();
+      } else {
+        al.onFailure(nextActionFailure);
+      }
+      nextActionFailure = NO_FAILURE;
+    });
   }
 
   @Implementation
@@ -123,10 +122,9 @@ public class ShadowWifiP2pManager {
       return;
     }
 
-    handler.post(
-        () ->
-            listener.onConnectionInfoAvailable(
-                p2pConnectionInfoMap.getOrDefault(c, new WifiP2pInfo())));
+    handler.post(() ->
+        listener.onConnectionInfoAvailable(
+            p2pConnectionInfoMap.getOrDefault(c, new WifiP2pInfo())));
   }
 
   @Implementation

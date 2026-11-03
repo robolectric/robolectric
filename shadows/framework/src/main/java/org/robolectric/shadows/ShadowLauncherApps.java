@@ -89,10 +89,8 @@ public class ShadowLauncherApps {
 
   private void shortcutsChanged(String packageName, List<ShortcutInfo> shortcuts) {
     for (Pair<LauncherApps.Callback, Handler> callbackPair : callbacks) {
-      callbackPair.second.post(
-          () ->
-              callbackPair.first.onShortcutsChanged(
-                  packageName, shortcuts, Process.myUserHandle()));
+      callbackPair.second.post(() ->
+          callbackPair.first.onShortcutsChanged(packageName, shortcuts, Process.myUserHandle()));
     }
   }
 

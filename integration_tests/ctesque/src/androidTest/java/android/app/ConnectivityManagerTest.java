@@ -30,34 +30,31 @@ public class ConnectivityManagerTest {
         ApplicationProvider.getApplicationContext().getSystemService(ConnectivityManager.class);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ConnectivityManager activityConnectivityManager =
-                activity.getSystemService(ConnectivityManager.class);
+      scenario.onActivity(activity -> {
+        ConnectivityManager activityConnectivityManager =
+            activity.getSystemService(ConnectivityManager.class);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-              assertThat(applicationConnectivityManager)
-                  .isNotSameInstanceAs(activityConnectivityManager);
-            } else {
-              assertThat(applicationConnectivityManager)
-                  .isSameInstanceAs(activityConnectivityManager);
-            }
-          });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          assertThat(applicationConnectivityManager)
+              .isNotSameInstanceAs(activityConnectivityManager);
+        } else {
+          assertThat(applicationConnectivityManager).isSameInstanceAs(activityConnectivityManager);
+        }
+      });
     }
   }
 
   @Test
   public void connectivityManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ConnectivityManager activityConnectivityManager =
-                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-            ConnectivityManager anotherActivityConnectivityManager =
-                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-            assertThat(anotherActivityConnectivityManager)
-                .isSameInstanceAs(activityConnectivityManager);
-          });
+      scenario.onActivity(activity -> {
+        ConnectivityManager activityConnectivityManager =
+            (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager anotherActivityConnectivityManager =
+            (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        assertThat(anotherActivityConnectivityManager)
+            .isSameInstanceAs(activityConnectivityManager);
+      });
     }
   }
 
@@ -68,16 +65,15 @@ public class ConnectivityManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ConnectivityManager activityConnectivityManager =
-                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+      scenario.onActivity(activity -> {
+        ConnectivityManager activityConnectivityManager =
+            (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            Network applicationActiveNetwork = applicationConnectivityManager.getActiveNetwork();
-            Network activityActiveNetwork = activityConnectivityManager.getActiveNetwork();
+        Network applicationActiveNetwork = applicationConnectivityManager.getActiveNetwork();
+        Network activityActiveNetwork = activityConnectivityManager.getActiveNetwork();
 
-            assertThat(activityActiveNetwork).isEqualTo(applicationActiveNetwork);
-          });
+        assertThat(activityActiveNetwork).isEqualTo(applicationActiveNetwork);
+      });
     }
   }
 }

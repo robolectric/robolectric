@@ -69,11 +69,10 @@ public class ShadowAppFunctionManager {
               return state;
             });
     if (newState == APP_FUNCTION_STATE_DOES_NOT_EXIST) {
-      executor.execute(
-          () ->
-              callback.onError(
-                  new IllegalArgumentException(
-                      String.format("Function %s does not exist", functionIdentifier))));
+      executor.execute(() ->
+          callback.onError(
+              new IllegalArgumentException(
+                  String.format("Function %s does not exist", functionIdentifier))));
     } else {
       executor.execute(() -> callback.onResult(null));
     }

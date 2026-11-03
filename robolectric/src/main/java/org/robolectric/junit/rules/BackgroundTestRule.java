@@ -59,14 +59,13 @@ public final class BackgroundTestRule implements TestRule {
         // TODO Remove explicit loading when/if background threads can kick off
         // application loading in the future
         RuntimeEnvironment.getApplication();
-        BackgroundExecutor.runInBackground(
-            () -> {
-              try {
-                base.evaluate();
-              } catch (Throwable t) {
-                throwable.set(t);
-              }
-            });
+        BackgroundExecutor.runInBackground(() -> {
+          try {
+            base.evaluate();
+          } catch (Throwable t) {
+            throwable.set(t);
+          }
+        });
         if (throwable.get() != null) {
           throw throwable.get();
         }

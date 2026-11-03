@@ -174,17 +174,16 @@ public final class Simulator {
         Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
     perfStatsPublisher = PerfStatsPublisher.getInstance();
     perfStatsPublisher.addReporters(perfStatsReporters);
-    perfStatsPublisher.doFinalReportOnShutdown(
-        () -> {
-          // Reuse the shutdown hook to logMemoryAndCpu, otherwise output of perfstats can collide
-          // with
-          // logMemoryAndCpu if they both log to System.err
-          logMemoryAndCpu();
-          System.err.println();
-          // there is no test runner reporting the data, so report first here before the finalReport
-          // runs
-          perfStatsPublisher.report(perfStatsCollector);
-        });
+    perfStatsPublisher.doFinalReportOnShutdown(() -> {
+      // Reuse the shutdown hook to logMemoryAndCpu, otherwise output of perfstats can collide
+      // with
+      // logMemoryAndCpu if they both log to System.err
+      logMemoryAndCpu();
+      System.err.println();
+      // there is no test runner reporting the data, so report first here before the finalReport
+      // runs
+      perfStatsPublisher.report(perfStatsCollector);
+    });
 
     if (perfStatsReporters.isEmpty()) {
       // there won't be a perf stats shutdown hook - add our own here to log memory and CPU
@@ -201,11 +200,9 @@ public final class Simulator {
     ProcessHandle.current()
         .info()
         .totalCpuDuration()
-        .ifPresent(
-            duration -> {
-              System.err.printf(
-                  "Java process total CPU time: %.1fs%n", duration.toMillis() / 1000.0);
-            });
+        .ifPresent(duration -> {
+          System.err.printf("Java process total CPU time: %.1fs%n", duration.toMillis() / 1000.0);
+        });
   }
 
   private static class SimulatorFrameCallback implements Choreographer.FrameCallback {

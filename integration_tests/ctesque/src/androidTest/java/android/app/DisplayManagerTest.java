@@ -22,26 +22,24 @@ public class DisplayManagerTest {
         (DisplayManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DisplayManager activityDisplayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-            assertThat(applicationDisplayManager).isNotSameInstanceAs(activityDisplayManager);
-          });
+      scenario.onActivity(activity -> {
+        DisplayManager activityDisplayManager =
+            (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+        assertThat(applicationDisplayManager).isNotSameInstanceAs(activityDisplayManager);
+      });
     }
   }
 
   @Test
   public void displayManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DisplayManager activityDisplayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-            DisplayManager anotherActivityDisplayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-            assertThat(anotherActivityDisplayManager).isSameInstanceAs(activityDisplayManager);
-          });
+      scenario.onActivity(activity -> {
+        DisplayManager activityDisplayManager =
+            (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+        DisplayManager anotherActivityDisplayManager =
+            (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+        assertThat(anotherActivityDisplayManager).isSameInstanceAs(activityDisplayManager);
+      });
     }
   }
 
@@ -52,25 +50,24 @@ public class DisplayManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DisplayManager activityDisplayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+      scenario.onActivity(activity -> {
+        DisplayManager activityDisplayManager =
+            (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
 
-            Display[] applicationDisplays = applicationDisplayManager.getDisplays();
-            Display[] activityDisplays = activityDisplayManager.getDisplays();
+        Display[] applicationDisplays = applicationDisplayManager.getDisplays();
+        Display[] activityDisplays = activityDisplayManager.getDisplays();
 
-            assertThat(activityDisplays.length).isEqualTo(applicationDisplays.length);
+        assertThat(activityDisplays.length).isEqualTo(applicationDisplays.length);
 
-            for (int i = 0; i < applicationDisplays.length; i++) {
-              Display appDisplay = applicationDisplays[i];
-              Display actDisplay = activityDisplays[i];
+        for (int i = 0; i < applicationDisplays.length; i++) {
+          Display appDisplay = applicationDisplays[i];
+          Display actDisplay = activityDisplays[i];
 
-              assertThat(actDisplay.getDisplayId()).isEqualTo(appDisplay.getDisplayId());
-              assertThat(actDisplay.getWidth()).isEqualTo(appDisplay.getWidth());
-              assertThat(actDisplay.getHeight()).isEqualTo(appDisplay.getHeight());
-            }
-          });
+          assertThat(actDisplay.getDisplayId()).isEqualTo(appDisplay.getDisplayId());
+          assertThat(actDisplay.getWidth()).isEqualTo(appDisplay.getWidth());
+          assertThat(actDisplay.getHeight()).isEqualTo(appDisplay.getHeight());
+        }
+      });
     }
   }
 }

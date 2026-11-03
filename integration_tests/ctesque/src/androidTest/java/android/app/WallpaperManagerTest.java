@@ -35,19 +35,18 @@ public class WallpaperManagerTest {
   @Test
   public void wallpaperManager_applicationInstance_matchesExpectedBehavior() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WallpaperManager activityWallpaperManager =
-                (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
-            // If WallpaperManagerService is not supported by the device, it returns a special
-            // WindowManager implementation called DisabledWallpaperManager, and it uses
-            // singleton for all Context instances.
-            if (isWallpaperSupported) {
-              assertThat(wallpaperManager).isNotSameInstanceAs(activityWallpaperManager);
-            } else {
-              assertThat(wallpaperManager).isSameInstanceAs(activityWallpaperManager);
-            }
-          });
+      scenario.onActivity(activity -> {
+        WallpaperManager activityWallpaperManager =
+            (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
+        // If WallpaperManagerService is not supported by the device, it returns a special
+        // WindowManager implementation called DisabledWallpaperManager, and it uses
+        // singleton for all Context instances.
+        if (isWallpaperSupported) {
+          assertThat(wallpaperManager).isNotSameInstanceAs(activityWallpaperManager);
+        } else {
+          assertThat(wallpaperManager).isSameInstanceAs(activityWallpaperManager);
+        }
+      });
     }
   }
 
@@ -55,14 +54,13 @@ public class WallpaperManagerTest {
   public void wallpaperManager_activityInstance_isSameAsActivityInstance() {
     assumeTrue(isWallpaperSupported);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WallpaperManager activityWallpaperManager =
-                (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
-            WallpaperManager anotherActivityWallpaperManager =
-                (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
-            assertThat(anotherActivityWallpaperManager).isSameInstanceAs(activityWallpaperManager);
-          });
+      scenario.onActivity(activity -> {
+        WallpaperManager activityWallpaperManager =
+            (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
+        WallpaperManager anotherActivityWallpaperManager =
+            (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
+        assertThat(anotherActivityWallpaperManager).isSameInstanceAs(activityWallpaperManager);
+      });
     }
   }
 
@@ -70,16 +68,15 @@ public class WallpaperManagerTest {
   public void wallpaperManager_instance_retrievesSameWallpaper() {
     assumeTrue(isWallpaperSupported);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WallpaperManager activityWallpaperManager =
-                (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
+      scenario.onActivity(activity -> {
+        WallpaperManager activityWallpaperManager =
+            (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
 
-            WallpaperInfo applicationWallpaper = wallpaperManager.getWallpaperInfo();
-            WallpaperInfo activityWallpaper = activityWallpaperManager.getWallpaperInfo();
+        WallpaperInfo applicationWallpaper = wallpaperManager.getWallpaperInfo();
+        WallpaperInfo activityWallpaper = activityWallpaperManager.getWallpaperInfo();
 
-            assertThat(activityWallpaper).isEqualTo(applicationWallpaper);
-          });
+        assertThat(activityWallpaper).isEqualTo(applicationWallpaper);
+      });
     }
   }
 }

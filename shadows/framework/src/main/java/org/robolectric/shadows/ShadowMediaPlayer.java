@@ -873,12 +873,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       SystemClock.sleep(info.preparationDelay);
     }
     state = PREPARED;
-    postEvent(
-        (mp, smp) -> {
-          if (preparedListener != null) {
-            preparedListener.onPrepared(mp);
-          }
-        });
+    postEvent((mp, smp) -> {
+      if (preparedListener != null) {
+        preparedListener.onPrepared(mp);
+      }
+    });
   }
 
   /**

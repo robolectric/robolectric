@@ -222,10 +222,9 @@ public class ShadowSafetyCenterManager {
       currentData = safetyCenterData;
     }
     if (currentData != null) {
-      executor.execute(
-          () -> {
-            listener.onSafetyCenterDataChanged(currentData);
-          });
+      executor.execute(() -> {
+        listener.onSafetyCenterDataChanged(currentData);
+      });
     } else {
       Log.d(
           TAG,
@@ -279,10 +278,9 @@ public class ShadowSafetyCenterManager {
       final OnSafetyCenterDataChangedListener listener = entry.getKey();
       final Executor executor = entry.getValue();
 
-      executor.execute(
-          () -> {
-            listener.onSafetyCenterDataChanged(safetyCenterData);
-          });
+      executor.execute(() -> {
+        listener.onSafetyCenterDataChanged(safetyCenterData);
+      });
     }
   }
 

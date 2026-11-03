@@ -92,102 +92,96 @@ public final class MemoryLeaksTest {
 
   @Test
   public void activityCanBeGcdAfterDestroyed() {
-    assertNotLeaking(
-        () -> {
-          ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
-          Activity activity = ac.get();
-          ac.pause().stop().destroy();
-          ShadowLooper.idleMainLooper();
-          return activity;
-        });
+    assertNotLeaking(() -> {
+      ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
+      Activity activity = ac.get();
+      ac.pause().stop().destroy();
+      ShadowLooper.idleMainLooper();
+      return activity;
+    });
   }
 
   @Test
   public void activityCanBeGcdAfterConfigChange() {
-    assertNotLeaking(
-        () -> {
-          ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
-          Activity activity = ac.get();
-          Configuration currentConfiguration = activity.getResources().getConfiguration();
-          Configuration newConfiguration = new Configuration(currentConfiguration);
-          newConfiguration.orientation =
-              currentConfiguration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                  ? Configuration.ORIENTATION_PORTRAIT
-                  : Configuration.ORIENTATION_LANDSCAPE;
-          ac.configurationChange(newConfiguration);
-          ShadowLooper.idleMainLooper();
-          return activity;
-        });
+    assertNotLeaking(() -> {
+      ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
+      Activity activity = ac.get();
+      Configuration currentConfiguration = activity.getResources().getConfiguration();
+      Configuration newConfiguration = new Configuration(currentConfiguration);
+      newConfiguration.orientation =
+          currentConfiguration.orientation == Configuration.ORIENTATION_LANDSCAPE
+              ? Configuration.ORIENTATION_PORTRAIT
+              : Configuration.ORIENTATION_LANDSCAPE;
+      ac.configurationChange(newConfiguration);
+      ShadowLooper.idleMainLooper();
+      return activity;
+    });
   }
 
   @Test
   public void fragmentCanBeGcdAfterActivityDestroyed() {
-    assertNotLeaking(
-        () -> {
-          ActivityController<FragmentActivity> ac =
-              Robolectric.buildActivity(FragmentActivity.class).setup();
-          FragmentContainerView contentView = new FragmentContainerView(ac.get());
-          contentView.setId(android.R.id.list_container);
-          ac.get().setContentView(contentView);
-          Fragment f = new Fragment();
-          ac.get()
-              .getSupportFragmentManager()
-              .beginTransaction()
-              .replace(android.R.id.list_container, f)
-              .commitNow();
-          ac.pause().stop().destroy();
-          // Idle any potential Fragment animations.
-          shadowOf(Looper.getMainLooper()).idle();
-          return f;
-        });
+    assertNotLeaking(() -> {
+      ActivityController<FragmentActivity> ac =
+          Robolectric.buildActivity(FragmentActivity.class).setup();
+      FragmentContainerView contentView = new FragmentContainerView(ac.get());
+      contentView.setId(android.R.id.list_container);
+      ac.get().setContentView(contentView);
+      Fragment f = new Fragment();
+      ac.get()
+          .getSupportFragmentManager()
+          .beginTransaction()
+          .replace(android.R.id.list_container, f)
+          .commitNow();
+      ac.pause().stop().destroy();
+      // Idle any potential Fragment animations.
+      shadowOf(Looper.getMainLooper()).idle();
+      return f;
+    });
   }
 
   @Test
   public void fragmentCanBeGcdAfterRemoved() {
-    assertNotLeaking(
-        () -> {
-          ActivityController<FragmentActivity> ac =
-              Robolectric.buildActivity(FragmentActivity.class).setup();
-          FragmentContainerView contentView = new FragmentContainerView(ac.get());
-          contentView.setId(android.R.id.list_container);
-          ac.get().setContentView(contentView);
-          Fragment f = new Fragment();
-          ac.get()
-              .getSupportFragmentManager()
-              .beginTransaction()
-              .replace(android.R.id.list_container, f)
-              .commitNow();
-          ac.get()
-              .getSupportFragmentManager()
-              .beginTransaction()
-              .replace(android.R.id.list_container, new Fragment())
-              .commitNow();
-          return f;
-        });
+    assertNotLeaking(() -> {
+      ActivityController<FragmentActivity> ac =
+          Robolectric.buildActivity(FragmentActivity.class).setup();
+      FragmentContainerView contentView = new FragmentContainerView(ac.get());
+      contentView.setId(android.R.id.list_container);
+      ac.get().setContentView(contentView);
+      Fragment f = new Fragment();
+      ac.get()
+          .getSupportFragmentManager()
+          .beginTransaction()
+          .replace(android.R.id.list_container, f)
+          .commitNow();
+      ac.get()
+          .getSupportFragmentManager()
+          .beginTransaction()
+          .replace(android.R.id.list_container, new Fragment())
+          .commitNow();
+      return f;
+    });
   }
 
   @Test
   public void typedArrayData() {
-    assertNotLeaking(
-        () -> {
-          Context context = RuntimeEnvironment.getApplication();
-          TypedArray typedArray = context.obtainStyledAttributes(new int[] {});
-          return ReflectionHelpers.getField(typedArray, "mData");
-        });
+    assertNotLeaking(() -> {
+      Context context = RuntimeEnvironment.getApplication();
+      TypedArray typedArray = context.obtainStyledAttributes(new int[] {});
+      return ReflectionHelpers.getField(typedArray, "mData");
+    });
   }
 
   @Test
   @Config(minSdk = N)
   public void themeObjectInNativeObjectRegistry() {
     final AtomicLong themeId = new AtomicLong(0);
-    assertNotLeaking(
-        () -> {
-          Theme theme = RuntimeEnvironment.getApplication().getResources().newTheme();
-          long nativeId =
-              ReflectionHelpers.getField(ReflectionHelpers.getField(theme, "mThemeImpl"), "mTheme");
-          themeId.set(nativeId);
-          return theme;
-        });
+    assertNotLeaking(() -> {
+      Theme theme = RuntimeEnvironment.getApplication().getResources().newTheme();
+      long nativeId =
+          ReflectionHelpers.getField(ReflectionHelpers.getField(theme, "mThemeImpl"), "mTheme");
+      themeId.set(nativeId);
+      return theme;
+    });
 
     // Also wait for the theme to be cleared from the registry.
     GcFinalization.awaitDone(

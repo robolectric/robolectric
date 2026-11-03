@@ -277,13 +277,12 @@ public class ShadowShortcutManager {
     shortcutInfoSet.addAll(getPinnedShortcuts());
 
     return shortcutInfoSet.stream()
-        .filter(
-            shortcutInfo ->
-                ((matchFlags & FLAG_MATCH_MANIFEST) != 0 && shortcutInfo.isDeclaredInManifest())
-                    || ((matchFlags & FLAG_MATCH_DYNAMIC) != 0 && shortcutInfo.isDynamic())
-                    || ((matchFlags & FLAG_MATCH_PINNED) != 0 && shortcutInfo.isPinned())
-                    || ((matchFlags & FLAG_MATCH_CACHED) != 0
-                        && (shortcutInfo.isCached() || shortcutInfo.isLongLived())))
+        .filter(shortcutInfo ->
+            ((matchFlags & FLAG_MATCH_MANIFEST) != 0 && shortcutInfo.isDeclaredInManifest())
+                || ((matchFlags & FLAG_MATCH_DYNAMIC) != 0 && shortcutInfo.isDynamic())
+                || ((matchFlags & FLAG_MATCH_PINNED) != 0 && shortcutInfo.isPinned())
+                || ((matchFlags & FLAG_MATCH_CACHED) != 0
+                    && (shortcutInfo.isCached() || shortcutInfo.isLongLived())))
         .collect(toCollection(ArrayList::new));
   }
 

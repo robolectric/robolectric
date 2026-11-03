@@ -41,11 +41,10 @@ public class ShadowDialogTest {
 
     final Dialog dialog = new Dialog(context);
     dialog.show();
-    dialog.setOnDismissListener(
-        dialogInListener -> {
-          assertThat(dialogInListener).isSameInstanceAs(dialog);
-          transcript.add("onDismiss called!");
-        });
+    dialog.setOnDismissListener(dialogInListener -> {
+      assertThat(dialogInListener).isSameInstanceAs(dialog);
+      transcript.add("onDismiss called!");
+    });
 
     dialog.dismiss();
     shadowMainLooper().idle();

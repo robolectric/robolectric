@@ -140,17 +140,16 @@ public class ShadowSpeechRecognizer {
     // The real implementation connects to a service simulate the resulting behavior once
     // the service is connected.
     new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              ShadowSpeechRecognizerDirectAccessors directAccessors = getDirectAccessors();
-              directAccessors.setService(createFakeSpeechRecognitionService());
+        .post(() -> {
+          ShadowSpeechRecognizerDirectAccessors directAccessors = getDirectAccessors();
+          directAccessors.setService(createFakeSpeechRecognitionService());
 
-              Handler taskHandler = directAccessors.getHandler();
-              Queue<Message> pendingTasks = directAccessors.getPendingTasks();
-              while (!pendingTasks.isEmpty()) {
-                taskHandler.sendMessage(pendingTasks.poll());
-              }
-            });
+          Handler taskHandler = directAccessors.getHandler();
+          Queue<Message> pendingTasks = directAccessors.getPendingTasks();
+          while (!pendingTasks.isEmpty()) {
+            taskHandler.sendMessage(pendingTasks.poll());
+          }
+        });
   }
 
   /** Handles changing the listener and allows access to the internal listener to trigger events. */
@@ -222,10 +221,9 @@ public class ShadowSpeechRecognizer {
     Preconditions.checkArgument(recognitionSupport instanceof RecognitionSupport);
 
     ShadowSpeechRecognizerState shadowState = getState();
-    shadowState.recognitionSupportExecutor.execute(
-        () ->
-            ((RecognitionSupportCallback) shadowState.recognitionSupportCallback)
-                .onSupportResult((RecognitionSupport) recognitionSupport));
+    shadowState.recognitionSupportExecutor.execute(() ->
+        ((RecognitionSupportCallback) shadowState.recognitionSupportCallback)
+            .onSupportResult((RecognitionSupport) recognitionSupport));
   }
 
   @RequiresApi(VERSION_CODES.TIRAMISU)

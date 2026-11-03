@@ -33,54 +33,51 @@ public class UIModeManagerTest {
   @Test
   public void uiModeManager_applicationInstance_isNotSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UiModeManager activityUiModeManager =
-                (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
-            assertThat(applicationUiModeManager).isNotSameInstanceAs(activityUiModeManager);
-          });
+      scenario.onActivity(activity -> {
+        UiModeManager activityUiModeManager =
+            (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
+        assertThat(applicationUiModeManager).isNotSameInstanceAs(activityUiModeManager);
+      });
     }
   }
 
   @Test
   public void uiModeManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UiModeManager activityUiModeManager =
-                (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
-            UiModeManager anotherActivityUiModeManager =
-                (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
-            assertThat(anotherActivityUiModeManager).isSameInstanceAs(activityUiModeManager);
-          });
+      scenario.onActivity(activity -> {
+        UiModeManager activityUiModeManager =
+            (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
+        UiModeManager anotherActivityUiModeManager =
+            (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
+        assertThat(anotherActivityUiModeManager).isSameInstanceAs(activityUiModeManager);
+      });
     }
   }
 
   @Test
   public void uiModeManager_instance_retrievesSameCurrentModeType() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UiModeManager activityUiModeManager =
-                (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
+      scenario.onActivity(activity -> {
+        UiModeManager activityUiModeManager =
+            (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
 
-            // First reset to car mode.
-            applicationUiModeManager.enableCarMode(0);
+        // First reset to car mode.
+        applicationUiModeManager.enableCarMode(0);
 
-            int applicationUiMode = applicationUiModeManager.getCurrentModeType();
-            int activityUiMode = activityUiModeManager.getCurrentModeType();
+        int applicationUiMode = applicationUiModeManager.getCurrentModeType();
+        int activityUiMode = activityUiModeManager.getCurrentModeType();
 
-            assertThat(activityUiMode).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
-            assertThat(activityUiMode).isEqualTo(applicationUiMode);
+        assertThat(activityUiMode).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(activityUiMode).isEqualTo(applicationUiMode);
 
-            // Then disable car mode.
-            activityUiModeManager.disableCarMode(0);
+        // Then disable car mode.
+        activityUiModeManager.disableCarMode(0);
 
-            applicationUiMode = applicationUiModeManager.getCurrentModeType();
-            activityUiMode = activityUiModeManager.getCurrentModeType();
-            assertThat(activityUiMode).isEqualTo(applicationUiMode);
-            assertThat(activityUiMode).isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
-          });
+        applicationUiMode = applicationUiModeManager.getCurrentModeType();
+        activityUiMode = activityUiModeManager.getCurrentModeType();
+        assertThat(activityUiMode).isEqualTo(applicationUiMode);
+        assertThat(activityUiMode).isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
+      });
     }
   }
 }

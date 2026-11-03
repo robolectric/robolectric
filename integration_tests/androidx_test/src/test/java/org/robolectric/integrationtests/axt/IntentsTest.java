@@ -183,15 +183,13 @@ public class IntentsTest {
 
     try (ActivityScenario<ResultCapturingActivity> activityScenario =
         ActivityScenario.launch(ResultCapturingActivity.class)) {
-      activityScenario.onActivity(
-          activity ->
-              activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0));
+      activityScenario.onActivity(activity ->
+          activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0));
 
-      activityScenario.onActivity(
-          activity -> {
-            assertThat(activity.activityResult.getResultCode()).isEqualTo(Activity.RESULT_OK);
-            assertThat(activity.activityResult.getResultData()).extras().containsKey("key");
-          });
+      activityScenario.onActivity(activity -> {
+        assertThat(activity.activityResult.getResultCode()).isEqualTo(Activity.RESULT_OK);
+        assertThat(activity.activityResult.getResultData()).extras().containsKey("key");
+      });
     }
   }
 
@@ -202,10 +200,9 @@ public class IntentsTest {
     browserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
     Intents.intending(hasAction(Intent.ACTION_VIEW))
-        .respondWithFunction(
-            intent -> {
-              throw new ActivityNotFoundException();
-            });
+        .respondWithFunction(intent -> {
+          throw new ActivityNotFoundException();
+        });
 
     assertThrows(
         ActivityNotFoundException.class,

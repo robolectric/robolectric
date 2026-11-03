@@ -35,11 +35,10 @@ public class ActivityScenarioActivityContextTest {
   @Test
   public void setQualifiers_doesNotStackOverflow() {
     try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            // Check that RuntimeEnvironment.setQualifiers does not cause an infinite loop
-            RuntimeEnvironment.setQualifiers("+land");
-          });
+      scenario.onActivity(activity -> {
+        // Check that RuntimeEnvironment.setQualifiers does not cause an infinite loop
+        RuntimeEnvironment.setQualifiers("+land");
+      });
     }
   }
 
@@ -48,10 +47,8 @@ public class ActivityScenarioActivityContextTest {
   public void baseContext_notApplicationContext() {
     final Application applicationContext = RuntimeEnvironment.getApplication();
     try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
-      scenario.onActivity(
-          activity ->
-              assertThat(activity.getBaseContext())
-                  .isNotEqualTo(applicationContext.getBaseContext()));
+      scenario.onActivity(activity ->
+          assertThat(activity.getBaseContext()).isNotEqualTo(applicationContext.getBaseContext()));
     }
   }
 }

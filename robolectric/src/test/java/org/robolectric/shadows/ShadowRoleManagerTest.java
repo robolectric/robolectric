@@ -274,20 +274,19 @@ public final class ShadowRoleManagerTest {
     for (int t = 0; t < numThreads; t++) {
       final int threadSeed = t;
       futures.add(
-          executor.submit(
-              () -> {
-                try {
-                  latch.await();
-                  for (int i = 0; i < iterations; i++) {
-                    // Use many unique user IDs to force HashMap rehashing/resizing concurrently.
-                    UserHandle user = UserHandle.of((threadSeed * iterations + i) % 500);
-                    ShadowRoleManager.addRoleHolder("role_" + (i % 10), "app_" + i, user);
-                    boolean unused = roleManager.isRoleHeld("role_" + (i % 10));
-                  }
-                } catch (Exception e) {
-                  throw new RuntimeException(e);
-                }
-              }));
+          executor.submit(() -> {
+            try {
+              latch.await();
+              for (int i = 0; i < iterations; i++) {
+                // Use many unique user IDs to force HashMap rehashing/resizing concurrently.
+                UserHandle user = UserHandle.of((threadSeed * iterations + i) % 500);
+                ShadowRoleManager.addRoleHolder("role_" + (i % 10), "app_" + i, user);
+                boolean unused = roleManager.isRoleHeld("role_" + (i % 10));
+              }
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }));
     }
 
     latch.countDown();
@@ -308,17 +307,16 @@ public final class ShadowRoleManagerTest {
 
     for (int t = 0; t < numThreads; t++) {
       futures.add(
-          executor.submit(
-              () -> {
-                try {
-                  latch.await();
-                  ShadowRoleManager.removeRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
-                } catch (IllegalArgumentException e) {
-                  // Expected if another thread removed the role first.
-                } catch (Exception e) {
-                  throw new RuntimeException(e);
-                }
-              }));
+          executor.submit(() -> {
+            try {
+              latch.await();
+              ShadowRoleManager.removeRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+            } catch (IllegalArgumentException e) {
+              // Expected if another thread removed the role first.
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }));
     }
 
     latch.countDown();

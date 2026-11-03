@@ -32,14 +32,13 @@ public class SimulatorIntegrationTest {
     }
     // Run SimulatorMain in a separate thread
     Thread simulatorThread =
-        new Thread(
-            () -> {
-              String[] stringArgs = args.stream().map(File::getAbsolutePath).toArray(String[]::new);
-              for (int i = 0; i < args.size(); i++) {
-                stringArgs[i] = args.get(i).getAbsolutePath();
-              }
-              SimulatorMain.main(stringArgs);
-            });
+        new Thread(() -> {
+          String[] stringArgs = args.stream().map(File::getAbsolutePath).toArray(String[]::new);
+          for (int i = 0; i < args.size(); i++) {
+            stringArgs[i] = args.get(i).getAbsolutePath();
+          }
+          SimulatorMain.main(stringArgs);
+        });
     simulatorThread.setDaemon(true);
     simulatorThread.start();
 
