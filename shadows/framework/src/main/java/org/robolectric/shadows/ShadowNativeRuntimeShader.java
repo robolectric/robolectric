@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.RuntimeShader;
+import java.util.Arrays;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -191,13 +192,20 @@ public class ShadowNativeRuntimeShader {
       float value3,
       float value4,
       int count) {
-    // no-op
+    float[] values = {value1, value2, value3, value4};
+    nativeUpdateUniforms(shaderBuilder, uniformName, Arrays.copyOf(values, count));
   }
 
   @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder, String uniformName, int[] uniforms) {
-    // no-op
+    // The native code from S only has a float[] setter, which copies the values into the uniform
+    // as raw bytes. Passing the bits of each int as a float sets an int uniform the same way.
+    float[] values = new float[uniforms.length];
+    for (int i = 0; i < uniforms.length; i++) {
+      values[i] = Float.intBitsToFloat(uniforms[i]);
+    }
+    nativeUpdateUniforms(shaderBuilder, uniformName, values);
   }
 
   @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
@@ -209,7 +217,8 @@ public class ShadowNativeRuntimeShader {
       int value3,
       int value4,
       int count) {
-    // no-op
+    int[] values = {value1, value2, value3, value4};
+    nativeUpdateUniforms(shaderBuilder, uniformName, Arrays.copyOf(values, count));
   }
 
   @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
