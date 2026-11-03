@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -15,6 +16,10 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.audio.IAudioConfigChangedCallback;
+import android.companion.virtual.audio.IAudioRoutingCallback;
+import android.companion.virtual.audio.VirtualAudioDevice;
+import android.companion.virtual.audio.VirtualAudioDevice.AudioConfigurationChangeCallback;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.sensor.VirtualSensor;
@@ -32,6 +37,7 @@ import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.Surface;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +65,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -196,6 +203,7 @@ public class ShadowVirtualDeviceManager {
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private Context context;
     private final List<Integer> displayIds = new CopyOnWriteArrayList<>();
+    @Nullable private volatile IAudioRoutingCallback audioRoutingCallback;
 
     @Filter(order = Order.AFTER)
     protected void __constructor__(
@@ -212,7 +220,9 @@ public class ShadowVirtualDeviceManager {
             reflector(DeviceManagerVirtualDeviceReflector.class, realVirtualDevice)
                 .getVirtualDeviceInternal();
         if (internalDevice != null) {
-          IVirtualDevice proxy = ReflectionHelpers.createNullProxy(IVirtualDevice.class);
+          IVirtualDevice proxy =
+              ReflectionHelpers.createDelegatingProxy(
+                  IVirtualDevice.class, new VirtualDeviceDelegateImpl());
           reflector(VirtualDeviceInternalReflector.class, internalDevice).setVirtualDevice(proxy);
         }
       }
@@ -239,6 +249,14 @@ public class ShadowVirtualDeviceManager {
     public void close() {
       if (isClosed.compareAndSet(false, true)) {
         mVirtualDevices.remove(realVirtualDevice);
+        if (realVirtualDevice != null) {
+          DeviceManagerVirtualDeviceReflector deviceReflector =
+              reflector(DeviceManagerVirtualDeviceReflector.class, realVirtualDevice);
+          if (deviceReflector.getVirtualDeviceInternal() != null) {
+            deviceReflector.close();
+          }
+        }
+        audioRoutingCallback = null;
         removeDisplays();
         maybeNotifyVirtualDeviceClosed(deviceId);
       }
@@ -424,6 +442,42 @@ public class ShadowVirtualDeviceManager {
       return createVirtualDisplay(config, executor, callback);
     }
 
+    @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = VANILLA_ICE_CREAM)
+    protected VirtualAudioDevice createVirtualAudioDevice(
+        @Nonnull VirtualDisplay display,
+        @Nullable Executor executor,
+        @Nullable AudioConfigurationChangeCallback callback) {
+      // On VANILLA_ICE_CREAM, VirtualDeviceInternal.createVirtualAudioDevice references
+      // android.companion.virtualdevice.flags.Flags.deviceAwareRecordAudioPermission(), which may
+      // be stripped from reduced runtime jars. Its default value on V is true (matching Baklava+,
+      // where the flag check was removed).
+      requireNonNull(display, "display must not be null");
+      Object internalDevice =
+          reflector(DeviceManagerVirtualDeviceReflector.class, realVirtualDevice)
+              .getVirtualDeviceInternal();
+      VirtualDeviceInternalReflector internalReflector =
+          reflector(VirtualDeviceInternalReflector.class, internalDevice);
+      VirtualAudioDevice virtualAudioDevice = internalReflector.getVirtualAudioDevice();
+      if (virtualAudioDevice == null) {
+        Context appContext =
+            params != null
+                    && params.getDevicePolicy(VirtualDeviceParams.POLICY_TYPE_AUDIO)
+                        == VirtualDeviceParams.DEVICE_POLICY_CUSTOM
+                ? context.createDeviceContext(deviceId)
+                : context;
+        virtualAudioDevice =
+            new VirtualAudioDevice(
+                appContext,
+                internalReflector.getVirtualDevice(),
+                display,
+                executor,
+                callback,
+                () -> internalReflector.setVirtualAudioDevice(null));
+        internalReflector.setVirtualAudioDevice(virtualAudioDevice);
+      }
+      return virtualAudioDevice;
+    }
+
     public void setPendingIntentCallbackResultCode(int resultCode) {
       this.pendingIntentResultCode = resultCode;
     }
@@ -448,6 +502,31 @@ public class ShadowVirtualDeviceManager {
               .getDirectChannelCallback();
     }
 
+    /**
+     * Notifies the active virtual audio session that the set of app UIDs needing audio routing has
+     * changed, triggering creation (when {@code appUids} is non-empty) or release (when empty) of
+     * the backing {@link android.media.AudioRecord} and/or {@link android.media.AudioTrack}
+     * streams.
+     *
+     * <p>Must be called after starting audio capture or injection via {@link
+     * android.companion.virtual.audio.VirtualAudioDevice}. Creating the backing audio streams
+     * requires {@link android.Manifest.permission#MODIFY_AUDIO_ROUTING} to be granted on the
+     * context (for {@link VirtualDeviceParams#DEVICE_POLICY_CUSTOM} audio policy, grant the
+     * permission for this virtual device's {@link #getDeviceId()}).
+     */
+    public void notifyAppsNeedingAudioRoutingChanged(int... appUids) {
+      requireNonNull(appUids, "appUids must not be null");
+      IAudioRoutingCallback callback = audioRoutingCallback;
+      if (callback == null) {
+        throw new IllegalStateException("No active virtual audio session");
+      }
+      try {
+        callback.onAppsNeedingAudioRoutingChanged(appUids);
+      } catch (RemoteException e) {
+        throw e.rethrowFromSystemServer();
+      }
+    }
+
     @Resetter
     public static void reset() {
       nextDeviceId.set(1);
@@ -457,6 +536,33 @@ public class ShadowVirtualDeviceManager {
       }
       mVirtualDevices.clear();
       virtualCameras.clear();
+    }
+
+    private class VirtualDeviceDelegateImpl {
+      @SuppressWarnings("unused")
+      public int getDeviceId() {
+        return deviceId;
+      }
+
+      @SuppressWarnings("unused")
+      public int getDevicePolicy(int policyType) {
+        return params == null
+            ? VirtualDeviceParams.DEVICE_POLICY_DEFAULT
+            : params.getDevicePolicy(policyType);
+      }
+
+      @SuppressWarnings("unused")
+      public void onAudioSessionStarting(
+          int displayId,
+          IAudioRoutingCallback routingCallback,
+          IAudioConfigChangedCallback configChangedCallback) {
+        audioRoutingCallback = routingCallback;
+      }
+
+      @SuppressWarnings("unused")
+      public void onAudioSessionEnded() {
+        audioRoutingCallback = null;
+      }
     }
 
     private void removeDisplays() {
@@ -591,10 +697,20 @@ public class ShadowVirtualDeviceManager {
 
     @Accessor("mVirtualDevice")
     void setVirtualDevice(IVirtualDevice virtualDevice);
+
+    @Accessor("mVirtualAudioDevice")
+    @Nullable
+    VirtualAudioDevice getVirtualAudioDevice();
+
+    @Accessor("mVirtualAudioDevice")
+    void setVirtualAudioDevice(@Nullable VirtualAudioDevice virtualAudioDevice);
   }
 
   @ForType(VirtualDeviceManager.VirtualDevice.class)
   interface DeviceManagerVirtualDeviceReflector {
+    @Direct
+    void close();
+
     String getPersistentDeviceId();
 
     @Accessor("mVirtualDeviceInternal")
