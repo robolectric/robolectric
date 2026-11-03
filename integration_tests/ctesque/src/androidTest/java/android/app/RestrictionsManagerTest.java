@@ -23,30 +23,27 @@ public class RestrictionsManagerTest {
                 .getSystemService(Context.RESTRICTIONS_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            RestrictionsManager activityRestrictionsManager =
-                (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
+      scenario.onActivity(activity -> {
+        RestrictionsManager activityRestrictionsManager =
+            (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
 
-            assertThat(applicationRestrictionsManager)
-                .isNotSameInstanceAs(activityRestrictionsManager);
-          });
+        assertThat(applicationRestrictionsManager).isNotSameInstanceAs(activityRestrictionsManager);
+      });
     }
   }
 
   @Test
   public void restrictionsManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            RestrictionsManager activityRestrictionsManager =
-                (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
-            RestrictionsManager anotherActivityRestrictionsManager =
-                (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
+      scenario.onActivity(activity -> {
+        RestrictionsManager activityRestrictionsManager =
+            (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
+        RestrictionsManager anotherActivityRestrictionsManager =
+            (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
 
-            assertThat(anotherActivityRestrictionsManager)
-                .isSameInstanceAs(activityRestrictionsManager);
-          });
+        assertThat(anotherActivityRestrictionsManager)
+            .isSameInstanceAs(activityRestrictionsManager);
+      });
     }
   }
 
@@ -58,17 +55,15 @@ public class RestrictionsManagerTest {
                 .getSystemService(Context.RESTRICTIONS_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            RestrictionsManager activityRestrictionsManager =
-                (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
+      scenario.onActivity(activity -> {
+        RestrictionsManager activityRestrictionsManager =
+            (RestrictionsManager) activity.getSystemService(Context.RESTRICTIONS_SERVICE);
 
-            boolean applicationHasProvider =
-                applicationRestrictionsManager.hasRestrictionsProvider();
-            boolean activityHasProvider = activityRestrictionsManager.hasRestrictionsProvider();
+        boolean applicationHasProvider = applicationRestrictionsManager.hasRestrictionsProvider();
+        boolean activityHasProvider = activityRestrictionsManager.hasRestrictionsProvider();
 
-            assertThat(activityHasProvider).isEqualTo(applicationHasProvider);
-          });
+        assertThat(activityHasProvider).isEqualTo(applicationHasProvider);
+      });
     }
   }
 }

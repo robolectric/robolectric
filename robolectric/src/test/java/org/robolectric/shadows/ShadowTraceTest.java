@@ -300,16 +300,15 @@ public class ShadowTraceTest {
       assertThat(ShadowTrace.getCurrentSections()).isEmpty();
 
       f =
-          backgroundExecutor.submit(
-              () -> {
-                assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
-                assertThat(ShadowTrace.getPreviousSections()).isEmpty();
+          backgroundExecutor.submit(() -> {
+            assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
+            assertThat(ShadowTrace.getPreviousSections()).isEmpty();
 
-                Trace.endSection();
+            Trace.endSection();
 
-                assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
-                assertThat(ShadowTrace.getCurrentSections()).isEmpty();
-              });
+            assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
+            assertThat(ShadowTrace.getCurrentSections()).isEmpty();
+          });
       f.get();
     } finally {
       backgroundExecutor.shutdown();
@@ -344,13 +343,12 @@ public class ShadowTraceTest {
       assertThat(ShadowTrace.getCurrentAsyncSections()).containsExactly(bgLooperSection);
 
       f =
-          backgroundExecutor.submit(
-              () -> {
-                Trace.endAsyncSection("bg_trace", COOKIE);
-                assertThat(ShadowTrace.getPreviousAsyncSections())
-                    .containsExactly(mainLooperSection, bgLooperSection);
-                assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
-              });
+          backgroundExecutor.submit(() -> {
+            Trace.endAsyncSection("bg_trace", COOKIE);
+            assertThat(ShadowTrace.getPreviousAsyncSections())
+                .containsExactly(mainLooperSection, bgLooperSection);
+            assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
+          });
       f.get();
 
     } finally {

@@ -1666,7 +1666,7 @@ public class ShadowActivityTest {
         Robolectric.buildActivity(TestActivity.class)) {
       TestActivity testActivity = controller.setup().get();
       Consumer<List<DirectAction>> testConsumer =
-          (directActions) -> {
+          directActions -> {
             assertThat(directActions).hasSize(1);
             DirectAction action = directActions.get(0);
             assertThat(action.getId()).isEqualTo(testActivity.getDirectActionForTesting().getId());
@@ -1689,7 +1689,7 @@ public class ShadowActivityTest {
           NullPointerException.class,
           () ->
               shadowOf(testActivity)
-                  .callOnGetDirectActions(new CancellationSignal(), (unused) -> {}));
+                  .callOnGetDirectActions(new CancellationSignal(), unused -> {}));
     }
   }
 

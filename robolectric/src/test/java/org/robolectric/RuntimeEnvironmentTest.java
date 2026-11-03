@@ -50,11 +50,10 @@ public class RuntimeEnvironmentTest {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t =
-        new Thread(
-            () -> {
-              res.set(RuntimeEnvironment.isMainThread());
-              finished.countDown();
-            });
+        new Thread(() -> {
+          res.set(RuntimeEnvironment.isMainThread());
+          finished.countDown();
+        });
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     t.start();
     if (!finished.await(1000, MILLISECONDS)) {
@@ -71,11 +70,10 @@ public class RuntimeEnvironmentTest {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t =
-        new Thread(
-            () -> {
-              res.set(RuntimeEnvironment.isMainThread());
-              finished.countDown();
-            });
+        new Thread(() -> {
+          res.set(RuntimeEnvironment.isMainThread());
+          finished.countDown();
+        });
     RuntimeEnvironment.setMainThread(t);
     t.start();
     if (!finished.await(1000, MILLISECONDS)) {

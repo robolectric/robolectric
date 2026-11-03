@@ -89,24 +89,21 @@ public final class EspressoIdlingResourceTest {
     NamedIdleResource b = new NamedIdleResource("B", /* isIdle= */ false);
     NamedIdleResource c = new NamedIdleResource("C", /* isIdle= */ false);
     idlingRegistry.register(a, b, c);
-    executor.submit(
-        () -> {
-          a.setIdle(false);
+    executor.submit(() -> {
+      a.setIdle(false);
+      b.setIdle(true);
+      c.setIdle(false);
+      executor.submit(() -> {
+        a.setIdle(true);
+        b.setIdle(false);
+        c.setIdle(false);
+        executor.submit(() -> {
+          a.setIdle(true);
           b.setIdle(true);
-          c.setIdle(false);
-          executor.submit(
-              () -> {
-                a.setIdle(true);
-                b.setIdle(false);
-                c.setIdle(false);
-                executor.submit(
-                    () -> {
-                      a.setIdle(true);
-                      b.setIdle(true);
-                      c.setIdle(true);
-                    });
-              });
+          c.setIdle(true);
         });
+      });
+    });
 
     onIdle();
 
@@ -124,15 +121,14 @@ public final class EspressoIdlingResourceTest {
       Handler handler = new Handler(handlerThread.getLooper());
       CountDownLatch handlerStarted = new CountDownLatch(1);
       CountDownLatch releaseHandler = new CountDownLatch(1);
-      handler.post(
-          () -> {
-            handlerStarted.countDown();
-            try {
-              releaseHandler.await();
-            } catch (InterruptedException e) {
-              // ignore
-            }
-          });
+      handler.post(() -> {
+        handlerStarted.countDown();
+        try {
+          releaseHandler.await();
+        } catch (InterruptedException e) {
+          // ignore
+        }
+      });
       handlerStarted.await();
       idlingRegistry.registerLooperAsIdlingResource(handlerThread.getLooper());
 
@@ -157,16 +153,15 @@ public final class EspressoIdlingResourceTest {
       CountDownLatch handlerStarted = new CountDownLatch(1);
       CountDownLatch releaseHandler = new CountDownLatch(1);
       AtomicBoolean mainThreadPosted = new AtomicBoolean(false);
-      handler.post(
-          () -> {
-            handlerStarted.countDown();
-            try {
-              releaseHandler.await();
-              new Handler(Looper.getMainLooper()).post(() -> mainThreadPosted.set(true));
-            } catch (InterruptedException e) {
-              // Ignore
-            }
-          });
+      handler.post(() -> {
+        handlerStarted.countDown();
+        try {
+          releaseHandler.await();
+          new Handler(Looper.getMainLooper()).post(() -> mainThreadPosted.set(true));
+        } catch (InterruptedException e) {
+          // Ignore
+        }
+      });
       handlerStarted.await();
       idlingRegistry.registerLooperAsIdlingResource(handlerThread.getLooper());
 

@@ -207,10 +207,9 @@ public class ShadowCookieManagerTest {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
 
-    cookieManager.removeAllCookies(
-        ok -> {
-          cookiesRemoved = Optional.of(ok);
-        });
+    cookieManager.removeAllCookies(ok -> {
+      cookiesRemoved = Optional.of(ok);
+    });
     assertThat(cookiesRemoved).hasValue(true);
     assertThat(cookieManager.getCookie(url)).isNull();
   }
@@ -236,10 +235,9 @@ public class ShadowCookieManagerTest {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
 
-    cookieManager.removeSessionCookies(
-        ok -> {
-          cookiesRemoved = Optional.of(ok);
-        });
+    cookieManager.removeSessionCookies(ok -> {
+      cookiesRemoved = Optional.of(ok);
+    });
     assertThat(cookiesRemoved).hasValue(true);
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }
@@ -257,10 +255,9 @@ public class ShadowCookieManagerTest {
   public void shouldRemoveSessionCookiesWhenSessionCookieIsNoPresent() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
 
-    cookieManager.removeSessionCookies(
-        ok -> {
-          cookiesRemoved = Optional.of(ok);
-        });
+    cookieManager.removeSessionCookies(ok -> {
+      cookiesRemoved = Optional.of(ok);
+    });
     assertThat(cookiesRemoved).hasValue(false);
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }

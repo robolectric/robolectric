@@ -82,10 +82,9 @@ public final class ShadowServiceManagerTest {
     ExecutorService e = Executors.newFixedThreadPool(1);
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
 
-    e.execute(
-        () -> {
-          binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
-        });
+    e.execute(() -> {
+      binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
+    });
     e.shutdown();
     e.awaitTermination(10, SECONDS);
 
@@ -99,10 +98,9 @@ public final class ShadowServiceManagerTest {
     ExecutorService e = Executors.newFixedThreadPool(1);
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
 
-    e.execute(
-        () -> {
-          binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
-        });
+    e.execute(() -> {
+      binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
+    });
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, true);
     e.shutdown();
     e.awaitTermination(10, SECONDS);
@@ -143,15 +141,14 @@ public final class ShadowServiceManagerTest {
     ExecutorService e = Executors.newFixedThreadPool(4);
     final AtomicReference<Exception> thrownException = new AtomicReference<>();
     for (int i = 0; i < 10; i++) {
-      e.execute(
-          () -> {
-            try {
-              IBinder b = ServiceManager.getService(Context.INPUT_METHOD_SERVICE);
-              IInputMethodManager.Stub.asInterface(b);
-            } catch (RuntimeException ex) {
-              thrownException.compareAndSet(null, ex);
-            }
-          });
+      e.execute(() -> {
+        try {
+          IBinder b = ServiceManager.getService(Context.INPUT_METHOD_SERVICE);
+          IInputMethodManager.Stub.asInterface(b);
+        } catch (RuntimeException ex) {
+          thrownException.compareAndSet(null, ex);
+        }
+      });
     }
     e.shutdown();
     e.awaitTermination(10, SECONDS);

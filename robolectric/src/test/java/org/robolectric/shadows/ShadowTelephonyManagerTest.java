@@ -1163,14 +1163,13 @@ public class ShadowTelephonyManagerTest {
   public void shouldGetSimCarrierIdNameFromSupplier() {
     AtomicInteger callCount = new AtomicInteger(0);
     shadowOf(telephonyManager)
-        .setSimCarrierIdNameSupplier(
-            () -> {
-              int callCountCopy = callCount.getAndIncrement();
-              if (callCountCopy == 0) {
-                return "Fi";
-              }
-              return "Other";
-            });
+        .setSimCarrierIdNameSupplier(() -> {
+          int callCountCopy = callCount.getAndIncrement();
+          if (callCountCopy == 0) {
+            return "Fi";
+          }
+          return "Other";
+        });
 
     // First call to getSimCarrierIdName() should return "Fi".
     assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Fi");
@@ -1983,7 +1982,7 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.getCarrierRestrictionRules()).isEqualTo(carrierRestrictionRules);
   }
 
-  @Test()
+  @Test
   @Config(minSdk = Q)
   public void setCarrierRestrictionRules_throwsIllegalStateException() {
     assertThrows(
@@ -2002,7 +2001,7 @@ public class ShadowTelephonyManagerTest {
     assertThat(shadowTelephonyManager.getModemRebootCount()).isEqualTo(1);
   }
 
-  @Test()
+  @Test
   @Config(minSdk = Q)
   public void rebootModem_noModifyPhoneStatePermission_throwsSecurityException() {
     assertThrows(SecurityException.class, () -> shadowTelephonyManager.rebootModem());

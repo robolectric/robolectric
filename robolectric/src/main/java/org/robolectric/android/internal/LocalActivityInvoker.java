@@ -74,71 +74,65 @@ public class LocalActivityInvoker implements ActivityInvoker {
   public void resumeActivity(Activity activity) {
     requireNonNull(controller);
     checkState(controller.get() == activity);
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          Stage stage =
-              ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
-          switch (stage) {
-            case RESUMED:
-              return;
-            case PAUSED:
-              controller.resume().topActivityResumed(true);
-              return;
-            case STOPPED:
-              controller.restart().resume().topActivityResumed(true);
-              return;
-            default:
-              throw new IllegalStateException(
-                  String.format(
-                      "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+      switch (stage) {
+        case RESUMED:
+          return;
+        case PAUSED:
+          controller.resume().topActivityResumed(true);
+          return;
+        case STOPPED:
+          controller.restart().resume().topActivityResumed(true);
+          return;
+        default:
+          throw new IllegalStateException(
+              String.format(
+                  "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
+      }
+    });
   }
 
   @Override
   public void pauseActivity(Activity activity) {
     requireNonNull(controller);
     checkState(controller.get() == activity);
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          Stage stage =
-              ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
-          switch (stage) {
-            case RESUMED:
-              controller.topActivityResumed(false).pause();
-              return;
-            case PAUSED:
-              return;
-            default:
-              throw new IllegalStateException(
-                  String.format("Activity's stage must be RESUMED or PAUSED but was %s.", stage));
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+      switch (stage) {
+        case RESUMED:
+          controller.topActivityResumed(false).pause();
+          return;
+        case PAUSED:
+          return;
+        default:
+          throw new IllegalStateException(
+              String.format("Activity's stage must be RESUMED or PAUSED but was %s.", stage));
+      }
+    });
   }
 
   @Override
   public void stopActivity(Activity activity) {
     requireNonNull(controller);
     checkState(controller.get() == activity);
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          Stage stage =
-              ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
-          switch (stage) {
-            case RESUMED:
-              controller.topActivityResumed(false).pause().stop();
-              return;
-            case PAUSED:
-              controller.stop();
-              return;
-            case STOPPED:
-              return;
-            default:
-              throw new IllegalStateException(
-                  String.format(
-                      "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+      switch (stage) {
+        case RESUMED:
+          controller.topActivityResumed(false).pause().stop();
+          return;
+        case PAUSED:
+          controller.stop();
+          return;
+        case STOPPED:
+          return;
+        default:
+          throw new IllegalStateException(
+              String.format(
+                  "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
+      }
+    });
   }
 
   @Override
@@ -152,27 +146,25 @@ public class LocalActivityInvoker implements ActivityInvoker {
   public void finishActivity(Activity activity) {
     requireNonNull(controller);
     checkState(controller.get() == activity);
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          activity.finish();
-          Stage stage =
-              ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
-          switch (stage) {
-            case RESUMED:
-              controller.topActivityResumed(false).pause().stop().destroy();
-              return;
-            case PAUSED:
-              controller.stop().destroy();
-              return;
-            case STOPPED:
-              controller.destroy();
-              return;
-            default:
-              throw new IllegalStateException(
-                  String.format(
-                      "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      activity.finish();
+      Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+      switch (stage) {
+        case RESUMED:
+          controller.topActivityResumed(false).pause().stop().destroy();
+          return;
+        case PAUSED:
+          controller.stop().destroy();
+          return;
+        case STOPPED:
+          controller.destroy();
+          return;
+        default:
+          throw new IllegalStateException(
+              String.format(
+                  "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
+      }
+    });
   }
 
   // This implementation makes sure, that the activity you are trying to launch exists

@@ -835,12 +835,11 @@ public class ShadowNativeColorSpaceTest {
         .map(ColorSpace::get)
         .filter(cs -> cs.getModel() == ColorSpace.Model.RGB)
         .map(cs -> (ColorSpace.Rgb) cs)
-        .forEach(
-            cs -> {
-              float[] source = {0.0f, 0.5f, 1.0f};
-              float[] r = cs.fromLinear(cs.toLinear(source[0], source[1], source[2]));
-              assertArrayEquals(source, r, 1e-3f);
-            });
+        .forEach(cs -> {
+          float[] source = {0.0f, 0.5f, 1.0f};
+          float[] r = cs.fromLinear(cs.toLinear(source[0], source[1], source[2]));
+          assertArrayEquals(source, r, 1e-3f);
+        });
   }
 
   // This test is flaky about 50% of the time on APIs 35 and 36. This is because the match function

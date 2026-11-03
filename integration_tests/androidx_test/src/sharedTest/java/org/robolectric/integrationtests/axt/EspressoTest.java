@@ -50,13 +50,12 @@ public final class EspressoTest {
   public void launchActivityAndFindView_ById() {
     activityRule
         .getScenario()
-        .onActivity(
-            activity -> {
-              EditText editText = activity.findViewById(R.id.edit_text);
+        .onActivity(activity -> {
+          EditText editText = activity.findViewById(R.id.edit_text);
 
-              assertThat(editText).isNotNull();
-              assertThat(editText.isEnabled()).isTrue();
-            });
+          assertThat(editText).isNotNull();
+          assertThat(editText.isEnabled()).isTrue();
+        });
   }
 
   /** Perform the equivalent of launchActivityAndFindView_ById except using espresso APIs */
@@ -71,14 +70,13 @@ public final class EspressoTest {
   public void buttonClick() {
     activityRule
         .getScenario()
-        .onActivity(
-            activity -> {
-              Button button = activity.findViewById(R.id.button);
+        .onActivity(activity -> {
+          Button button = activity.findViewById(R.id.button);
 
-              button.performClick();
+          button.performClick();
 
-              assertThat(activity.buttonClicked).isTrue();
-            });
+          assertThat(activity.buttonClicked).isTrue();
+        });
   }
 
   /** Perform the equivalent of click except using espresso APIs */
@@ -103,14 +101,13 @@ public final class EspressoTest {
   public void typeText_findView() {
     activityRule
         .getScenario()
-        .onActivity(
-            activity -> {
-              EditText editText = activity.findViewById(R.id.edit_text);
-              editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
+        .onActivity(activity -> {
+          EditText editText = activity.findViewById(R.id.edit_text);
+          editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
 
-              assertThat(editText.getText().toString())
-                  .isEqualTo("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
-            });
+          assertThat(editText.getText().toString())
+              .isEqualTo("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
+        });
   }
 
   /** Perform the equivalent of setText except using espresso APIs */
@@ -142,51 +139,47 @@ public final class EspressoTest {
   @Test
   public void textView() {
     onView(withText("Text View"))
-        .check(
-            (view, noViewFoundException) -> {
-              assertThat(view.getWidth()).isGreaterThan(0);
-              assertThat(view.getHeight()).isGreaterThan(0);
-            });
+        .check((view, noViewFoundException) -> {
+          assertThat(view.getWidth()).isGreaterThan(0);
+          assertThat(view.getHeight()).isGreaterThan(0);
+        });
     onView(withText("Text View")).check(matches(isCompletelyDisplayed()));
   }
 
   @Test
   public void textViewWithPositiveScaleX() {
     onView(withId(R.id.text_view_positive_scale_x))
-        .check(
-            (view, noViewFoundException) -> {
-              TextView textView = (TextView) view;
-              float expectedTextScaleX = 1.5f;
-              assertThat(textView.getTextScaleX()).isEqualTo(expectedTextScaleX);
-              float scaledWidth = textView.getPaint().measureText(textView.getText().toString());
-              textView.setTextScaleX(1f);
-              float unscaledWidth = textView.getPaint().measureText(textView.getText().toString());
-              assertThat(scaledWidth).isGreaterThan(unscaledWidth);
-            });
+        .check((view, noViewFoundException) -> {
+          TextView textView = (TextView) view;
+          float expectedTextScaleX = 1.5f;
+          assertThat(textView.getTextScaleX()).isEqualTo(expectedTextScaleX);
+          float scaledWidth = textView.getPaint().measureText(textView.getText().toString());
+          textView.setTextScaleX(1f);
+          float unscaledWidth = textView.getPaint().measureText(textView.getText().toString());
+          assertThat(scaledWidth).isGreaterThan(unscaledWidth);
+        });
   }
 
   @Test
   public void textViewWithNegativeScaleX() {
     onView(withId(R.id.text_view_negative_scale_x))
-        .check(
-            (view, noViewFoundException) -> {
-              TextView textView = (TextView) view;
-              assertThat(textView.getTextScaleX()).isEqualTo(-1.5f);
-              float scaledWidth = textView.getPaint().measureText(textView.getText().toString());
-              textView.setTextScaleX(1f);
-              float unscaledWidth = textView.getPaint().measureText(textView.getText().toString());
-              assertThat(scaledWidth).isLessThan(unscaledWidth);
-            });
+        .check((view, noViewFoundException) -> {
+          TextView textView = (TextView) view;
+          assertThat(textView.getTextScaleX()).isEqualTo(-1.5f);
+          float scaledWidth = textView.getPaint().measureText(textView.getText().toString());
+          textView.setTextScaleX(1f);
+          float unscaledWidth = textView.getPaint().measureText(textView.getText().toString());
+          assertThat(scaledWidth).isLessThan(unscaledWidth);
+        });
   }
 
   @Test
   public void textViewWithLetterSpacing() {
     onView(withId(R.id.text_view_letter_spacing))
-        .check(
-            (view, noViewFoundException) -> {
-              TextView textView = (TextView) view;
-              assertThat(textView.getLetterSpacing()).isEqualTo(0.05f);
-            });
+        .check((view, noViewFoundException) -> {
+          TextView textView = (TextView) view;
+          assertThat(textView.getLetterSpacing()).isEqualTo(0.05f);
+        });
   }
 
   @Test
@@ -195,9 +188,8 @@ public final class EspressoTest {
     // This test injects no keys, so letting the IME back in is safe here.
     activityRule
         .getScenario()
-        .onActivity(
-            activity ->
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM));
+        .onActivity(activity ->
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM));
     // Set text and then close the soft keyboard. This uses replaceText rather than typeText
     // because injected keystrokes are occasionally replayed on a slow device, which duplicates
     // a character; typeText itself is covered by the typeText_* tests above.
@@ -223,11 +215,10 @@ public final class EspressoTest {
   @LooperMode(Mode.INSTRUMENTATION_TEST) // only instrumentation test mode has the correct behavior
   public void onView_mainThread() {
     new Handler(Looper.getMainLooper())
-        .post(
-            () ->
-                assertThrows(
-                    IllegalStateException.class,
-                    () -> onView(withId(R.id.edit_text)).perform(typeText("Some text."))));
+        .post(() ->
+            assertThrows(
+                IllegalStateException.class,
+                () -> onView(withId(R.id.edit_text)).perform(typeText("Some text."))));
     Espresso.onIdle();
   }
 }

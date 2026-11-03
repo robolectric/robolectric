@@ -43,13 +43,12 @@ public class ShadowAudioRecordTest {
     byte[] secondAudioRecordInput = new byte[] {4, 5, 6, 7, 8};
     AudioRecordSource subsequentAudioRecordSource = createAudioRecordSource(secondAudioRecordInput);
     AudioRecord secondAudioRecord = createAudioRecord();
-    ShadowAudioRecord.setSourceProvider(
-        audioRecord -> {
-          if (audioRecord == firstAudioRecord) {
-            return firstAudioRecordSource;
-          }
-          return subsequentAudioRecordSource;
-        });
+    ShadowAudioRecord.setSourceProvider(audioRecord -> {
+      if (audioRecord == firstAudioRecord) {
+        return firstAudioRecordSource;
+      }
+      return subsequentAudioRecordSource;
+    });
 
     firstAudioRecord.startRecording();
     byte[] firstAudioRecordData = new byte[100];

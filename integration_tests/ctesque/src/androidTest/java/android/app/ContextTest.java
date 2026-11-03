@@ -103,26 +103,24 @@ public class ContextTest {
     AudioManager applicationAudioManager =
         (AudioManager) application.getSystemService(Context.AUDIO_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AudioManager activityAudioManager =
-                (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-            assertThat(applicationAudioManager).isNotSameInstanceAs(activityAudioManager);
-          });
+      scenario.onActivity(activity -> {
+        AudioManager activityAudioManager =
+            (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        assertThat(applicationAudioManager).isNotSameInstanceAs(activityAudioManager);
+      });
     }
   }
 
   @Test
   public void audioManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AudioManager activityAudioManager =
-                (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-            AudioManager anotherActivityAudioManager =
-                (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-            assertThat(anotherActivityAudioManager).isSameInstanceAs(activityAudioManager);
-          });
+      scenario.onActivity(activity -> {
+        AudioManager activityAudioManager =
+            (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        AudioManager anotherActivityAudioManager =
+            (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        assertThat(anotherActivityAudioManager).isSameInstanceAs(activityAudioManager);
+      });
     }
   }
 
@@ -131,19 +129,18 @@ public class ContextTest {
     AudioManager applicationAudioManager =
         (AudioManager) application.getSystemService(Context.AUDIO_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AudioManager activityAudioManager =
-                (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+      scenario.onActivity(activity -> {
+        AudioManager activityAudioManager =
+            (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
 
-            activityAudioManager.setMode(AudioManager.MODE_RINGTONE);
-            assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
-            assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
+        activityAudioManager.setMode(AudioManager.MODE_RINGTONE);
+        assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
+        assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
 
-            applicationAudioManager.setMode(AudioManager.MODE_NORMAL);
-            assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
-            assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
-          });
+        applicationAudioManager.setMode(AudioManager.MODE_NORMAL);
+        assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+        assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+      });
     }
   }
 
@@ -152,26 +149,24 @@ public class ContextTest {
     AccountManager applicationAccountManager =
         (AccountManager) application.getSystemService(Context.ACCOUNT_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AccountManager activityAccountManager =
-                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
-            assertThat(applicationAccountManager).isNotSameInstanceAs(activityAccountManager);
-          });
+      scenario.onActivity(activity -> {
+        AccountManager activityAccountManager =
+            (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+        assertThat(applicationAccountManager).isNotSameInstanceAs(activityAccountManager);
+      });
     }
   }
 
   @Test
   public void accountManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AccountManager activityAccountManager =
-                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
-            AccountManager anotherActivityAccountManager =
-                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
-            assertThat(anotherActivityAccountManager).isSameInstanceAs(activityAccountManager);
-          });
+      scenario.onActivity(activity -> {
+        AccountManager activityAccountManager =
+            (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+        AccountManager anotherActivityAccountManager =
+            (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+        assertThat(anotherActivityAccountManager).isSameInstanceAs(activityAccountManager);
+      });
     }
   }
 
@@ -180,18 +175,17 @@ public class ContextTest {
     AccountManager applicationAccountManager =
         (AccountManager) application.getSystemService(Context.ACCOUNT_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AccountManager activityAccountManager =
-                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+      scenario.onActivity(activity -> {
+        AccountManager activityAccountManager =
+            (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
 
-            Account[] applicationAccounts =
-                applicationAccountManager.getAccountsByType("com.example.account_type");
-            Account[] activityAccounts =
-                activityAccountManager.getAccountsByType("com.example.account_type");
+        Account[] applicationAccounts =
+            applicationAccountManager.getAccountsByType("com.example.account_type");
+        Account[] activityAccounts =
+            activityAccountManager.getAccountsByType("com.example.account_type");
 
-            assertThat(activityAccounts).isEqualTo(applicationAccounts);
-          });
+        assertThat(activityAccounts).isEqualTo(applicationAccounts);
+      });
     }
   }
 
@@ -200,26 +194,24 @@ public class ContextTest {
     BatteryManager applicationBatteryManager =
         (BatteryManager) application.getSystemService(Context.BATTERY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BatteryManager activityBatteryManager =
-                (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
-            assertThat(applicationBatteryManager).isNotSameInstanceAs(activityBatteryManager);
-          });
+      scenario.onActivity(activity -> {
+        BatteryManager activityBatteryManager =
+            (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
+        assertThat(applicationBatteryManager).isNotSameInstanceAs(activityBatteryManager);
+      });
     }
   }
 
   @Test
   public void batteryManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BatteryManager activityBatteryManager =
-                (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
-            BatteryManager anotherActivityBatteryManager =
-                (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
-            assertThat(anotherActivityBatteryManager).isSameInstanceAs(activityBatteryManager);
-          });
+      scenario.onActivity(activity -> {
+        BatteryManager activityBatteryManager =
+            (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
+        BatteryManager anotherActivityBatteryManager =
+            (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
+        assertThat(anotherActivityBatteryManager).isSameInstanceAs(activityBatteryManager);
+      });
     }
   }
 
@@ -228,26 +220,24 @@ public class ContextTest {
     AlarmManager applicationAlarmManager =
         (AlarmManager) application.getSystemService(Context.ALARM_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AlarmManager activityAlarmManager =
-                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-            assertThat(applicationAlarmManager).isNotSameInstanceAs(activityAlarmManager);
-          });
+      scenario.onActivity(activity -> {
+        AlarmManager activityAlarmManager =
+            (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        assertThat(applicationAlarmManager).isNotSameInstanceAs(activityAlarmManager);
+      });
     }
   }
 
   @Test
   public void alarmManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AlarmManager activityAlarmManager =
-                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-            AlarmManager anotherActivityAlarmManager =
-                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-            assertThat(anotherActivityAlarmManager).isSameInstanceAs(activityAlarmManager);
-          });
+      scenario.onActivity(activity -> {
+        AlarmManager activityAlarmManager =
+            (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager anotherActivityAlarmManager =
+            (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        assertThat(anotherActivityAlarmManager).isSameInstanceAs(activityAlarmManager);
+      });
     }
   }
 
@@ -256,18 +246,16 @@ public class ContextTest {
     AlarmManager applicationAlarmManager =
         (AlarmManager) application.getSystemService(Context.ALARM_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AlarmManager activityAlarmManager =
-                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+      scenario.onActivity(activity -> {
+        AlarmManager activityAlarmManager =
+            (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
 
-            AlarmManager.AlarmClockInfo applicationAlarmClock =
-                applicationAlarmManager.getNextAlarmClock();
-            AlarmManager.AlarmClockInfo activityAlarmClock =
-                activityAlarmManager.getNextAlarmClock();
+        AlarmManager.AlarmClockInfo applicationAlarmClock =
+            applicationAlarmManager.getNextAlarmClock();
+        AlarmManager.AlarmClockInfo activityAlarmClock = activityAlarmManager.getNextAlarmClock();
 
-            assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
-          });
+        assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
+      });
     }
   }
 
@@ -276,26 +264,24 @@ public class ContextTest {
     ClipboardManager applicationClipboardManager =
         (ClipboardManager) application.getSystemService(Context.CLIPBOARD_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ClipboardManager activityClipboardManager =
-                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-            assertThat(applicationClipboardManager).isNotSameInstanceAs(activityClipboardManager);
-          });
+      scenario.onActivity(activity -> {
+        ClipboardManager activityClipboardManager =
+            (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        assertThat(applicationClipboardManager).isNotSameInstanceAs(activityClipboardManager);
+      });
     }
   }
 
   @Test
   public void clipboardManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ClipboardManager activityClipboardManager =
-                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipboardManager anotherActivityClipboardManager =
-                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-            assertThat(anotherActivityClipboardManager).isSameInstanceAs(activityClipboardManager);
-          });
+      scenario.onActivity(activity -> {
+        ClipboardManager activityClipboardManager =
+            (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipboardManager anotherActivityClipboardManager =
+            (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        assertThat(anotherActivityClipboardManager).isSameInstanceAs(activityClipboardManager);
+      });
     }
   }
 
@@ -307,21 +293,20 @@ public class ContextTest {
     applicationClipboardManager.setPrimaryClip(clipData);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ClipboardManager activityClipboardManager =
-                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+      scenario.onActivity(activity -> {
+        ClipboardManager activityClipboardManager =
+            (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
 
-            ClipData applicationClipData = applicationClipboardManager.getPrimaryClip();
-            ClipData activityClipData = activityClipboardManager.getPrimaryClip();
+        ClipData applicationClipData = applicationClipboardManager.getPrimaryClip();
+        ClipData activityClipData = activityClipboardManager.getPrimaryClip();
 
-            if (applicationClipData == null || activityClipData == null) {
-              assertThat(applicationClipData).isNull();
-              assertThat(activityClipData).isNull();
-            } else {
-              assertThat(applicationClipData.toString()).isEqualTo(activityClipData.toString());
-            }
-          });
+        if (applicationClipData == null || activityClipData == null) {
+          assertThat(applicationClipData).isNull();
+          assertThat(activityClipData).isNull();
+        } else {
+          assertThat(applicationClipData.toString()).isEqualTo(activityClipData.toString());
+        }
+      });
     }
   }
 
@@ -330,26 +315,24 @@ public class ContextTest {
     KeyguardManager applicationKeyguardManager =
         (KeyguardManager) application.getSystemService(Context.KEYGUARD_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            KeyguardManager activityKeyguardManager =
-                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
-            assertThat(applicationKeyguardManager).isNotSameInstanceAs(activityKeyguardManager);
-          });
+      scenario.onActivity(activity -> {
+        KeyguardManager activityKeyguardManager =
+            (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+        assertThat(applicationKeyguardManager).isNotSameInstanceAs(activityKeyguardManager);
+      });
     }
   }
 
   @Test
   public void keyguardManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            KeyguardManager activityKeyguardManager =
-                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
-            KeyguardManager anotherActivityKeyguardManager =
-                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
-            assertThat(anotherActivityKeyguardManager).isSameInstanceAs(activityKeyguardManager);
-          });
+      scenario.onActivity(activity -> {
+        KeyguardManager activityKeyguardManager =
+            (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+        KeyguardManager anotherActivityKeyguardManager =
+            (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+        assertThat(anotherActivityKeyguardManager).isSameInstanceAs(activityKeyguardManager);
+      });
     }
   }
 
@@ -358,16 +341,15 @@ public class ContextTest {
     KeyguardManager applicationKeyguardManager =
         (KeyguardManager) application.getSystemService(Context.KEYGUARD_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            KeyguardManager activityKeyguardManager =
-                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+      scenario.onActivity(activity -> {
+        KeyguardManager activityKeyguardManager =
+            (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
 
-            boolean applicationIsKeyguardLocked = applicationKeyguardManager.isKeyguardLocked();
-            boolean activityIsKeyguardLocked = activityKeyguardManager.isKeyguardLocked();
+        boolean applicationIsKeyguardLocked = applicationKeyguardManager.isKeyguardLocked();
+        boolean activityIsKeyguardLocked = activityKeyguardManager.isKeyguardLocked();
 
-            assertThat(activityIsKeyguardLocked).isEqualTo(applicationIsKeyguardLocked);
-          });
+        assertThat(activityIsKeyguardLocked).isEqualTo(applicationIsKeyguardLocked);
+      });
     }
   }
 
@@ -376,26 +358,24 @@ public class ContextTest {
     DevicePolicyManager applicationDpm =
         (DevicePolicyManager) application.getSystemService(Context.DEVICE_POLICY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DevicePolicyManager activityDpm =
-                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
-            assertThat(applicationDpm).isNotSameInstanceAs(activityDpm);
-          });
+      scenario.onActivity(activity -> {
+        DevicePolicyManager activityDpm =
+            (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        assertThat(applicationDpm).isNotSameInstanceAs(activityDpm);
+      });
     }
   }
 
   @Test
   public void devicePolicyManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DevicePolicyManager activityDpm =
-                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
-            DevicePolicyManager anotherActivityDpm =
-                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
-            assertThat(anotherActivityDpm).isSameInstanceAs(activityDpm);
-          });
+      scenario.onActivity(activity -> {
+        DevicePolicyManager activityDpm =
+            (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        DevicePolicyManager anotherActivityDpm =
+            (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        assertThat(anotherActivityDpm).isSameInstanceAs(activityDpm);
+      });
     }
   }
 
@@ -405,16 +385,15 @@ public class ContextTest {
         (DevicePolicyManager) application.getSystemService(Context.DEVICE_POLICY_SERVICE);
     ComponentName testAdminComponent = new ComponentName(application, DeviceAdminReceiver.class);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DevicePolicyManager activityDpm =
-                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+      scenario.onActivity(activity -> {
+        DevicePolicyManager activityDpm =
+            (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
 
-            boolean applicationAdminActive = applicationDpm.isAdminActive(testAdminComponent);
-            boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
+        boolean applicationAdminActive = applicationDpm.isAdminActive(testAdminComponent);
+        boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
 
-            assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
-          });
+        assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
+      });
     }
   }
 
@@ -423,26 +402,22 @@ public class ContextTest {
     AutofillManager applicationAutofillManager =
         application.getSystemService(AutofillManager.class);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AutofillManager activityAutofillManager =
-                activity.getSystemService(AutofillManager.class);
-            assertThat(applicationAutofillManager).isNotSameInstanceAs(activityAutofillManager);
-          });
+      scenario.onActivity(activity -> {
+        AutofillManager activityAutofillManager = activity.getSystemService(AutofillManager.class);
+        assertThat(applicationAutofillManager).isNotSameInstanceAs(activityAutofillManager);
+      });
     }
   }
 
   @Test
   public void autofillManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AutofillManager activityAutofillManager =
-                activity.getSystemService(AutofillManager.class);
-            AutofillManager anotherActivityAutofillManager =
-                activity.getSystemService(AutofillManager.class);
-            assertThat(anotherActivityAutofillManager).isSameInstanceAs(activityAutofillManager);
-          });
+      scenario.onActivity(activity -> {
+        AutofillManager activityAutofillManager = activity.getSystemService(AutofillManager.class);
+        AutofillManager anotherActivityAutofillManager =
+            activity.getSystemService(AutofillManager.class);
+        assertThat(anotherActivityAutofillManager).isSameInstanceAs(activityAutofillManager);
+      });
     }
   }
 
@@ -452,19 +427,15 @@ public class ContextTest {
         application.getSystemService(AutofillManager.class);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AutofillManager activityAutofillManager =
-                activity.getSystemService(AutofillManager.class);
+      scenario.onActivity(activity -> {
+        AutofillManager activityAutofillManager = activity.getSystemService(AutofillManager.class);
 
-            boolean applicationAutofillServiceAvailable =
-                applicationAutofillManager.isAutofillSupported();
-            boolean activityAutofillServiceAvailable =
-                activityAutofillManager.isAutofillSupported();
+        boolean applicationAutofillServiceAvailable =
+            applicationAutofillManager.isAutofillSupported();
+        boolean activityAutofillServiceAvailable = activityAutofillManager.isAutofillSupported();
 
-            assertThat(activityAutofillServiceAvailable)
-                .isEqualTo(applicationAutofillServiceAvailable);
-          });
+        assertThat(activityAutofillServiceAvailable).isEqualTo(applicationAutofillServiceAvailable);
+      });
     }
   }
 
@@ -473,26 +444,24 @@ public class ContextTest {
     DownloadManager applicationDownloadManager =
         (DownloadManager) application.getSystemService(Context.DOWNLOAD_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DownloadManager activityDownloadManager =
-                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
-            assertThat(applicationDownloadManager).isNotSameInstanceAs(activityDownloadManager);
-          });
+      scenario.onActivity(activity -> {
+        DownloadManager activityDownloadManager =
+            (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+        assertThat(applicationDownloadManager).isNotSameInstanceAs(activityDownloadManager);
+      });
     }
   }
 
   @Test
   public void downloadManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DownloadManager activityDownloadManager =
-                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
-            DownloadManager anotherActivityDownloadManager =
-                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
-            assertThat(anotherActivityDownloadManager).isSameInstanceAs(activityDownloadManager);
-          });
+      scenario.onActivity(activity -> {
+        DownloadManager activityDownloadManager =
+            (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+        DownloadManager anotherActivityDownloadManager =
+            (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+        assertThat(anotherActivityDownloadManager).isSameInstanceAs(activityDownloadManager);
+      });
     }
   }
 
@@ -502,17 +471,16 @@ public class ContextTest {
     DownloadManager applicationDownloadManager =
         (DownloadManager) application.getSystemService(Context.DOWNLOAD_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DownloadManager activityDownloadManager =
-                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+      scenario.onActivity(activity -> {
+        DownloadManager activityDownloadManager =
+            (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
 
-            String applicationMimeType =
-                applicationDownloadManager.getMimeTypeForDownloadedFile(testId);
-            String activityMimeType = activityDownloadManager.getMimeTypeForDownloadedFile(testId);
+        String applicationMimeType =
+            applicationDownloadManager.getMimeTypeForDownloadedFile(testId);
+        String activityMimeType = activityDownloadManager.getMimeTypeForDownloadedFile(testId);
 
-            assertThat(activityMimeType).isEqualTo(applicationMimeType);
-          });
+        assertThat(activityMimeType).isEqualTo(applicationMimeType);
+      });
     }
   }
 
@@ -528,12 +496,10 @@ public class ContextTest {
   public void fingerprintManager_applicationInstance_isNotSameAsActivityInstance() {
     Object applicationFingerprintManager = application.getSystemService(FINGERPRINT_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
-            assertThat(applicationFingerprintManager)
-                .isNotSameInstanceAs(activityFingerprintManager);
-          });
+      scenario.onActivity(activity -> {
+        Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
+        assertThat(applicationFingerprintManager).isNotSameInstanceAs(activityFingerprintManager);
+      });
     }
   }
 
@@ -542,14 +508,11 @@ public class ContextTest {
   @SdkSuppress(maxSdkVersion = BAKLAVA)
   public void fingerprintManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
-            Object anotherActivityFingerprintManager =
-                activity.getSystemService(FINGERPRINT_SERVICE);
-            assertThat(anotherActivityFingerprintManager)
-                .isSameInstanceAs(activityFingerprintManager);
-          });
+      scenario.onActivity(activity -> {
+        Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
+        Object anotherActivityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
+        assertThat(anotherActivityFingerprintManager).isSameInstanceAs(activityFingerprintManager);
+      });
     }
   }
 
@@ -560,25 +523,23 @@ public class ContextTest {
     Object applicationFingerprintManager = application.getSystemService(FINGERPRINT_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
+      scenario.onActivity(activity -> {
+        Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
 
-            boolean isApplicationFingerprintAvailable =
-                invokeBooleanMethod(applicationFingerprintManager, "isHardwareDetected");
-            boolean isActivityFingerprintAvailable =
-                invokeBooleanMethod(activityFingerprintManager, "isHardwareDetected");
+        boolean isApplicationFingerprintAvailable =
+            invokeBooleanMethod(applicationFingerprintManager, "isHardwareDetected");
+        boolean isActivityFingerprintAvailable =
+            invokeBooleanMethod(activityFingerprintManager, "isHardwareDetected");
 
-            assertThat(isActivityFingerprintAvailable).isEqualTo(isApplicationFingerprintAvailable);
+        assertThat(isActivityFingerprintAvailable).isEqualTo(isApplicationFingerprintAvailable);
 
-            boolean hasApplicationEnrolledFingerprints =
-                invokeBooleanMethod(applicationFingerprintManager, "hasEnrolledFingerprints");
-            boolean hasActivityEnrolledFingerprints =
-                invokeBooleanMethod(activityFingerprintManager, "hasEnrolledFingerprints");
+        boolean hasApplicationEnrolledFingerprints =
+            invokeBooleanMethod(applicationFingerprintManager, "hasEnrolledFingerprints");
+        boolean hasActivityEnrolledFingerprints =
+            invokeBooleanMethod(activityFingerprintManager, "hasEnrolledFingerprints");
 
-            assertThat(hasActivityEnrolledFingerprints)
-                .isEqualTo(hasApplicationEnrolledFingerprints);
-          });
+        assertThat(hasActivityEnrolledFingerprints).isEqualTo(hasApplicationEnrolledFingerprints);
+      });
     }
   }
 
@@ -597,26 +558,24 @@ public class ContextTest {
         (ActivityManager) application.getSystemService(Context.ACTIVITY_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ActivityManager activityActivityManager =
-                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
-            assertThat(applicationActivityManager).isNotSameInstanceAs(activityActivityManager);
-          });
+      scenario.onActivity(activity -> {
+        ActivityManager activityActivityManager =
+            (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        assertThat(applicationActivityManager).isNotSameInstanceAs(activityActivityManager);
+      });
     }
   }
 
   @Test
   public void activityManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ActivityManager activityActivityManager =
-                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
-            ActivityManager anotherActivityActivityManager =
-                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
-            assertThat(anotherActivityActivityManager).isSameInstanceAs(activityActivityManager);
-          });
+      scenario.onActivity(activity -> {
+        ActivityManager activityActivityManager =
+            (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager anotherActivityActivityManager =
+            (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        assertThat(anotherActivityActivityManager).isSameInstanceAs(activityActivityManager);
+      });
     }
   }
 
@@ -626,16 +585,15 @@ public class ContextTest {
         (ActivityManager) application.getSystemService(Context.ACTIVITY_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            ActivityManager activityActivityManager =
-                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+      scenario.onActivity(activity -> {
+        ActivityManager activityActivityManager =
+            (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
 
-            boolean applicationLowRamStatus = applicationActivityManager.isLowRamDevice();
-            boolean activityLowRamStatus = activityActivityManager.isLowRamDevice();
+        boolean applicationLowRamStatus = applicationActivityManager.isLowRamDevice();
+        boolean activityLowRamStatus = activityActivityManager.isLowRamDevice();
 
-            assertThat(activityLowRamStatus).isEqualTo(applicationLowRamStatus);
-          });
+        assertThat(activityLowRamStatus).isEqualTo(applicationLowRamStatus);
+      });
     }
   }
 
@@ -644,26 +602,24 @@ public class ContextTest {
     CameraManager applicationCameraManager =
         (CameraManager) application.getSystemService(Context.CAMERA_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CameraManager activityCameraManager =
-                (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
-            assertThat(applicationCameraManager).isNotSameInstanceAs(activityCameraManager);
-          });
+      scenario.onActivity(activity -> {
+        CameraManager activityCameraManager =
+            (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        assertThat(applicationCameraManager).isNotSameInstanceAs(activityCameraManager);
+      });
     }
   }
 
   @Test
   public void cameraManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CameraManager activityCameraManager =
-                (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
-            CameraManager anotherActivityCameraManager =
-                (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
-            assertThat(anotherActivityCameraManager).isSameInstanceAs(activityCameraManager);
-          });
+      scenario.onActivity(activity -> {
+        CameraManager activityCameraManager =
+            (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager anotherActivityCameraManager =
+            (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        assertThat(anotherActivityCameraManager).isSameInstanceAs(activityCameraManager);
+      });
     }
   }
 
@@ -672,26 +628,24 @@ public class ContextTest {
     AppWidgetManager applicationAppWidgetManager =
         (AppWidgetManager) application.getSystemService(Context.APPWIDGET_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AppWidgetManager activityAppWidgetManager =
-                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
-            assertThat(applicationAppWidgetManager).isNotSameInstanceAs(activityAppWidgetManager);
-          });
+      scenario.onActivity(activity -> {
+        AppWidgetManager activityAppWidgetManager =
+            (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+        assertThat(applicationAppWidgetManager).isNotSameInstanceAs(activityAppWidgetManager);
+      });
     }
   }
 
   @Test
   public void appWidgetManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AppWidgetManager activityAppWidgetManager =
-                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
-            AppWidgetManager anotherActivityAppWidgetManager =
-                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
-            assertThat(anotherActivityAppWidgetManager).isSameInstanceAs(activityAppWidgetManager);
-          });
+      scenario.onActivity(activity -> {
+        AppWidgetManager activityAppWidgetManager =
+            (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+        AppWidgetManager anotherActivityAppWidgetManager =
+            (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+        assertThat(anotherActivityAppWidgetManager).isSameInstanceAs(activityAppWidgetManager);
+      });
     }
   }
 
@@ -715,18 +669,17 @@ public class ContextTest {
         new RemoteViews(application.getPackageName(), android.R.layout.simple_list_item_1));
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AppWidgetManager activityAppWidgetManager =
-                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+      scenario.onActivity(activity -> {
+        AppWidgetManager activityAppWidgetManager =
+            (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
 
-            int[] applicationAppWidgets = appWidgetManager.getAppWidgetIds(providerComponent);
-            int[] activityAppWidgets = activityAppWidgetManager.getAppWidgetIds(providerComponent);
+        int[] applicationAppWidgets = appWidgetManager.getAppWidgetIds(providerComponent);
+        int[] activityAppWidgets = activityAppWidgetManager.getAppWidgetIds(providerComponent);
 
-            Truth.assertThat(activityAppWidgets).isEqualTo(applicationAppWidgets);
+        Truth.assertThat(activityAppWidgets).isEqualTo(applicationAppWidgets);
 
-            appWidgetHost.deleteAppWidgetId(appWidgetId);
-          });
+        appWidgetHost.deleteAppWidgetId(appWidgetId);
+      });
     }
   }
 
@@ -735,26 +688,24 @@ public class ContextTest {
     BiometricManager applicationBiometricManager =
         (BiometricManager) application.getSystemService(Context.BIOMETRIC_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BiometricManager activityBiometricManager =
-                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
-            assertThat(applicationBiometricManager).isNotSameInstanceAs(activityBiometricManager);
-          });
+      scenario.onActivity(activity -> {
+        BiometricManager activityBiometricManager =
+            (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+        assertThat(applicationBiometricManager).isNotSameInstanceAs(activityBiometricManager);
+      });
     }
   }
 
   @Test
   public void biometricManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BiometricManager activityBiometricManager =
-                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
-            BiometricManager anotherActivityBiometricManager =
-                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
-            assertThat(anotherActivityBiometricManager).isSameInstanceAs(activityBiometricManager);
-          });
+      scenario.onActivity(activity -> {
+        BiometricManager activityBiometricManager =
+            (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+        BiometricManager anotherActivityBiometricManager =
+            (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+        assertThat(anotherActivityBiometricManager).isSameInstanceAs(activityBiometricManager);
+      });
     }
   }
 
@@ -764,18 +715,17 @@ public class ContextTest {
     BiometricManager applicationBiometricManager =
         (BiometricManager) application.getSystemService(Context.BIOMETRIC_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BiometricManager activityBiometricManager =
-                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+      scenario.onActivity(activity -> {
+        BiometricManager activityBiometricManager =
+            (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
 
-            int authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK;
-            int applicationCanAuthenticate =
-                applicationBiometricManager.canAuthenticate(authenticators);
-            int activityCanAuthenticate = activityBiometricManager.canAuthenticate(authenticators);
+        int authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK;
+        int applicationCanAuthenticate =
+            applicationBiometricManager.canAuthenticate(authenticators);
+        int activityCanAuthenticate = activityBiometricManager.canAuthenticate(authenticators);
 
-            assertThat(activityCanAuthenticate).isEqualTo(applicationCanAuthenticate);
-          });
+        assertThat(activityCanAuthenticate).isEqualTo(applicationCanAuthenticate);
+      });
     }
   }
 
@@ -785,26 +735,24 @@ public class ContextTest {
         (BluetoothManager) application.getSystemService(Context.BLUETOOTH_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BluetoothManager activityBluetoothManager =
-                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            assertThat(applicationBluetoothManager).isNotSameInstanceAs(activityBluetoothManager);
-          });
+      scenario.onActivity(activity -> {
+        BluetoothManager activityBluetoothManager =
+            (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        assertThat(applicationBluetoothManager).isNotSameInstanceAs(activityBluetoothManager);
+      });
     }
   }
 
   @Test
   public void bluetoothManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BluetoothManager activityBluetoothManager =
-                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            BluetoothManager anotherActivityBluetoothManager =
-                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            assertThat(anotherActivityBluetoothManager).isSameInstanceAs(activityBluetoothManager);
-          });
+      scenario.onActivity(activity -> {
+        BluetoothManager activityBluetoothManager =
+            (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager anotherActivityBluetoothManager =
+            (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        assertThat(anotherActivityBluetoothManager).isSameInstanceAs(activityBluetoothManager);
+      });
     }
   }
 
@@ -817,15 +765,14 @@ public class ContextTest {
     BluetoothAdapter applicationAdapter = applicationBluetoothManager.getAdapter();
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            BluetoothManager activityBluetoothManager =
-                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+      scenario.onActivity(activity -> {
+        BluetoothManager activityBluetoothManager =
+            (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
 
-            BluetoothAdapter activityAdapter = activityBluetoothManager.getAdapter();
+        BluetoothAdapter activityAdapter = activityBluetoothManager.getAdapter();
 
-            assertThat(applicationAdapter).isEqualTo(activityAdapter);
-          });
+        assertThat(applicationAdapter).isEqualTo(activityAdapter);
+      });
     }
   }
 
@@ -834,26 +781,24 @@ public class ContextTest {
     AppOpsManager applicationAppOpsManager =
         (AppOpsManager) application.getSystemService(Context.APP_OPS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AppOpsManager activityAppOpsManager =
-                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
-            assertThat(applicationAppOpsManager).isNotSameInstanceAs(activityAppOpsManager);
-          });
+      scenario.onActivity(activity -> {
+        AppOpsManager activityAppOpsManager =
+            (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+        assertThat(applicationAppOpsManager).isNotSameInstanceAs(activityAppOpsManager);
+      });
     }
   }
 
   @Test
   public void appOpsManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AppOpsManager activityAppOpsManager =
-                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
-            AppOpsManager anotherActivityAppOpsManager =
-                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
-            assertThat(anotherActivityAppOpsManager).isSameInstanceAs(activityAppOpsManager);
-          });
+      scenario.onActivity(activity -> {
+        AppOpsManager activityAppOpsManager =
+            (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+        AppOpsManager anotherActivityAppOpsManager =
+            (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+        assertThat(anotherActivityAppOpsManager).isSameInstanceAs(activityAppOpsManager);
+      });
     }
   }
 
@@ -862,21 +807,20 @@ public class ContextTest {
     AppOpsManager applicationAppOpsManager =
         (AppOpsManager) application.getSystemService(Context.APP_OPS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AppOpsManager activityAppOpsManager =
-                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+      scenario.onActivity(activity -> {
+        AppOpsManager activityAppOpsManager =
+            (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
 
-            String opCode = AppOpsManager.OPSTR_CAMERA;
-            int applicationOpMode =
-                applicationAppOpsManager.checkOpNoThrow(
-                    opCode, android.os.Process.myUid(), "com.example.app");
-            int activityOpMode =
-                activityAppOpsManager.checkOpNoThrow(
-                    opCode, android.os.Process.myUid(), "com.example.app");
+        String opCode = AppOpsManager.OPSTR_CAMERA;
+        int applicationOpMode =
+            applicationAppOpsManager.checkOpNoThrow(
+                opCode, android.os.Process.myUid(), "com.example.app");
+        int activityOpMode =
+            activityAppOpsManager.checkOpNoThrow(
+                opCode, android.os.Process.myUid(), "com.example.app");
 
-            assertThat(activityOpMode).isEqualTo(applicationOpMode);
-          });
+        assertThat(activityOpMode).isEqualTo(applicationOpMode);
+      });
     }
   }
 
@@ -886,26 +830,24 @@ public class ContextTest {
         (EuiccManager) application.getSystemService(Context.EUICC_SERVICE);
     assumeTrue(applicationEuiccManager != null);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            EuiccManager activityEuiccManager =
-                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
-            assertThat(applicationEuiccManager).isNotSameInstanceAs(activityEuiccManager);
-          });
+      scenario.onActivity(activity -> {
+        EuiccManager activityEuiccManager =
+            (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+        assertThat(applicationEuiccManager).isNotSameInstanceAs(activityEuiccManager);
+      });
     }
   }
 
   @Test
   public void euiccManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            EuiccManager activityEuiccManager =
-                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
-            EuiccManager anotherActivityEuiccManager =
-                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
-            assertThat(anotherActivityEuiccManager).isSameInstanceAs(activityEuiccManager);
-          });
+      scenario.onActivity(activity -> {
+        EuiccManager activityEuiccManager =
+            (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+        EuiccManager anotherActivityEuiccManager =
+            (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+        assertThat(anotherActivityEuiccManager).isSameInstanceAs(activityEuiccManager);
+      });
     }
   }
 
@@ -915,16 +857,15 @@ public class ContextTest {
         (EuiccManager) application.getSystemService(Context.EUICC_SERVICE);
     assumeTrue(applicationEuiccManager != null);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            EuiccManager activityEuiccManager =
-                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+      scenario.onActivity(activity -> {
+        EuiccManager activityEuiccManager =
+            (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
 
-            String applicationEid = applicationEuiccManager.getEid();
-            String activityEid = activityEuiccManager.getEid();
+        String applicationEid = applicationEuiccManager.getEid();
+        String activityEid = activityEuiccManager.getEid();
 
-            assertThat(activityEid).isEqualTo(applicationEid);
-          });
+        assertThat(activityEid).isEqualTo(applicationEid);
+      });
     }
   }
 
@@ -933,26 +874,24 @@ public class ContextTest {
     CrossProfileApps applicationCrossProfileApps =
         (CrossProfileApps) application.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CrossProfileApps activityCrossProfileApps =
-                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
-            assertThat(applicationCrossProfileApps).isNotSameInstanceAs(activityCrossProfileApps);
-          });
+      scenario.onActivity(activity -> {
+        CrossProfileApps activityCrossProfileApps =
+            (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+        assertThat(applicationCrossProfileApps).isNotSameInstanceAs(activityCrossProfileApps);
+      });
     }
   }
 
   @Test
   public void crossProfileApps_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CrossProfileApps activityCrossProfileApps =
-                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
-            CrossProfileApps anotherActivityCrossProfileApps =
-                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
-            assertThat(anotherActivityCrossProfileApps).isSameInstanceAs(activityCrossProfileApps);
-          });
+      scenario.onActivity(activity -> {
+        CrossProfileApps activityCrossProfileApps =
+            (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+        CrossProfileApps anotherActivityCrossProfileApps =
+            (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+        assertThat(anotherActivityCrossProfileApps).isSameInstanceAs(activityCrossProfileApps);
+      });
     }
   }
 
@@ -961,18 +900,17 @@ public class ContextTest {
     CrossProfileApps applicationCrossProfileApps =
         (CrossProfileApps) application.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CrossProfileApps activityCrossProfileApps =
-                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+      scenario.onActivity(activity -> {
+        CrossProfileApps activityCrossProfileApps =
+            (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
 
-            List<UserHandle> applicationTargetUserProfiles =
-                applicationCrossProfileApps.getTargetUserProfiles();
-            List<UserHandle> activityTargetUserProfiles =
-                activityCrossProfileApps.getTargetUserProfiles();
+        List<UserHandle> applicationTargetUserProfiles =
+            applicationCrossProfileApps.getTargetUserProfiles();
+        List<UserHandle> activityTargetUserProfiles =
+            activityCrossProfileApps.getTargetUserProfiles();
 
-            assertThat(activityTargetUserProfiles).isEqualTo(applicationTargetUserProfiles);
-          });
+        assertThat(activityTargetUserProfiles).isEqualTo(applicationTargetUserProfiles);
+      });
     }
   }
 
@@ -981,26 +919,24 @@ public class ContextTest {
     LauncherApps applicationLauncherApps =
         (LauncherApps) application.getSystemService(Context.LAUNCHER_APPS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            LauncherApps activityLauncherApps =
-                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
-            assertThat(applicationLauncherApps).isNotSameInstanceAs(activityLauncherApps);
-          });
+      scenario.onActivity(activity -> {
+        LauncherApps activityLauncherApps =
+            (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+        assertThat(applicationLauncherApps).isNotSameInstanceAs(activityLauncherApps);
+      });
     }
   }
 
   @Test
   public void launcherApps_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            LauncherApps activityLauncherApps =
-                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
-            LauncherApps anotherActivityLauncherApps =
-                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
-            assertThat(anotherActivityLauncherApps).isSameInstanceAs(activityLauncherApps);
-          });
+      scenario.onActivity(activity -> {
+        LauncherApps activityLauncherApps =
+            (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+        LauncherApps anotherActivityLauncherApps =
+            (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+        assertThat(anotherActivityLauncherApps).isSameInstanceAs(activityLauncherApps);
+      });
     }
   }
 
@@ -1009,19 +945,18 @@ public class ContextTest {
     LauncherApps applicationLauncherApps =
         (LauncherApps) application.getSystemService(Context.LAUNCHER_APPS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            LauncherApps activityLauncherApps =
-                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+      scenario.onActivity(activity -> {
+        LauncherApps activityLauncherApps =
+            (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
 
-            List<UserHandle> applicationProfiles = applicationLauncherApps.getProfiles();
-            List<UserHandle> activityProfiles = activityLauncherApps.getProfiles();
+        List<UserHandle> applicationProfiles = applicationLauncherApps.getProfiles();
+        List<UserHandle> activityProfiles = activityLauncherApps.getProfiles();
 
-            assertThat(applicationProfiles).isNotEmpty();
-            assertThat(activityProfiles).isNotEmpty();
+        assertThat(applicationProfiles).isNotEmpty();
+        assertThat(activityProfiles).isNotEmpty();
 
-            assertThat(activityProfiles).isEqualTo(applicationProfiles);
-          });
+        assertThat(activityProfiles).isEqualTo(applicationProfiles);
+      });
     }
   }
 
@@ -1031,26 +966,24 @@ public class ContextTest {
         (DropBoxManager) application.getSystemService(Context.DROPBOX_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DropBoxManager activityDropBoxManager =
-                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
-            assertThat(applicationDropBoxManager).isNotSameInstanceAs(activityDropBoxManager);
-          });
+      scenario.onActivity(activity -> {
+        DropBoxManager activityDropBoxManager =
+            (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+        assertThat(applicationDropBoxManager).isNotSameInstanceAs(activityDropBoxManager);
+      });
     }
   }
 
   @Test
   public void dropBoxManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DropBoxManager activityDropBoxManager =
-                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
-            DropBoxManager anotherActivityDropBoxManager =
-                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
-            assertThat(anotherActivityDropBoxManager).isSameInstanceAs(activityDropBoxManager);
-          });
+      scenario.onActivity(activity -> {
+        DropBoxManager activityDropBoxManager =
+            (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+        DropBoxManager anotherActivityDropBoxManager =
+            (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+        assertThat(anotherActivityDropBoxManager).isSameInstanceAs(activityDropBoxManager);
+      });
     }
   }
 
@@ -1064,16 +997,15 @@ public class ContextTest {
     applicationDropBoxManager.addText(tag, data);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            DropBoxManager activityDropBoxManager =
-                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+      scenario.onActivity(activity -> {
+        DropBoxManager activityDropBoxManager =
+            (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
 
-            boolean applicationTagEnabled = applicationDropBoxManager.isTagEnabled(tag);
-            boolean activityTagEnabled = activityDropBoxManager.isTagEnabled(tag);
+        boolean applicationTagEnabled = applicationDropBoxManager.isTagEnabled(tag);
+        boolean activityTagEnabled = activityDropBoxManager.isTagEnabled(tag);
 
-            assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
-          });
+        assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
+      });
     }
   }
 
@@ -1082,26 +1014,24 @@ public class ContextTest {
     MediaRouter applicationMediaRouter =
         (MediaRouter) application.getSystemService(Context.MEDIA_ROUTER_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            MediaRouter activityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-            assertThat(applicationMediaRouter).isNotSameInstanceAs(activityMediaRouter);
-          });
+      scenario.onActivity(activity -> {
+        MediaRouter activityMediaRouter =
+            (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
+        assertThat(applicationMediaRouter).isNotSameInstanceAs(activityMediaRouter);
+      });
     }
   }
 
   @Test
   public void mediaRouter_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            MediaRouter activityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-            MediaRouter anotherActivityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-            assertThat(anotherActivityMediaRouter).isSameInstanceAs(activityMediaRouter);
-          });
+      scenario.onActivity(activity -> {
+        MediaRouter activityMediaRouter =
+            (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
+        MediaRouter anotherActivityMediaRouter =
+            (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
+        assertThat(anotherActivityMediaRouter).isSameInstanceAs(activityMediaRouter);
+      });
     }
   }
 
@@ -1110,17 +1040,15 @@ public class ContextTest {
     MediaRouter applicationMediaRouter =
         (MediaRouter) application.getSystemService(Context.MEDIA_ROUTER_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            MediaRouter activityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
+      scenario.onActivity(activity -> {
+        MediaRouter activityMediaRouter =
+            (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
 
-            MediaRouter.RouteInfo applicationDefaultRoute =
-                applicationMediaRouter.getDefaultRoute();
-            MediaRouter.RouteInfo activityDefaultRoute = activityMediaRouter.getDefaultRoute();
+        MediaRouter.RouteInfo applicationDefaultRoute = applicationMediaRouter.getDefaultRoute();
+        MediaRouter.RouteInfo activityDefaultRoute = activityMediaRouter.getDefaultRoute();
 
-            assertThat(activityDefaultRoute).isEqualTo(applicationDefaultRoute);
-          });
+        assertThat(activityDefaultRoute).isEqualTo(applicationDefaultRoute);
+      });
     }
   }
 
@@ -1130,30 +1058,27 @@ public class ContextTest {
         (CaptioningManager) application.getSystemService(Context.CAPTIONING_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CaptioningManager activityCaptioningManager =
-                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+      scenario.onActivity(activity -> {
+        CaptioningManager activityCaptioningManager =
+            (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
 
-            assertThat(applicationCaptioningManager).isNotSameInstanceAs(activityCaptioningManager);
-          });
+        assertThat(applicationCaptioningManager).isNotSameInstanceAs(activityCaptioningManager);
+      });
     }
   }
 
   @Test
   public void captioningManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CaptioningManager activityCaptioningManager =
-                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+      scenario.onActivity(activity -> {
+        CaptioningManager activityCaptioningManager =
+            (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
 
-            CaptioningManager anotherActivityCaptioningManager =
-                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+        CaptioningManager anotherActivityCaptioningManager =
+            (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
 
-            assertThat(anotherActivityCaptioningManager)
-                .isSameInstanceAs(activityCaptioningManager);
-          });
+        assertThat(anotherActivityCaptioningManager).isSameInstanceAs(activityCaptioningManager);
+      });
     }
   }
 
@@ -1163,16 +1088,15 @@ public class ContextTest {
         (CaptioningManager) application.getSystemService(Context.CAPTIONING_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CaptioningManager activityCaptioningManager =
-                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+      scenario.onActivity(activity -> {
+        CaptioningManager activityCaptioningManager =
+            (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
 
-            boolean applicationisEnabled = applicationCaptioningManager.isEnabled();
-            boolean activityisEnabled = activityCaptioningManager.isEnabled();
+        boolean applicationisEnabled = applicationCaptioningManager.isEnabled();
+        boolean activityisEnabled = activityCaptioningManager.isEnabled();
 
-            assertThat(applicationisEnabled).isEqualTo(activityisEnabled);
-          });
+        assertThat(applicationisEnabled).isEqualTo(activityisEnabled);
+      });
     }
   }
 
@@ -1182,29 +1106,27 @@ public class ContextTest {
         (SensorManager) application.getSystemService(Context.SENSOR_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SensorManager activitySensorManager =
-                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+      scenario.onActivity(activity -> {
+        SensorManager activitySensorManager =
+            (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 
-            assertThat(applicationSensorManager).isNotSameInstanceAs(activitySensorManager);
-          });
+        assertThat(applicationSensorManager).isNotSameInstanceAs(activitySensorManager);
+      });
     }
   }
 
   @Test
   public void sensorManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SensorManager activitySensorManager =
-                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+      scenario.onActivity(activity -> {
+        SensorManager activitySensorManager =
+            (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 
-            SensorManager anotherActivitySensorManager =
-                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+        SensorManager anotherActivitySensorManager =
+            (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 
-            assertThat(anotherActivitySensorManager).isSameInstanceAs(activitySensorManager);
-          });
+        assertThat(anotherActivitySensorManager).isSameInstanceAs(activitySensorManager);
+      });
     }
   }
 
@@ -1214,27 +1136,25 @@ public class ContextTest {
         (SensorManager) application.getSystemService(Context.SENSOR_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SensorManager activitySensorManager =
-                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+      scenario.onActivity(activity -> {
+        SensorManager activitySensorManager =
+            (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 
-            List<Sensor> applicationSensors =
-                applicationSensorManager.getSensorList(Sensor.TYPE_ALL);
-            List<Sensor> activitySensors = activitySensorManager.getSensorList(Sensor.TYPE_ALL);
+        List<Sensor> applicationSensors = applicationSensorManager.getSensorList(Sensor.TYPE_ALL);
+        List<Sensor> activitySensors = activitySensorManager.getSensorList(Sensor.TYPE_ALL);
 
-            for (int i = 0; i < applicationSensors.size(); i++) {
-              Sensor appSensor = applicationSensors.get(i);
-              Sensor actSensor = activitySensors.get(i);
+        for (int i = 0; i < applicationSensors.size(); i++) {
+          Sensor appSensor = applicationSensors.get(i);
+          Sensor actSensor = activitySensors.get(i);
 
-              assertThat(appSensor.getName()).isEqualTo(actSensor.getName());
-              assertThat(appSensor.getType()).isEqualTo(actSensor.getType());
-              assertThat(appSensor.getMaximumRange()).isEqualTo(actSensor.getMaximumRange());
-              assertThat(appSensor.getResolution()).isEqualTo(actSensor.getResolution());
-              assertThat(appSensor.getPower()).isEqualTo(actSensor.getPower());
-              assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
-            }
-          });
+          assertThat(appSensor.getName()).isEqualTo(actSensor.getName());
+          assertThat(appSensor.getType()).isEqualTo(actSensor.getType());
+          assertThat(appSensor.getMaximumRange()).isEqualTo(actSensor.getMaximumRange());
+          assertThat(appSensor.getResolution()).isEqualTo(actSensor.getResolution());
+          assertThat(appSensor.getPower()).isEqualTo(actSensor.getPower());
+          assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
+        }
+      });
     }
   }
 
@@ -1243,26 +1163,24 @@ public class ContextTest {
     RoleManager applicationRoleManager =
         (RoleManager) application.getSystemService(Context.ROLE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            RoleManager activityRoleManager =
-                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
-            assertThat(applicationRoleManager).isNotSameInstanceAs(activityRoleManager);
-          });
+      scenario.onActivity(activity -> {
+        RoleManager activityRoleManager =
+            (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+        assertThat(applicationRoleManager).isNotSameInstanceAs(activityRoleManager);
+      });
     }
   }
 
   @Test
   public void roleManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            RoleManager activityRoleManager =
-                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
-            RoleManager anotherActivityRoleManager =
-                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
-            assertThat(anotherActivityRoleManager).isSameInstanceAs(activityRoleManager);
-          });
+      scenario.onActivity(activity -> {
+        RoleManager activityRoleManager =
+            (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+        RoleManager anotherActivityRoleManager =
+            (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+        assertThat(anotherActivityRoleManager).isSameInstanceAs(activityRoleManager);
+      });
     }
   }
 
@@ -1271,16 +1189,15 @@ public class ContextTest {
     RoleManager applicationRoleManager =
         (RoleManager) application.getSystemService(Context.ROLE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            RoleManager activityRoleManager =
-                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+      scenario.onActivity(activity -> {
+        RoleManager activityRoleManager =
+            (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
 
-            boolean applicationRoleHeld = applicationRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
-            boolean activityRoleHeld = activityRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
+        boolean applicationRoleHeld = applicationRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
+        boolean activityRoleHeld = activityRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
 
-            assertThat(activityRoleHeld).isEqualTo(applicationRoleHeld);
-          });
+        assertThat(activityRoleHeld).isEqualTo(applicationRoleHeld);
+      });
     }
   }
 
@@ -1288,24 +1205,21 @@ public class ContextTest {
   public void sliceManager_applicationInstance_isNotSameAsActivityInstance() {
     SliceManager applicationSliceManager = application.getSystemService(SliceManager.class);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
-            assertThat(applicationSliceManager).isNotSameInstanceAs(activitySliceManager);
-          });
+      scenario.onActivity(activity -> {
+        SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+        assertThat(applicationSliceManager).isNotSameInstanceAs(activitySliceManager);
+      });
     }
   }
 
   @Test
   public void sliceManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
-            SliceManager anotherActivitySliceManager =
-                activity.getSystemService(SliceManager.class);
-            assertThat(anotherActivitySliceManager).isSameInstanceAs(activitySliceManager);
-          });
+      scenario.onActivity(activity -> {
+        SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+        SliceManager anotherActivitySliceManager = activity.getSystemService(SliceManager.class);
+        assertThat(anotherActivitySliceManager).isSameInstanceAs(activitySliceManager);
+      });
     }
   }
 
@@ -1314,26 +1228,22 @@ public class ContextTest {
     UsbManager applicationUsbManager =
         (UsbManager) application.getSystemService(Context.USB_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UsbManager activityUsbManager =
-                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
-            assertThat(applicationUsbManager).isNotSameInstanceAs(activityUsbManager);
-          });
+      scenario.onActivity(activity -> {
+        UsbManager activityUsbManager = (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+        assertThat(applicationUsbManager).isNotSameInstanceAs(activityUsbManager);
+      });
     }
   }
 
   @Test
   public void usbManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UsbManager activityUsbManager =
-                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
-            UsbManager anotherActivityUsbManager =
-                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
-            assertThat(anotherActivityUsbManager).isSameInstanceAs(activityUsbManager);
-          });
+      scenario.onActivity(activity -> {
+        UsbManager activityUsbManager = (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+        UsbManager anotherActivityUsbManager =
+            (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+        assertThat(anotherActivityUsbManager).isSameInstanceAs(activityUsbManager);
+      });
     }
   }
 
@@ -1342,16 +1252,14 @@ public class ContextTest {
     UsbManager applicationUsbManager =
         (UsbManager) application.getSystemService(Context.USB_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UsbManager activityUsbManager =
-                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+      scenario.onActivity(activity -> {
+        UsbManager activityUsbManager = (UsbManager) activity.getSystemService(Context.USB_SERVICE);
 
-            HashMap<String, UsbDevice> applicationDevices = applicationUsbManager.getDeviceList();
-            HashMap<String, UsbDevice> activityDevices = activityUsbManager.getDeviceList();
+        HashMap<String, UsbDevice> applicationDevices = applicationUsbManager.getDeviceList();
+        HashMap<String, UsbDevice> activityDevices = activityUsbManager.getDeviceList();
 
-            assertThat(activityDevices).isEqualTo(applicationDevices);
-          });
+        assertThat(activityDevices).isEqualTo(applicationDevices);
+      });
     }
   }
 
@@ -1364,14 +1272,13 @@ public class ContextTest {
     Slice applicationSlice = applicationSliceManager.bindSlice(testUri, testSpecs);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+      scenario.onActivity(activity -> {
+        SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
 
-            Slice activitySlice = activitySliceManager.bindSlice(testUri, testSpecs);
+        Slice activitySlice = activitySliceManager.bindSlice(testUri, testSpecs);
 
-            assertThat(activitySlice).isEqualTo(applicationSlice);
-          });
+        assertThat(activitySlice).isEqualTo(applicationSlice);
+      });
     }
   }
 
@@ -1380,26 +1287,24 @@ public class ContextTest {
     StorageManager applicationStorageManager =
         (StorageManager) application.getSystemService(Context.STORAGE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            StorageManager activityStorageManager =
-                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
-            assertThat(applicationStorageManager).isNotSameInstanceAs(activityStorageManager);
-          });
+      scenario.onActivity(activity -> {
+        StorageManager activityStorageManager =
+            (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+        assertThat(applicationStorageManager).isNotSameInstanceAs(activityStorageManager);
+      });
     }
   }
 
   @Test
   public void storageManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            StorageManager activityStorageManager =
-                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
-            StorageManager anotherActivityStorageManager =
-                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
-            assertThat(anotherActivityStorageManager).isSameInstanceAs(activityStorageManager);
-          });
+      scenario.onActivity(activity -> {
+        StorageManager activityStorageManager =
+            (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+        StorageManager anotherActivityStorageManager =
+            (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+        assertThat(anotherActivityStorageManager).isSameInstanceAs(activityStorageManager);
+      });
     }
   }
 
@@ -1408,16 +1313,15 @@ public class ContextTest {
     StorageManager applicationStorageManager =
         (StorageManager) application.getSystemService(Context.STORAGE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            StorageManager activityStorageManager =
-                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+      scenario.onActivity(activity -> {
+        StorageManager activityStorageManager =
+            (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
 
-            List<StorageVolume> applicationVolumes = applicationStorageManager.getStorageVolumes();
-            List<StorageVolume> activityVolumes = activityStorageManager.getStorageVolumes();
+        List<StorageVolume> applicationVolumes = applicationStorageManager.getStorageVolumes();
+        List<StorageVolume> activityVolumes = activityStorageManager.getStorageVolumes();
 
-            assertThat(activityVolumes).isEqualTo(applicationVolumes);
-          });
+        assertThat(activityVolumes).isEqualTo(applicationVolumes);
+      });
     }
   }
 
@@ -1426,27 +1330,24 @@ public class ContextTest {
     UsageStatsManager applicationUsageStatsManager =
         (UsageStatsManager) application.getSystemService(Context.USAGE_STATS_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UsageStatsManager activityUsageStatsManager =
-                (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
-            assertThat(applicationUsageStatsManager).isNotSameInstanceAs(activityUsageStatsManager);
-          });
+      scenario.onActivity(activity -> {
+        UsageStatsManager activityUsageStatsManager =
+            (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+        assertThat(applicationUsageStatsManager).isNotSameInstanceAs(activityUsageStatsManager);
+      });
     }
   }
 
   @Test
   public void usageStatsManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UsageStatsManager activityUsageStatsManager =
-                (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
-            UsageStatsManager anotherActivityUsageStatsManager =
-                (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
-            assertThat(anotherActivityUsageStatsManager)
-                .isSameInstanceAs(activityUsageStatsManager);
-          });
+      scenario.onActivity(activity -> {
+        UsageStatsManager activityUsageStatsManager =
+            (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+        UsageStatsManager anotherActivityUsageStatsManager =
+            (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+        assertThat(anotherActivityUsageStatsManager).isSameInstanceAs(activityUsageStatsManager);
+      });
     }
   }
 
@@ -1456,16 +1357,15 @@ public class ContextTest {
         (UserManager) application.getSystemService(Context.USER_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UserManager activityUserManager =
-                (UserManager) activity.getSystemService(Context.USER_SERVICE);
+      scenario.onActivity(activity -> {
+        UserManager activityUserManager =
+            (UserManager) activity.getSystemService(Context.USER_SERVICE);
 
-            boolean isGoatApplication = applicationUserManager.isUserAGoat();
-            boolean isGoatActivity = activityUserManager.isUserAGoat();
+        boolean isGoatApplication = applicationUserManager.isUserAGoat();
+        boolean isGoatActivity = activityUserManager.isUserAGoat();
 
-            assertThat(isGoatApplication).isEqualTo(isGoatActivity);
-          });
+        assertThat(isGoatApplication).isEqualTo(isGoatActivity);
+      });
     }
   }
 
@@ -1474,31 +1374,25 @@ public class ContextTest {
     SubscriptionManager applicationSubscriptionManager =
         (SubscriptionManager) application.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SubscriptionManager activitySubscriptionManager =
-                (SubscriptionManager)
-                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-            assertThat(applicationSubscriptionManager)
-                .isNotSameInstanceAs(activitySubscriptionManager);
-          });
+      scenario.onActivity(activity -> {
+        SubscriptionManager activitySubscriptionManager =
+            (SubscriptionManager) activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+        assertThat(applicationSubscriptionManager).isNotSameInstanceAs(activitySubscriptionManager);
+      });
     }
   }
 
   @Test
   public void subscriptionManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SubscriptionManager activitySubscriptionManager =
-                (SubscriptionManager)
-                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-            SubscriptionManager anotherActivitySubscriptionManager =
-                (SubscriptionManager)
-                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-            assertThat(anotherActivitySubscriptionManager)
-                .isSameInstanceAs(activitySubscriptionManager);
-          });
+      scenario.onActivity(activity -> {
+        SubscriptionManager activitySubscriptionManager =
+            (SubscriptionManager) activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+        SubscriptionManager anotherActivitySubscriptionManager =
+            (SubscriptionManager) activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+        assertThat(anotherActivitySubscriptionManager)
+            .isSameInstanceAs(activitySubscriptionManager);
+      });
     }
   }
 
@@ -1508,19 +1402,17 @@ public class ContextTest {
     SubscriptionManager applicationSubscriptionManager =
         (SubscriptionManager) application.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SubscriptionManager activitySubscriptionManager =
-                (SubscriptionManager)
-                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+      scenario.onActivity(activity -> {
+        SubscriptionManager activitySubscriptionManager =
+            (SubscriptionManager) activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
 
-            SubscriptionInfo applicationSubscriptionInfo =
-                applicationSubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
-            SubscriptionInfo activitySubscriptionInfo =
-                activitySubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
+        SubscriptionInfo applicationSubscriptionInfo =
+            applicationSubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
+        SubscriptionInfo activitySubscriptionInfo =
+            activitySubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
 
-            assertThat(applicationSubscriptionInfo).isEqualTo(activitySubscriptionInfo);
-          });
+        assertThat(applicationSubscriptionInfo).isEqualTo(activitySubscriptionInfo);
+      });
     }
   }
 
@@ -1529,26 +1421,24 @@ public class ContextTest {
     TelephonyManager applicationTelephonyManager =
         (TelephonyManager) application.getSystemService(Context.TELEPHONY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TelephonyManager activityTelephonyManager =
-                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
-            assertThat(applicationTelephonyManager).isNotSameInstanceAs(activityTelephonyManager);
-          });
+      scenario.onActivity(activity -> {
+        TelephonyManager activityTelephonyManager =
+            (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+        assertThat(applicationTelephonyManager).isNotSameInstanceAs(activityTelephonyManager);
+      });
     }
   }
 
   @Test
   public void telephonyManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TelephonyManager activityTelephonyManager =
-                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
-            TelephonyManager anotherActivityTelephonyManager =
-                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
-            assertThat(anotherActivityTelephonyManager).isSameInstanceAs(activityTelephonyManager);
-          });
+      scenario.onActivity(activity -> {
+        TelephonyManager activityTelephonyManager =
+            (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager anotherActivityTelephonyManager =
+            (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+        assertThat(anotherActivityTelephonyManager).isSameInstanceAs(activityTelephonyManager);
+      });
     }
   }
 
@@ -1557,16 +1447,15 @@ public class ContextTest {
     TelephonyManager applicationTelephonyManager =
         (TelephonyManager) application.getSystemService(Context.TELEPHONY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TelephonyManager activityTelephonyManager =
-                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+      scenario.onActivity(activity -> {
+        TelephonyManager activityTelephonyManager =
+            (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
 
-            int applicationPhoneCount = applicationTelephonyManager.getPhoneCount();
-            int activityPhoneCount = activityTelephonyManager.getPhoneCount();
+        int applicationPhoneCount = applicationTelephonyManager.getPhoneCount();
+        int activityPhoneCount = activityTelephonyManager.getPhoneCount();
 
-            assertThat(activityPhoneCount).isEqualTo(applicationPhoneCount);
-          });
+        assertThat(activityPhoneCount).isEqualTo(applicationPhoneCount);
+      });
     }
   }
 
@@ -1575,28 +1464,25 @@ public class ContextTest {
     SystemHealthManager applicationSystemHealthManager =
         (SystemHealthManager) application.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SystemHealthManager activitySystemHealthManager =
-                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
-            assertThat(applicationSystemHealthManager)
-                .isNotSameInstanceAs(activitySystemHealthManager);
-          });
+      scenario.onActivity(activity -> {
+        SystemHealthManager activitySystemHealthManager =
+            (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+        assertThat(applicationSystemHealthManager).isNotSameInstanceAs(activitySystemHealthManager);
+      });
     }
   }
 
   @Test
   public void systemHealthManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SystemHealthManager activitySystemHealthManager =
-                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
-            SystemHealthManager anotherActivitySystemHealthManager =
-                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
-            assertThat(anotherActivitySystemHealthManager)
-                .isSameInstanceAs(activitySystemHealthManager);
-          });
+      scenario.onActivity(activity -> {
+        SystemHealthManager activitySystemHealthManager =
+            (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+        SystemHealthManager anotherActivitySystemHealthManager =
+            (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+        assertThat(anotherActivitySystemHealthManager)
+            .isSameInstanceAs(activitySystemHealthManager);
+      });
     }
   }
 
@@ -1605,25 +1491,23 @@ public class ContextTest {
     SystemHealthManager applicationSystemHealthManager =
         (SystemHealthManager) application.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            SystemHealthManager activitySystemHealthManager =
-                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+      scenario.onActivity(activity -> {
+        SystemHealthManager activitySystemHealthManager =
+            (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
 
-            HealthStats applicationHealthStats = applicationSystemHealthManager.takeMyUidSnapshot();
-            HealthStats activityHealthStats = activitySystemHealthManager.takeMyUidSnapshot();
+        HealthStats applicationHealthStats = applicationSystemHealthManager.takeMyUidSnapshot();
+        HealthStats activityHealthStats = activitySystemHealthManager.takeMyUidSnapshot();
 
-            try {
-              Object applicationField =
-                  ReflectionHelpers.getField(applicationHealthStats, "desiredField");
-              Object activityField =
-                  ReflectionHelpers.getField(activityHealthStats, "desiredField");
+        try {
+          Object applicationField =
+              ReflectionHelpers.getField(applicationHealthStats, "desiredField");
+          Object activityField = ReflectionHelpers.getField(activityHealthStats, "desiredField");
 
-              assertThat(applicationField).isEqualTo(activityField);
-            } catch (RuntimeException e) {
-              e.printStackTrace();
-            }
-          });
+          assertThat(applicationField).isEqualTo(activityField);
+        } catch (RuntimeException e) {
+          e.printStackTrace();
+        }
+      });
     }
   }
 

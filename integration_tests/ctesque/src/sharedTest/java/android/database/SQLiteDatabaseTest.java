@@ -208,14 +208,13 @@ public class SQLiteDatabaseTest {
       for (int i = 0; i < 1000; i++) {
         final MyCursorWindow cursorWindow = new MyCursorWindow(String.valueOf(i));
         for (int j = 0; j < 4; j++) {
-          executor.execute(
-              () -> {
-                try {
-                  cursorWindow.finalize();
-                } catch (Throwable e) {
-                  throw new AssertionError(e);
-                }
-              });
+          executor.execute(() -> {
+            try {
+              cursorWindow.finalize();
+            } catch (Throwable e) {
+              throw new AssertionError(e);
+            }
+          });
         }
       }
       executor.shutdown();

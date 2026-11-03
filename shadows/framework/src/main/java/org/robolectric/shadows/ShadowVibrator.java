@@ -106,12 +106,11 @@ public class ShadowVibrator {
   public List<PrimitiveEffect> getPrimitiveSegmentsInPrimitiveEffects() {
     return vibrationEffectSegments.stream()
         .filter(segment -> segment instanceof PrimitiveSegment)
-        .map(
-            segment ->
-                new PrimitiveEffect(
-                    ReflectionHelpers.getField(segment, "mPrimitiveId"),
-                    ReflectionHelpers.getField(segment, "mScale"),
-                    ReflectionHelpers.getField(segment, "mDelay")))
+        .map(segment ->
+            new PrimitiveEffect(
+                ReflectionHelpers.getField(segment, "mPrimitiveId"),
+                ReflectionHelpers.getField(segment, "mScale"),
+                ReflectionHelpers.getField(segment, "mDelay")))
         .collect(Collectors.toList());
   }
 

@@ -183,11 +183,10 @@ public class ShadowCarrierConfigManager {
       // above.
       int finalCarrierId = carrierId;
       int finalSimSpecificCarrierId = simSpecificCarrierId;
-      carrierConfigChangedListenerExecutor.execute(
-          () -> {
-            carrierConfigChangedListener.onCarrierConfigChanged(
-                logicalSlotId, subId, finalCarrierId, finalSimSpecificCarrierId);
-          });
+      carrierConfigChangedListenerExecutor.execute(() -> {
+        carrierConfigChangedListener.onCarrierConfigChanged(
+            logicalSlotId, subId, finalCarrierId, finalSimSpecificCarrierId);
+      });
     }
 
     // Prior to P, no extras were actually documented (added in aosp/598950), but the slot and sub

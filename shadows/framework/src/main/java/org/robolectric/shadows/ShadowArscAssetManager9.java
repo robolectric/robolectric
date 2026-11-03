@@ -629,18 +629,17 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       return null;
     }
 
-    assetmanager.ForEachPackage(
-        (String package_name, byte package_id) -> {
-          String jpackage_name = package_name; // env.NewStringUTF(package_name);
-          if (jpackage_name == null) {
-            // An exception is pending.
-            return;
-          }
+    assetmanager.ForEachPackage((String package_name, byte package_id) -> {
+      String jpackage_name = package_name; // env.NewStringUTF(package_name);
+      if (jpackage_name == null) {
+        // An exception is pending.
+        return;
+      }
 
-          // env.CallVoidMethod(sparse_array, gSparseArrayOffsets.put, (int) (package_id),
-          //     jpackage_name);
-          sparse_array.put(package_id, jpackage_name);
-        });
+      // env.CallVoidMethod(sparse_array, gSparseArrayOffsets.put, (int) (package_id),
+      //     jpackage_name);
+      sparse_array.put(package_id, jpackage_name);
+    });
     return sparse_array;
   }
 

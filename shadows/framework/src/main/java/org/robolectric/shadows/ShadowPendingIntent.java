@@ -214,10 +214,9 @@ public class ShadowPendingIntent {
         handler == null
             ? onFinished
             : (pendingIntent, intent1, resultCode, resultData, resultExtras) ->
-                handler.post(
-                    () ->
-                        onFinished.onSendFinished(
-                            pendingIntent, intent1, resultCode, resultData, resultExtras));
+                handler.post(() ->
+                    onFinished.onSendFinished(
+                        pendingIntent, intent1, resultCode, resultData, resultExtras));
 
     if (canceled) {
       throw new CanceledException();

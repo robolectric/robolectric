@@ -20,26 +20,24 @@ public class StatusBarManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.STATUS_BAR_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            StatusBarManager activityStatusBarManager =
-                (StatusBarManager) activity.getSystemService(Context.STATUS_BAR_SERVICE);
-            assertThat(applicationStatusBarManager).isNotSameInstanceAs(activityStatusBarManager);
-          });
+      scenario.onActivity(activity -> {
+        StatusBarManager activityStatusBarManager =
+            (StatusBarManager) activity.getSystemService(Context.STATUS_BAR_SERVICE);
+        assertThat(applicationStatusBarManager).isNotSameInstanceAs(activityStatusBarManager);
+      });
     }
   }
 
   @Test
   public void statusBarManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            StatusBarManager activityStatusBarManager =
-                (StatusBarManager) activity.getSystemService(Context.STATUS_BAR_SERVICE);
-            StatusBarManager anotherActivityStatusBarManager =
-                (StatusBarManager) activity.getSystemService(Context.STATUS_BAR_SERVICE);
-            assertThat(anotherActivityStatusBarManager).isSameInstanceAs(activityStatusBarManager);
-          });
+      scenario.onActivity(activity -> {
+        StatusBarManager activityStatusBarManager =
+            (StatusBarManager) activity.getSystemService(Context.STATUS_BAR_SERVICE);
+        StatusBarManager anotherActivityStatusBarManager =
+            (StatusBarManager) activity.getSystemService(Context.STATUS_BAR_SERVICE);
+        assertThat(anotherActivityStatusBarManager).isSameInstanceAs(activityStatusBarManager);
+      });
     }
   }
 }

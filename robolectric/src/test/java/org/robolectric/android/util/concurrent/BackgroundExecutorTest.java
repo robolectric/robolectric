@@ -17,12 +17,10 @@ public class BackgroundExecutorTest {
 
   @Test
   public void forRunnable_doesNotRunOnMainLooper() {
-    runInBackground(
-        () -> {
-          assertThat(Thread.currentThread())
-              .isNotSameInstanceAs(Looper.getMainLooper().getThread());
-          assertThat(Looper.myLooper()).isNotSameInstanceAs(Looper.getMainLooper());
-        });
+    runInBackground(() -> {
+      assertThat(Thread.currentThread()).isNotSameInstanceAs(Looper.getMainLooper().getThread());
+      assertThat(Looper.myLooper()).isNotSameInstanceAs(Looper.getMainLooper());
+    });
   }
 
   @Test
@@ -42,13 +40,12 @@ public class BackgroundExecutorTest {
   @Test
   public void forCallable_doesNotRunOnMainLooper() {
     boolean result =
-        runInBackground(
-            () -> {
-              assertThat(Thread.currentThread())
-                  .isNotSameInstanceAs(Looper.getMainLooper().getThread());
-              assertThat(Looper.myLooper()).isNotSameInstanceAs(Looper.getMainLooper());
-              return true;
-            });
+        runInBackground(() -> {
+          assertThat(Thread.currentThread())
+              .isNotSameInstanceAs(Looper.getMainLooper().getThread());
+          assertThat(Looper.myLooper()).isNotSameInstanceAs(Looper.getMainLooper());
+          return true;
+        });
     assertThat(result).isTrue();
   }
 

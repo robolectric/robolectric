@@ -25,29 +25,27 @@ public class FileIntegrityManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.FILE_INTEGRITY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            FileIntegrityManager activityFileIntegrityManager =
-                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+      scenario.onActivity(activity -> {
+        FileIntegrityManager activityFileIntegrityManager =
+            (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
 
-            assertThat(applicationFileIntegrityManager)
-                .isNotSameInstanceAs(activityFileIntegrityManager);
-          });
+        assertThat(applicationFileIntegrityManager)
+            .isNotSameInstanceAs(activityFileIntegrityManager);
+      });
     }
   }
 
   @Test
   public void fileIntegrityManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            FileIntegrityManager activityFileIntegrityManager =
-                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
-            FileIntegrityManager anotherActivityFileIntegrityManager =
-                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
-            assertThat(anotherActivityFileIntegrityManager)
-                .isSameInstanceAs(activityFileIntegrityManager);
-          });
+      scenario.onActivity(activity -> {
+        FileIntegrityManager activityFileIntegrityManager =
+            (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+        FileIntegrityManager anotherActivityFileIntegrityManager =
+            (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+        assertThat(anotherActivityFileIntegrityManager)
+            .isSameInstanceAs(activityFileIntegrityManager);
+      });
     }
   }
 
@@ -58,18 +56,16 @@ public class FileIntegrityManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.FILE_INTEGRITY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            FileIntegrityManager activityFileIntegrityManager =
-                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+      scenario.onActivity(activity -> {
+        FileIntegrityManager activityFileIntegrityManager =
+            (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
 
-            boolean applicationApkVeritySupported =
-                applicationFileIntegrityManager.isApkVeritySupported();
-            boolean activityApkVeritySupported =
-                activityFileIntegrityManager.isApkVeritySupported();
+        boolean applicationApkVeritySupported =
+            applicationFileIntegrityManager.isApkVeritySupported();
+        boolean activityApkVeritySupported = activityFileIntegrityManager.isApkVeritySupported();
 
-            assertThat(activityApkVeritySupported).isEqualTo(applicationApkVeritySupported);
-          });
+        assertThat(activityApkVeritySupported).isEqualTo(applicationApkVeritySupported);
+      });
     }
   }
 }

@@ -274,7 +274,7 @@ public class ShadowNativeSweepGradientTest {
     canvas.drawPaint(paint);
 
     final ColorSpace bitmapColorSpace = bitmap.getColorSpace();
-    Function<Long, Color> convert = (l) -> Color.valueOf(Color.convert(l, bitmapColorSpace));
+    Function<Long, Color> convert = l -> Color.valueOf(Color.convert(l, bitmapColorSpace));
 
     Color lastColor = null;
     double lastAngle = 0;

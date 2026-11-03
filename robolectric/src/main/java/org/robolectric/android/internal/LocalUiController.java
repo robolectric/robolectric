@@ -188,15 +188,14 @@ public class LocalUiController implements UiController {
         // synchronously. The idle callback is synchronized in the resource which avoids a race
         // between registering the idle callback and checking the idle state.
         activeResources.add(resource);
-        resource.notifyOnIdle(
-            () -> {
-              if (Looper.myLooper() == mainLooper) {
-                activeResources.remove(resource);
-              } else {
-                // Post to restart the main thread.
-                handler.post(() -> activeResources.remove(resource));
-              }
-            });
+        resource.notifyOnIdle(() -> {
+          if (Looper.myLooper() == mainLooper) {
+            activeResources.remove(resource);
+          } else {
+            // Post to restart the main thread.
+            handler.post(() -> activeResources.remove(resource));
+          }
+        });
       }
       // If all are idle then just return, we're done.
       if (activeResources.isEmpty() && shadowMainLooper.isIdle()) {

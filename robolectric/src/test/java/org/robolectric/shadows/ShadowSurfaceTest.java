@@ -122,7 +122,7 @@ public class ShadowSurfaceTest {
   public void unlockCanvasAndPost_triggersFrameUpdateInSurfaceTexture() {
     AtomicBoolean listenerCallBackCalled = new AtomicBoolean(false);
 
-    texture.setOnFrameAvailableListener((surfaceTexture) -> listenerCallBackCalled.set(true));
+    texture.setOnFrameAvailableListener(surfaceTexture -> listenerCallBackCalled.set(true));
     Canvas canvas = surface.lockCanvas(new Rect());
     surface.unlockCanvasAndPost(canvas);
     shadowOf(Looper.getMainLooper()).idle();
@@ -135,7 +135,7 @@ public class ShadowSurfaceTest {
   public void unlockCanvasAndPost_triggersFrameUpdateInSurfaceTexture_hardwareCanvas() {
     AtomicBoolean listenerCallBackCalled = new AtomicBoolean(false);
 
-    texture.setOnFrameAvailableListener((surfaceTexture) -> listenerCallBackCalled.set(true));
+    texture.setOnFrameAvailableListener(surfaceTexture -> listenerCallBackCalled.set(true));
     Canvas canvas = surface.lockHardwareCanvas();
     surface.unlockCanvasAndPost(canvas);
     shadowOf(Looper.getMainLooper()).idle();

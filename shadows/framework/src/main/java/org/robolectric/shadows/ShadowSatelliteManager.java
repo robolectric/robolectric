@@ -106,14 +106,13 @@ public class ShadowSatelliteManager {
   protected void requestIsSupported(
       @NonNull @CallbackExecutor Executor executor,
       @NonNull OutcomeReceiver<Boolean, SatelliteException> callback) {
-    executor.execute(
-        () -> {
-          if (isSupportedError.get() != null) {
-            callback.onError(isSupportedError.get());
-          } else {
-            callback.onResult(isSupported.get());
-          }
-        });
+    executor.execute(() -> {
+      if (isSupportedError.get() != null) {
+        callback.onError(isSupportedError.get());
+      } else {
+        callback.onResult(isSupported.get());
+      }
+    });
   }
 
   /**
@@ -133,14 +132,13 @@ public class ShadowSatelliteManager {
   protected void requestIsCommunicationAllowedForCurrentLocation(
       @NonNull @CallbackExecutor Executor executor,
       @NonNull OutcomeReceiver<Boolean, SatelliteException> callback) {
-    executor.execute(
-        () -> {
-          if (isCommunicationAllowedForCurrentLocationError.get() != null) {
-            callback.onError(isCommunicationAllowedForCurrentLocationError.get());
-          } else {
-            callback.onResult(isCommunicationAllowedForCurrentLocation.get());
-          }
-        });
+    executor.execute(() -> {
+      if (isCommunicationAllowedForCurrentLocationError.get() != null) {
+        callback.onError(isCommunicationAllowedForCurrentLocationError.get());
+      } else {
+        callback.onResult(isCommunicationAllowedForCurrentLocation.get());
+      }
+    });
   }
 
   @Implementation
@@ -176,14 +174,13 @@ public class ShadowSatelliteManager {
       @NonNull @CallbackExecutor Executor executor,
       @NonNull
           OutcomeReceiver<List<SatelliteSubscriberProvisionStatus>, SatelliteException> callback) {
-    executor.execute(
-        () -> {
-          if (satelliteSubscriberProvisionStatusError.get() != null) {
-            callback.onError(satelliteSubscriberProvisionStatusError.get());
-          } else {
-            callback.onResult(satelliteSubscriberProvisionStatus.get());
-          }
-        });
+    executor.execute(() -> {
+      if (satelliteSubscriberProvisionStatusError.get() != null) {
+        callback.onError(satelliteSubscriberProvisionStatusError.get());
+      } else {
+        callback.onResult(satelliteSubscriberProvisionStatus.get());
+      }
+    });
   }
 
   @Implementation(minSdk = VERSION_CODES.BAKLAVA)

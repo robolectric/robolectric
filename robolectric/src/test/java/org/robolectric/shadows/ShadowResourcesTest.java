@@ -249,11 +249,10 @@ public class ShadowResourcesTest {
   public void addConfigurationChangeListener_callsOnConfigurationChange() {
     AtomicBoolean listenerWasCalled = new AtomicBoolean();
     shadowOf(resources)
-        .addConfigurationChangeListener(
-            (oldConfig, newConfig, newMetrics) -> {
-              listenerWasCalled.set(true);
-              assertThat(newConfig.fontScale).isEqualTo(oldConfig.fontScale * 2);
-            });
+        .addConfigurationChangeListener((oldConfig, newConfig, newMetrics) -> {
+          listenerWasCalled.set(true);
+          assertThat(newConfig.fontScale).isEqualTo(oldConfig.fontScale * 2);
+        });
 
     Configuration newConfig = new Configuration(resources.getConfiguration());
     newConfig.fontScale *= 2;

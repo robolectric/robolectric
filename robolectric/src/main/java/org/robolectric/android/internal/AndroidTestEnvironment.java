@@ -300,18 +300,17 @@ public class AndroidTestEnvironment implements TestEnvironment {
         reflector(ActivityThreadReflector.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
 
-    return Suppliers.memoize(
-        () ->
-            PerfStatsCollector.getInstance()
-                .measure(
-                    "installAndCreateApplication",
-                    () ->
-                        installAndCreateApplication(
-                            appManifest,
-                            config,
-                            shadowActivityThread,
-                            activityThreadReflector,
-                            activityThread.getInstrumentation())));
+    return Suppliers.memoize(() ->
+        PerfStatsCollector.getInstance()
+            .measure(
+                "installAndCreateApplication",
+                () ->
+                    installAndCreateApplication(
+                        appManifest,
+                        config,
+                        shadowActivityThread,
+                        activityThreadReflector,
+                        activityThread.getInstrumentation())));
   }
 
   private Application installAndCreateApplication(
@@ -562,27 +561,26 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   private Instrumentation createInstrumentation() {
     Instrumentation androidInstrumentation = pickInstrumentation();
-    androidInstrumentation.runOnMainSync(
-        () -> {
-          ActivityThread activityThread = reflector(ActivityThreadReflector.class).newInstance();
-          reflector(ActivityThreadReflector.class)
-              .setMainThreadHandler(new Handler(Looper.getMainLooper()));
-          reflector(ActivityThreadReflector.class, activityThread)
-              .setInstrumentation(androidInstrumentation);
-          RuntimeEnvironment.setActivityThread(activityThread);
+    androidInstrumentation.runOnMainSync(() -> {
+      ActivityThread activityThread = reflector(ActivityThreadReflector.class).newInstance();
+      reflector(ActivityThreadReflector.class)
+          .setMainThreadHandler(new Handler(Looper.getMainLooper()));
+      reflector(ActivityThreadReflector.class, activityThread)
+          .setInstrumentation(androidInstrumentation);
+      RuntimeEnvironment.setActivityThread(activityThread);
 
-          Application dummyInitialApplication = new Application();
-          final ComponentName dummyInitialComponent =
-              new ComponentName("", androidInstrumentation.getClass().getSimpleName());
-          reflector(InstrumentationReflector.class, androidInstrumentation)
-              .init(
-                  activityThread,
-                  dummyInitialApplication,
-                  dummyInitialApplication,
-                  dummyInitialComponent,
-                  null,
-                  null);
-        });
+      Application dummyInitialApplication = new Application();
+      final ComponentName dummyInitialComponent =
+          new ComponentName("", androidInstrumentation.getClass().getSimpleName());
+      reflector(InstrumentationReflector.class, androidInstrumentation)
+          .init(
+              activityThread,
+              dummyInitialApplication,
+              dummyInitialApplication,
+              dummyInitialComponent,
+              null,
+              null);
+    });
 
     androidInstrumentation.onCreate(new Bundle());
     return androidInstrumentation;

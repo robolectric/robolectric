@@ -462,13 +462,12 @@ public class ShadowViewGroupTest {
     // The down event will reset this state (and so we do not need to reset it).
     // The value in getDisallowInterceptTouchEvent() is not in-sync with the flag and
     // only records the last call to requestDisallowInterceptTouchEvent().
-    child3a.setOnTouchListener(
-        (view, event) -> {
-          if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            view.getParent().requestDisallowInterceptTouchEvent(true);
-          }
-          return false;
-        });
+    child3a.setOnTouchListener((view, event) -> {
+      if (event.getAction() == MotionEvent.ACTION_DOWN) {
+        view.getParent().requestDisallowInterceptTouchEvent(true);
+      }
+      return false;
+    });
 
     MotionEvent downEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
     MotionEvent moveEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 0, 0);

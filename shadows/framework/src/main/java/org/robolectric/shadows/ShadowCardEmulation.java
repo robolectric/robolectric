@@ -197,9 +197,8 @@ public class ShadowCardEmulation {
 
   private void triggerNfcEventCallback(Consumer<Object> callbackConsumer) {
     getNfcEventCallbackListeners()
-        .forEach(
-            (callbackObj, executor) ->
-                executor.execute(() -> callbackConsumer.accept(callbackObj)));
+        .forEach((callbackObj, executor) ->
+            executor.execute(() -> callbackConsumer.accept(callbackObj)));
   }
 
   @Resetter

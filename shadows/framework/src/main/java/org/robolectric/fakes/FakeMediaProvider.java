@@ -103,13 +103,12 @@ public final class FakeMediaProvider extends ContentProvider {
     // lazily create the database to avoid the performance hit of loading native sqlite for tests
     // that do not need it
     dbSupplier =
-        Suppliers.memoize(
-            () -> {
-              SQLiteDatabase db = SQLiteDatabase.create(null);
-              db.execSQL(createTableStatement());
-              initialized.set(true);
-              return db;
-            });
+        Suppliers.memoize(() -> {
+          SQLiteDatabase db = SQLiteDatabase.create(null);
+          db.execSQL(createTableStatement());
+          initialized.set(true);
+          return db;
+        });
 
     return true;
   }

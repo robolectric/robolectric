@@ -322,16 +322,15 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     long open(final String path) {
       synchronized (lock) {
         final SQLiteConnection dbConnection =
-            execute(
-                () -> {
-                  SQLiteConnection connection =
-                      useInMemoryDatabase.get() || IN_MEMORY_PATH.equals(path)
-                          ? new SQLiteConnection()
-                          : new SQLiteConnection(new File(path));
+            execute(() -> {
+              SQLiteConnection connection =
+                  useInMemoryDatabase.get() || IN_MEMORY_PATH.equals(path)
+                      ? new SQLiteConnection()
+                      : new SQLiteConnection(new File(path));
 
-                  connection.open();
-                  return connection;
-                });
+              connection.open();
+              return connection;
+            });
 
         final long connectionPtr = pointerCounter.incrementAndGet();
         connectionsMap.put(connectionPtr, dbConnection);
@@ -360,11 +359,10 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     void close(final long connectionPtr) {
       synchronized (lock) {
         final SQLiteConnection connection = getConnection(connectionPtr);
-        execute(
-            () -> {
-              connection.dispose();
-              return null;
-            });
+        execute(() -> {
+          connection.dispose();
+          return null;
+        });
         connectionsMap.remove(connectionPtr);
         statementPtrsForConnection.remove(connectionPtr);
       }
@@ -391,11 +389,10 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         ExecutorService executorService, Collection<SQLiteConnection> connections) {
       for (final SQLiteConnection connection : connections) {
         getFuture(
-            executorService.submit(
-                () -> {
-                  connection.dispose();
-                  return null;
-                }));
+            executorService.submit(() -> {
+              connection.dispose();
+              return null;
+            }));
       }
 
       executorService.shutdown();
@@ -415,11 +412,10 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
         statementsMap.remove(statementPtr);
 
-        execute(
-            () -> {
-              statement.dispose();
-              return null;
-            });
+        execute(() -> {
+          statement.dispose();
+          return null;
+        });
       }
     }
 
@@ -441,11 +437,10 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
           }
         }
 
-        execute(
-            () -> {
-              statement.dispose();
-              return null;
-            });
+        execute(() -> {
+          statement.dispose();
+          return null;
+        });
       }
     }
 
@@ -596,15 +591,14 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         final SQLiteConnection connection = getConnection(connectionPtr);
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-        return execute(
-            () -> {
-              if (statement.step()) {
-                throw new android.database.sqlite.SQLiteException(
-                    "Queries can be performed using SQLiteDatabase query or rawQuery methods"
-                        + " only.");
-              }
-              return connection.getChanges();
-            });
+        return execute(() -> {
+          if (statement.step()) {
+            throw new android.database.sqlite.SQLiteException(
+                "Queries can be performed using SQLiteDatabase query or rawQuery methods"
+                    + " only.");
+          }
+          return connection.getChanges();
+        });
       }
     }
 
@@ -613,11 +607,10 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         final SQLiteConnection connection = getConnection(connectionPtr);
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-        return execute(
-            () -> {
-              statement.stepThrough();
-              return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
-            });
+        return execute(() -> {
+          statement.stepThrough();
+          return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
+        });
       }
     }
 

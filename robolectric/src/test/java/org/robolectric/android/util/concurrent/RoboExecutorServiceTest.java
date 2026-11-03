@@ -64,11 +64,10 @@ public class RoboExecutorServiceTest {
   @Test
   public void submitCallable_shouldRunStuffOnBackgroundThread() throws Exception {
     Future<String> future =
-        executorService.submit(
-            () -> {
-              runnable.run();
-              return "foo";
-            });
+        executorService.submit(() -> {
+          runnable.run();
+          return "foo";
+        });
 
     assertThat(transcript).isEmpty();
     assertThat(future.isDone()).isFalse();

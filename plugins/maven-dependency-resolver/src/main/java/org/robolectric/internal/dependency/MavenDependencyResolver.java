@@ -79,14 +79,13 @@ public class MavenDependencyResolver implements DependencyResolver {
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     List<MavenJarArtifact> artifacts = new ArrayList<>(dependencies.length);
-    whileLocked(
-        () -> {
-          for (DependencyJar dependencyJar : dependencies) {
-            MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
-            artifacts.add(artifact);
-            mavenArtifactFetcher.fetchArtifact(artifact);
-          }
-        });
+    whileLocked(() -> {
+      for (DependencyJar dependencyJar : dependencies) {
+        MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
+        artifacts.add(artifact);
+        mavenArtifactFetcher.fetchArtifact(artifact);
+      }
+    });
     URL[] urls = new URL[dependencies.length];
     try {
       for (int i = 0; i < artifacts.size(); i++) {

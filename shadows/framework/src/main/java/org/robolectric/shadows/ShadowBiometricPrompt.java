@@ -165,20 +165,19 @@ public class ShadowBiometricPrompt {
       this.cancel = cancel;
       this.executor = executor;
 
-      cancel.setOnCancelListener(
-          () -> {
-            boolean isCurrentSession = false;
-            synchronized (lock) {
-              isCurrentSession = this.equals(currentAuthenticateSession);
-              if (isCurrentSession) {
-                currentAuthenticateSession = null;
-              }
-            }
-            if (isCurrentSession) {
-              this.authenticateWithError(
-                  BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "Authentication canceled");
-            }
-          });
+      cancel.setOnCancelListener(() -> {
+        boolean isCurrentSession = false;
+        synchronized (lock) {
+          isCurrentSession = this.equals(currentAuthenticateSession);
+          if (isCurrentSession) {
+            currentAuthenticateSession = null;
+          }
+        }
+        if (isCurrentSession) {
+          this.authenticateWithError(
+              BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "Authentication canceled");
+        }
+      });
     }
 
     private BiometricPrompt getPrompt() {

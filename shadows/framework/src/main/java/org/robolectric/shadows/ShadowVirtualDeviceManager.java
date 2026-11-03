@@ -96,35 +96,33 @@ public class ShadowVirtualDeviceManager {
   @SuppressWarnings("ReturnValueIgnored")
   protected List<VirtualDevice> getVirtualDevices() {
     return mVirtualDevices.stream()
-        .map(
-            virtualDevice -> {
-              VirtualDeviceReflector accessor = reflector(VirtualDeviceReflector.class);
-              String deviceName =
-                  ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getParams().getName();
-              int[] displayIds =
-                  ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getDisplayIds();
-              DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
-                  reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
-              if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
-                return accessor.newInstance(virtualDevice.getDeviceId(), deviceName);
-              } else if (getApiLevel() <= BAKLAVA) {
-                return accessor.newInstanceV(
-                    ReflectionHelpers.createDelegatingProxy(
-                        IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
-                    virtualDevice.getDeviceId(),
-                    virtualDeviceReflector.getPersistentDeviceId(),
-                    deviceName);
-              } else {
-                return accessor.newInstanceC(
-                    ReflectionHelpers.createDelegatingProxy(
-                        IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
-                    virtualDevice.getDeviceId(),
-                    0, /* profile */
-                    virtualDeviceReflector.getPersistentDeviceId(),
-                    deviceName,
-                    deviceName);
-              }
-            })
+        .map(virtualDevice -> {
+          VirtualDeviceReflector accessor = reflector(VirtualDeviceReflector.class);
+          String deviceName =
+              ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getParams().getName();
+          int[] displayIds = ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getDisplayIds();
+          DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
+              reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
+          if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
+            return accessor.newInstance(virtualDevice.getDeviceId(), deviceName);
+          } else if (getApiLevel() <= BAKLAVA) {
+            return accessor.newInstanceV(
+                ReflectionHelpers.createDelegatingProxy(
+                    IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
+                virtualDevice.getDeviceId(),
+                virtualDeviceReflector.getPersistentDeviceId(),
+                deviceName);
+          } else {
+            return accessor.newInstanceC(
+                ReflectionHelpers.createDelegatingProxy(
+                    IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
+                virtualDevice.getDeviceId(),
+                0, /* profile */
+                virtualDeviceReflector.getPersistentDeviceId(),
+                deviceName,
+                deviceName);
+          }
+        })
         .collect(Collectors.toList());
   }
 
@@ -133,11 +131,10 @@ public class ShadowVirtualDeviceManager {
     return mVirtualDevices.stream()
         .filter(virtualDevice -> virtualDevice.getDeviceId() == deviceId)
         .findFirst()
-        .map(
-            virtualDevice ->
-                ((ShadowVirtualDevice) Shadow.extract(virtualDevice))
-                    .getParams()
-                    .getDevicePolicy(policyType))
+        .map(virtualDevice ->
+            ((ShadowVirtualDevice) Shadow.extract(virtualDevice))
+                .getParams()
+                .getDevicePolicy(policyType))
         .orElse(VirtualDeviceParams.DEVICE_POLICY_DEFAULT);
   }
 
@@ -235,15 +232,14 @@ public class ShadowVirtualDeviceManager {
       }
 
       return params.getVirtualSensorConfigs().stream()
-          .map(
-              config -> {
-                VirtualSensor sensor =
-                    new VirtualSensor(
-                        config.hashCode(), config.getType(), config.getName(), null, null);
-                ShadowVirtualSensor shadowSensor = Shadow.extract(sensor);
-                shadowSensor.setDeviceId(deviceId);
-                return sensor;
-              })
+          .map(config -> {
+            VirtualSensor sensor =
+                new VirtualSensor(
+                    config.hashCode(), config.getType(), config.getName(), null, null);
+            ShadowVirtualSensor shadowSensor = Shadow.extract(sensor);
+            shadowSensor.setDeviceId(deviceId);
+            return sensor;
+          })
           .collect(Collectors.toList());
     }
 

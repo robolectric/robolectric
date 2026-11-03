@@ -80,19 +80,18 @@ public class ShadowWindowManagerGlobalTest {
     protected void onCreate(@Nullable Bundle bundle) {
       super.onCreate(bundle);
       View contentView = new View(this);
-      contentView.setOnTouchListener(
-          (view, motionEvent) -> {
-            if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
-              ClipData clipData = ClipData.newPlainText("label", "text");
-              DragShadowBuilder dragShadowBuilder = new DragShadowBuilder(view);
-              if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.N) {
-                view.startDragAndDrop(clipData, dragShadowBuilder, null, 0);
-              } else {
-                view.startDrag(clipData, dragShadowBuilder, null, 0);
-              }
-            }
-            return true;
-          });
+      contentView.setOnTouchListener((view, motionEvent) -> {
+        if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
+          ClipData clipData = ClipData.newPlainText("label", "text");
+          DragShadowBuilder dragShadowBuilder = new DragShadowBuilder(view);
+          if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.N) {
+            view.startDragAndDrop(clipData, dragShadowBuilder, null, 0);
+          } else {
+            view.startDrag(clipData, dragShadowBuilder, null, 0);
+          }
+        }
+        return true;
+      });
       setContentView(contentView);
     }
   }

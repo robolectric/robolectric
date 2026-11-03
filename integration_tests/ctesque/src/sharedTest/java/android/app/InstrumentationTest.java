@@ -30,14 +30,13 @@ public final class InstrumentationTest {
 
     mainHandler.post(() -> events.add("before runOnMainSync"));
     getInstrumentation()
-        .runOnMainSync(
-            () -> {
-              events.add("in runOnMainSync");
-              // as expected, on device tests become flaky and fail deterministically on
-              // Robolectric with this line, as runOnMainSync does not drain the main looper
-              // after runnable executes
-              // mainHandler.post(() -> events.add("post from runOnMainSync"));
-            });
+        .runOnMainSync(() -> {
+          events.add("in runOnMainSync");
+          // as expected, on device tests become flaky and fail deterministically on
+          // Robolectric with this line, as runOnMainSync does not drain the main looper
+          // after runnable executes
+          // mainHandler.post(() -> events.add("post from runOnMainSync"));
+        });
 
     assertThat(events).containsExactly("before runOnMainSync", "in runOnMainSync").inOrder();
   }
@@ -48,9 +47,8 @@ public final class InstrumentationTest {
         IllegalStateException.class,
         () ->
             getInstrumentation()
-                .runOnMainSync(
-                    () -> {
-                      throw new IllegalStateException("test");
-                    }));
+                .runOnMainSync(() -> {
+                  throw new IllegalStateException("test");
+                }));
   }
 }

@@ -233,14 +233,13 @@ public class ShadowLegacyLooperTest {
   public void resetThreadLoopers_fromNonMainThread_doesNotThrow() throws InterruptedException {
     final AtomicReference<Throwable> ex = new AtomicReference<>();
     Thread t =
-        new Thread(
-            () -> {
-              try {
-                ShadowLooper.resetThreadLoopers();
-              } catch (Throwable t1) {
-                ex.set(t1);
-              }
-            });
+        new Thread(() -> {
+          try {
+            ShadowLooper.resetThreadLoopers();
+          } catch (Throwable t1) {
+            ex.set(t1);
+          }
+        });
     t.start();
     t.join();
     assertThat(ex.get()).isNull();

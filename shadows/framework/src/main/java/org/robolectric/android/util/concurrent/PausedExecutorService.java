@@ -76,11 +76,10 @@ public class PausedExecutorService extends AbstractExecutorService {
 
   public PausedExecutorService() {
     this.realService =
-        Executors.newSingleThreadExecutor(
-            r -> {
-              executorThread = new Thread(r);
-              return executorThread;
-            });
+        Executors.newSingleThreadExecutor(r -> {
+          executorThread = new Thread(r);
+          return executorThread;
+        });
   }
 
   /**

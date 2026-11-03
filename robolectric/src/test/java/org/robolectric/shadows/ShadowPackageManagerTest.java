@@ -879,7 +879,7 @@ public class ShadowPackageManagerTest {
     packageManager.getGroupOfPlatformPermission(
         "org.robolectric.some_permission",
         context.getMainExecutor(),
-        (group) -> permissionGroupArg[0] = group);
+        group -> permissionGroupArg[0] = group);
     shadowMainLooper().idle();
 
     assertThat(permissionGroupArg[0]).isNull();
@@ -897,7 +897,7 @@ public class ShadowPackageManagerTest {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
-        permissionName, context.getMainExecutor(), (group) -> permissionGroupArg[0] = group);
+        permissionName, context.getMainExecutor(), group -> permissionGroupArg[0] = group);
     shadowMainLooper().idle();
 
     assertThat(permissionGroupArg[0]).isNull();
@@ -915,7 +915,7 @@ public class ShadowPackageManagerTest {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
-        permissionName, context.getMainExecutor(), (group) -> permissionGroupArg[0] = group);
+        permissionName, context.getMainExecutor(), group -> permissionGroupArg[0] = group);
     shadowMainLooper().idle();
 
     assertThat(permissionGroupArg[0]).isEqualTo(permissionGroupName);
@@ -927,7 +927,7 @@ public class ShadowPackageManagerTest {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
-        "unknown_permission", context.getMainExecutor(), (group) -> permissionGroupArg[0] = group);
+        "unknown_permission", context.getMainExecutor(), group -> permissionGroupArg[0] = group);
     shadowMainLooper().idle();
 
     assertThat(permissionGroupArg[0]).isNull();
@@ -939,7 +939,7 @@ public class ShadowPackageManagerTest {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
-        READ_CONTACTS, context.getMainExecutor(), (group) -> permissionGroupArg[0] = group);
+        READ_CONTACTS, context.getMainExecutor(), group -> permissionGroupArg[0] = group);
     shadowMainLooper().idle();
 
     assertThat(permissionGroupArg[0]).isEqualTo(permission_group.CONTACTS);
@@ -955,7 +955,7 @@ public class ShadowPackageManagerTest {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
-        READ_CONTACTS, context.getMainExecutor(), (group) -> permissionGroupArg[0] = group);
+        READ_CONTACTS, context.getMainExecutor(), group -> permissionGroupArg[0] = group);
     shadowMainLooper().idle();
 
     assertThat(permissionGroupArg[0]).isEqualTo(permission_group.CALENDAR);

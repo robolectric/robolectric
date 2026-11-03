@@ -115,23 +115,21 @@ public final class RobolectricTestParameterInjector extends RobolectricTestRunne
     return methods.stream()
         .map(RobolectricFrameworkMethod.class::cast)
         .map(Objects::requireNonNull)
-        .flatMap(
-            robolectricFrameworkMethod -> {
-              List<FrameworkMethod> injectedMethods =
-                  injectedMethodsGetter.apply(robolectricFrameworkMethod);
-              if (injectedMethods == null) {
-                // This should not happen if computeTestMethods preserves methods
-                return IntStream.empty().mapToObj(unused -> null); // Empty stream
-              }
+        .flatMap(robolectricFrameworkMethod -> {
+          List<FrameworkMethod> injectedMethods =
+              injectedMethodsGetter.apply(robolectricFrameworkMethod);
+          if (injectedMethods == null) {
+            // This should not happen if computeTestMethods preserves methods
+            return IntStream.empty().mapToObj(unused -> null); // Empty stream
+          }
 
-              // We rely on the order of injected methods being deterministic
-              AtomicInteger index = new AtomicInteger(0);
-              return injectedMethods.stream()
-                  .map(
-                      injected ->
-                          new RobolectricInjectedFrameworkMethod(
-                              robolectricFrameworkMethod, injected, index.getAndIncrement()));
-            })
+          // We rely on the order of injected methods being deterministic
+          AtomicInteger index = new AtomicInteger(0);
+          return injectedMethods.stream()
+              .map(injected ->
+                  new RobolectricInjectedFrameworkMethod(
+                      robolectricFrameworkMethod, injected, index.getAndIncrement()));
+        })
         .filter(Objects::nonNull)
         .collect(toImmutableList());
   }

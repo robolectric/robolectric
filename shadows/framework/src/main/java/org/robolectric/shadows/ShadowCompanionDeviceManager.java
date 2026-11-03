@@ -98,9 +98,8 @@ public class ShadowCompanionDeviceManager {
   protected void disassociate(String deviceMacAddress) {
     RoboAssociationInfo associationInfo =
         associations.stream()
-            .filter(
-                association ->
-                    Ascii.equalsIgnoreCase(deviceMacAddress, association.deviceMacAddress()))
+            .filter(association ->
+                Ascii.equalsIgnoreCase(deviceMacAddress, association.deviceMacAddress()))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Association does not exist"));
     associations.remove(associationInfo);
@@ -436,10 +435,9 @@ public class ShadowCompanionDeviceManager {
     // This performs a linear search for the sake of implementation simplicity, since performance is
     // usually not critical in Robolectric tests.
     messageListenerRecords.stream()
-        .filter(
-            record ->
-                record.messageType == messageType
-                    && Ints.contains(associationIds, record.receiverAssociationId))
+        .filter(record ->
+            record.messageType == messageType
+                && Ints.contains(associationIds, record.receiverAssociationId))
         .forEach(record -> record.executor.execute(() -> record.listener.accept(senderId, data)));
   }
 

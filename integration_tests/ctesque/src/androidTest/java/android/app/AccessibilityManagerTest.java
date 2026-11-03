@@ -24,28 +24,25 @@ public class AccessibilityManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.ACCESSIBILITY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AccessibilityManager activityAccessibilityManager =
-                (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
-            assertThat(applicationAccessibilityManager)
-                .isSameInstanceAs(activityAccessibilityManager);
-          });
+      scenario.onActivity(activity -> {
+        AccessibilityManager activityAccessibilityManager =
+            (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        assertThat(applicationAccessibilityManager).isSameInstanceAs(activityAccessibilityManager);
+      });
     }
   }
 
   @Test
   public void accessibilityManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AccessibilityManager activityAccessibilityManager =
-                (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
-            AccessibilityManager anotherActivityAccessibilityManager =
-                (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
-            assertThat(anotherActivityAccessibilityManager)
-                .isSameInstanceAs(activityAccessibilityManager);
-          });
+      scenario.onActivity(activity -> {
+        AccessibilityManager activityAccessibilityManager =
+            (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        AccessibilityManager anotherActivityAccessibilityManager =
+            (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        assertThat(anotherActivityAccessibilityManager)
+            .isSameInstanceAs(activityAccessibilityManager);
+      });
     }
   }
 
@@ -56,18 +53,17 @@ public class AccessibilityManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.ACCESSIBILITY_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            AccessibilityManager activityAccessibilityManager =
-                (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
+      scenario.onActivity(activity -> {
+        AccessibilityManager activityAccessibilityManager =
+            (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
-            List<AccessibilityServiceInfo> applicationServices =
-                applicationAccessibilityManager.getInstalledAccessibilityServiceList();
-            List<AccessibilityServiceInfo> activityServices =
-                activityAccessibilityManager.getInstalledAccessibilityServiceList();
+        List<AccessibilityServiceInfo> applicationServices =
+            applicationAccessibilityManager.getInstalledAccessibilityServiceList();
+        List<AccessibilityServiceInfo> activityServices =
+            activityAccessibilityManager.getInstalledAccessibilityServiceList();
 
-            assertThat(activityServices).isEqualTo(applicationServices);
-          });
+        assertThat(activityServices).isEqualTo(applicationServices);
+      });
     }
   }
 }

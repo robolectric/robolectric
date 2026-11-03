@@ -28,11 +28,10 @@ public class PausedExecutorServiceTest {
   @Test
   public void executionRunsInBackgroundThread() {
     final Thread testThread = Thread.currentThread();
-    executorService.execute(
-        () -> {
-          assertThat(Thread.currentThread()).isNotSameInstanceAs(testThread);
-          executedTasksRecord.add("task ran");
-        });
+    executorService.execute(() -> {
+      assertThat(Thread.currentThread()).isNotSameInstanceAs(testThread);
+      executedTasksRecord.add("task ran");
+    });
     executorService.runAll();
     assertThat(executedTasksRecord).containsExactly("task ran");
   }
@@ -100,11 +99,10 @@ public class PausedExecutorServiceTest {
   public void submitCallable() throws Exception {
     Runnable runnable = () -> executedTasksRecord.add("background event ran");
     Future<String> future =
-        executorService.submit(
-            () -> {
-              runnable.run();
-              return "foo";
-            });
+        executorService.submit(() -> {
+          runnable.run();
+          return "foo";
+        });
     executorService.runAll();
 
     assertThat(executedTasksRecord).containsExactly("background event ran");

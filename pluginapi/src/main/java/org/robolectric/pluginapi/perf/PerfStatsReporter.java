@@ -21,5 +21,4 @@ public interface PerfStatsReporter {
    * to {@link #report}.
    */
   default void finalReport() {}
-  ;
 }

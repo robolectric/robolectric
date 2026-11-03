@@ -300,11 +300,10 @@ class QualifierParser {
 
     if (partIter.hasNext()) {
       StringBuilder sb = new StringBuilder();
-      partIter.forEachRemaining(
-          s -> {
-            sb.append(s);
-            sb.append(", ");
-          });
+      partIter.forEachRemaining(s -> {
+        sb.append(s);
+        sb.append(", ");
+      });
       throwParseError(qualifierString, "Found unrecognized trailing qualifier segments " + sb);
     }
 

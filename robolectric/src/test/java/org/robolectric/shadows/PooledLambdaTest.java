@@ -29,7 +29,7 @@ public final class PooledLambdaTest {
   public void obtainMessage() throws Exception {
     Handler mainHandler = new Handler(Looper.getMainLooper());
     AtomicBoolean called = new AtomicBoolean(false);
-    Message msg = PooledLambda.obtainMessage((state) -> state.set(true), called);
+    Message msg = PooledLambda.obtainMessage(state -> state.set(true), called);
     mainHandler.sendMessage(msg);
     ShadowLooper.idleMainLooper();
     assertThat(called.get()).isTrue();

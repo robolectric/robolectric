@@ -1319,20 +1319,18 @@ public class CppAssetManager2 {
                       };
 
                   // Create the filters here.
-                  impl.loaded_package_.ForEachTypeSpec(
-                      (TypeSpec spec, byte type_index) -> {
-                        FilteredConfigGroup configGroup =
-                            impl.filtered_configs_.editItemAt(type_index);
-                        // const auto iter_end = spec->types + spec->type_count;
-                        //   for (auto iter = spec->types; iter != iter_end; ++iter) {
-                        for (ResTable_type iter : spec.types) {
-                          if (iter.config.match(configuration_)) {
-                            ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
-                            configGroup.configurations.add(this_config);
-                            configGroup.types.add(iter);
-                          }
-                        }
-                      });
+                  impl.loaded_package_.ForEachTypeSpec((TypeSpec spec, byte type_index) -> {
+                    FilteredConfigGroup configGroup = impl.filtered_configs_.editItemAt(type_index);
+                    // const auto iter_end = spec->types + spec->type_count;
+                    //   for (auto iter = spec->types; iter != iter_end; ++iter) {
+                    for (ResTable_type iter : spec.types) {
+                      if (iter.config.match(configuration_)) {
+                        ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
+                        configGroup.configurations.add(this_config);
+                        configGroup.types.add(iter);
+                      }
+                    }
+                  });
                 }
               }
             });

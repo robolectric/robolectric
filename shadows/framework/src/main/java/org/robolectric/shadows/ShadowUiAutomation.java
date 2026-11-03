@@ -98,29 +98,27 @@ public class ShadowUiAutomation {
   @Implementation
   protected boolean setRotation(int rotation) {
     AtomicBoolean result = new AtomicBoolean(false);
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          if (rotation == UiAutomation.ROTATION_FREEZE_CURRENT
-              || rotation == UiAutomation.ROTATION_UNFREEZE) {
-            result.set(true);
-            return;
-          }
-          Display display = ShadowDisplay.getDefaultDisplay();
-          int currentRotation = display.getRotation();
-          boolean isRotated =
-              (rotation == ROTATION_FREEZE_0 || rotation == ROTATION_FREEZE_180)
-                  != (currentRotation == ROTATION_FREEZE_0
-                      || currentRotation == ROTATION_FREEZE_180);
-          shadowOf(display).setRotation(rotation);
-          if (isRotated) {
-            int currentOrientation = Resources.getSystem().getConfiguration().orientation;
-            String rotationQualifier =
-                "+" + (currentOrientation == Configuration.ORIENTATION_PORTRAIT ? "land" : "port");
-            ShadowDisplayManager.changeDisplay(display.getDisplayId(), rotationQualifier);
-            RuntimeEnvironment.setQualifiers(rotationQualifier);
-          }
-          result.set(true);
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      if (rotation == UiAutomation.ROTATION_FREEZE_CURRENT
+          || rotation == UiAutomation.ROTATION_UNFREEZE) {
+        result.set(true);
+        return;
+      }
+      Display display = ShadowDisplay.getDefaultDisplay();
+      int currentRotation = display.getRotation();
+      boolean isRotated =
+          (rotation == ROTATION_FREEZE_0 || rotation == ROTATION_FREEZE_180)
+              != (currentRotation == ROTATION_FREEZE_0 || currentRotation == ROTATION_FREEZE_180);
+      shadowOf(display).setRotation(rotation);
+      if (isRotated) {
+        int currentOrientation = Resources.getSystem().getConfiguration().orientation;
+        String rotationQualifier =
+            "+" + (currentOrientation == Configuration.ORIENTATION_PORTRAIT ? "land" : "port");
+        ShadowDisplayManager.changeDisplay(display.getDisplayId(), rotationQualifier);
+        RuntimeEnvironment.setQualifiers(rotationQualifier);
+      }
+      result.set(true);
+    });
     return result.get();
   }
 
@@ -146,43 +144,42 @@ public class ShadowUiAutomation {
     }
 
     FutureTask<Bitmap> screenshotTask =
-        new FutureTask<>(
-            () -> {
-              List<Root> visibleRoots =
-                  getViewRoots().reverse().stream().filter(IS_VISIBLE).collect(toList());
-              Point displaySize = new Point();
-              ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
-              Bitmap screenshot =
-                  Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
+        new FutureTask<>(() -> {
+          List<Root> visibleRoots =
+              getViewRoots().reverse().stream().filter(IS_VISIBLE).collect(toList());
+          Point displaySize = new Point();
+          ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
+          Bitmap screenshot =
+              Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
 
-              if (visibleRoots.isEmpty()) {
-                // short circuit, nothing to do
-                return screenshot;
-              } else if (visibleRoots.size() == 1
-                  && visibleRoots.getFirst().getRootView().getWidth() == displaySize.x
-                  && visibleRoots.getFirst().getRootView().getHeight() == displaySize.y) {
-                // optimized path - there is only a single full screen window. Just draw into
-                // screenshot and return
-                drawIntoBitmap(screenshot, visibleRoots.getFirst());
-                return screenshot;
-              }
+          if (visibleRoots.isEmpty()) {
+            // short circuit, nothing to do
+            return screenshot;
+          } else if (visibleRoots.size() == 1
+              && visibleRoots.getFirst().getRootView().getWidth() == displaySize.x
+              && visibleRoots.getFirst().getRootView().getHeight() == displaySize.y) {
+            // optimized path - there is only a single full screen window. Just draw into
+            // screenshot and return
+            drawIntoBitmap(screenshot, visibleRoots.getFirst());
+            return screenshot;
+          }
 
-              // multiple windows, draw them independently
-              Canvas screenshotCanvas = new Canvas(screenshot);
-              Paint paint = new Paint();
-              for (Root root : visibleRoots) {
-                Bitmap window =
-                    Bitmap.createBitmap(
-                        root.getRootView().getWidth(),
-                        root.getRootView().getHeight(),
-                        Bitmap.Config.ARGB_8888);
-                drawIntoBitmap(window, root);
-                screenshotCanvas.drawBitmap(
-                    window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
-                window.recycle();
-              }
-              return screenshot;
-            });
+          // multiple windows, draw them independently
+          Canvas screenshotCanvas = new Canvas(screenshot);
+          Paint paint = new Paint();
+          for (Root root : visibleRoots) {
+            Bitmap window =
+                Bitmap.createBitmap(
+                    root.getRootView().getWidth(),
+                    root.getRootView().getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            drawIntoBitmap(window, root);
+            screenshotCanvas.drawBitmap(
+                window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
+            window.recycle();
+          }
+          return screenshot;
+        });
 
     ShadowInstrumentation.runOnMainSyncNoIdle(screenshotTask);
     return screenshotTask.get();
@@ -220,16 +217,15 @@ public class ShadowUiAutomation {
    */
   public static boolean injectInputEvent(InputEvent event) {
     AtomicBoolean result = new AtomicBoolean(false);
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          if (event instanceof MotionEvent) {
-            result.set(injectMotionEvent((MotionEvent) event));
-          } else if (event instanceof KeyEvent) {
-            result.set(injectKeyEvent((KeyEvent) event));
-          } else {
-            throw new IllegalArgumentException("Unrecognized event type: " + event);
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      if (event instanceof MotionEvent) {
+        result.set(injectMotionEvent((MotionEvent) event));
+      } else if (event instanceof KeyEvent) {
+        result.set(injectKeyEvent((KeyEvent) event));
+      } else {
+        throw new IllegalArgumentException("Unrecognized event type: " + event);
+      }
+    });
     return result.get();
   }
 
@@ -345,12 +341,11 @@ public class ShadowUiAutomation {
 
   private static Set<IBinder> getStartedActivityTokens() {
     Set<Activity> startedActivities = newConcurrentHashSet();
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
-          startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
-          startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
+      startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
+      startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
+    });
 
     return startedActivities.stream()
         .map(activity -> activity.getWindow().getDecorView().getApplicationWindowToken())

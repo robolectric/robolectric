@@ -150,16 +150,15 @@ final class LooperControlService {
   //
   void unpause() {
     checkState(looper != getMainLooper() || looperMode() == Mode.INSTRUMENTATION_TEST);
-    executeControlTask(
-        () -> {
-          synchronized (lock) {
-            checkState(
-                state != State.SHUTDOWN,
-                "unpause of %s failed: Looper is shutdown",
-                Thread.currentThread().getName());
-            state = State.UNPAUSED;
-          }
-        });
+    executeControlTask(() -> {
+      synchronized (lock) {
+        checkState(
+            state != State.SHUTDOWN,
+            "unpause of %s failed: Looper is shutdown",
+            Thread.currentThread().getName());
+        state = State.UNPAUSED;
+      }
+    });
   }
 
   void executeControlTask(Runnable runnable) {

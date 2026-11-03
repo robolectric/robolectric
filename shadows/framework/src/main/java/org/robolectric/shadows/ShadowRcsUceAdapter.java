@@ -89,10 +89,9 @@ public class ShadowRcsUceAdapter {
         executor.execute(
             () -> c.onCapabilitiesReceived(ImmutableList.of(capabilitiesMap.get(contact))));
       } else {
-        executor.execute(
-            () ->
-                c.onCapabilitiesReceived(
-                    ImmutableList.of(new RcsContactUceCapability.OptionsBuilder(contact).build())));
+        executor.execute(() ->
+            c.onCapabilitiesReceived(
+                ImmutableList.of(new RcsContactUceCapability.OptionsBuilder(contact).build())));
       }
     }
     if (completedSuccessfully) {

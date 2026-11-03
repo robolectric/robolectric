@@ -37,13 +37,11 @@ public class TranslationManagerTest {
         application.getSystemService(TranslationManager.class);
     assertThat(applicationTranslationManager).isNotNull();
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TranslationManager activityTranslationManager =
-                activity.getSystemService(TranslationManager.class);
-            assertThat(applicationTranslationManager)
-                .isNotSameInstanceAs(activityTranslationManager);
-          });
+      scenario.onActivity(activity -> {
+        TranslationManager activityTranslationManager =
+            activity.getSystemService(TranslationManager.class);
+        assertThat(applicationTranslationManager).isNotSameInstanceAs(activityTranslationManager);
+      });
     }
   }
 
@@ -51,15 +49,13 @@ public class TranslationManagerTest {
   public void translationManager_activityInstance_isSameAsActivityInstance() {
     assumeTrue(hasTranslationManager);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TranslationManager activityTranslationManager =
-                activity.getSystemService(TranslationManager.class);
-            TranslationManager anotherActivityTranslationManager =
-                activity.getSystemService(TranslationManager.class);
-            assertThat(anotherActivityTranslationManager)
-                .isSameInstanceAs(activityTranslationManager);
-          });
+      scenario.onActivity(activity -> {
+        TranslationManager activityTranslationManager =
+            activity.getSystemService(TranslationManager.class);
+        TranslationManager anotherActivityTranslationManager =
+            activity.getSystemService(TranslationManager.class);
+        assertThat(anotherActivityTranslationManager).isSameInstanceAs(activityTranslationManager);
+      });
     }
   }
 
@@ -69,18 +65,17 @@ public class TranslationManagerTest {
     TranslationManager applicationTranslationManager =
         application.getSystemService(TranslationManager.class);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TranslationManager activityTranslationManager =
-                activity.getSystemService(TranslationManager.class);
+      scenario.onActivity(activity -> {
+        TranslationManager activityTranslationManager =
+            activity.getSystemService(TranslationManager.class);
 
-            Set<TranslationCapability> applicationCapabilities =
-                applicationTranslationManager.getOnDeviceTranslationCapabilities(1, 2);
-            Set<TranslationCapability> activityCapabilities =
-                activityTranslationManager.getOnDeviceTranslationCapabilities(1, 2);
+        Set<TranslationCapability> applicationCapabilities =
+            applicationTranslationManager.getOnDeviceTranslationCapabilities(1, 2);
+        Set<TranslationCapability> activityCapabilities =
+            activityTranslationManager.getOnDeviceTranslationCapabilities(1, 2);
 
-            assertThat(activityCapabilities).isEqualTo(applicationCapabilities);
-          });
+        assertThat(activityCapabilities).isEqualTo(applicationCapabilities);
+      });
     }
   }
 }

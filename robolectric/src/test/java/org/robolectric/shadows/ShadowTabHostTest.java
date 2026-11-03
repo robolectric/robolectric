@@ -116,12 +116,11 @@ public class ShadowTabHostTest {
     TabHost.TabSpec foo =
         tabHost
             .newTabSpec("Foo")
-            .setContent(
-                tag -> {
-                  TextView tv = new TextView(context);
-                  tv.setText("The Text of " + tag);
-                  return tv;
-                });
+            .setContent(tag -> {
+              TextView tv = new TextView(context);
+              tv.setText("The Text of " + tag);
+              return tv;
+            });
 
     tabHost.addTab(foo);
     tabHost.setCurrentTabByTag("Foo");

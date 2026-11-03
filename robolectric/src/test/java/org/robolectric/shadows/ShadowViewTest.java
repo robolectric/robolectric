@@ -481,11 +481,10 @@ public class ShadowViewTest {
   @Test
   public void dispatchTouchEvent_listensToFalseFromListener() {
     final AtomicBoolean called = new AtomicBoolean(false);
-    view.setOnTouchListener(
-        (view, motionEvent) -> {
-          called.set(true);
-          return false;
-        });
+    view.setOnTouchListener((view, motionEvent) -> {
+      called.set(true);
+      return false;
+    });
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     view.dispatchTouchEvent(event);
     assertThat(shadowOf(view).getLastTouchEvent()).isSameInstanceAs(event);

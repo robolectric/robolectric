@@ -152,9 +152,8 @@ public class ShadowAppWidgetManager {
       String packageName, UserHandle profile) {
     return ImmutableList.copyOf(
         installedProvidersForProfile.get(profile).stream()
-            .filter(
-                (AppWidgetProviderInfo providerInfo) ->
-                    providerInfo.provider.getPackageName().equals(packageName))
+            .filter((AppWidgetProviderInfo providerInfo) ->
+                providerInfo.provider.getPackageName().equals(packageName))
             .collect(Collectors.toList()));
   }
 

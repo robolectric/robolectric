@@ -230,11 +230,10 @@ public class ShadowHandlerTest {
     ShadowLooper.pauseMainLooper();
     final List<Integer> order = new ArrayList<>();
     final Handler h = new Handler();
-    h.post(
-        () -> {
-          order.add(1);
-          h.post(() -> order.add(3));
-        });
+    h.post(() -> {
+      order.add(1);
+      h.post(() -> order.add(3));
+    });
     h.post(() -> order.add(2));
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     assertThat(order).containsExactly(1, 2, 3);
@@ -500,11 +499,10 @@ public class ShadowHandlerTest {
   public void shouldSetWhenOnMessage() {
     final List<Long> whens = new ArrayList<>();
     Handler h =
-        new Handler(
-            msg -> {
-              whens.add(msg.getWhen());
-              return false;
-            });
+        new Handler(msg -> {
+          whens.add(msg.getWhen());
+          return false;
+        });
 
     final long startTime = Robolectric.getForegroundThreadScheduler().getCurrentTime();
     h.sendEmptyMessage(0);

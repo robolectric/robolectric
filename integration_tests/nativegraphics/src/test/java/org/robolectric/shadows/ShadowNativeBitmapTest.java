@@ -1662,21 +1662,19 @@ public class ShadowNativeBitmapTest {
   @Test
   @Ignore("TODO(b/hoisie): re-enable when HW bitmaps are better supported")
   public void testCreateScaledFromHWInStrictMode() {
-    strictModeTest(
-        () -> {
-          Bitmap bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
-          Bitmap hwBitmap = bitmap.copy(Config.HARDWARE, false);
-          Bitmap.createScaledBitmap(hwBitmap, 200, 200, false);
-        });
+    strictModeTest(() -> {
+      Bitmap bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
+      Bitmap hwBitmap = bitmap.copy(Config.HARDWARE, false);
+      Bitmap.createScaledBitmap(hwBitmap, 200, 200, false);
+    });
   }
 
   @Test
   public void testCompressInStrictMode() {
-    strictModeTest(
-        () -> {
-          Bitmap bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
-          bitmap.compress(CompressFormat.JPEG, 90, new ByteArrayOutputStream());
-        });
+    strictModeTest(() -> {
+      Bitmap bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
+      bitmap.compress(CompressFormat.JPEG, 90, new ByteArrayOutputStream());
+    });
   }
 
   @Test
@@ -1689,12 +1687,11 @@ public class ShadowNativeBitmapTest {
   @Ignore("TODO(b/hoisie): re-enable when HW bitmaps are better supported")
   @Test
   public void testParcelHWInStrictMode() {
-    strictModeTest(
-        () -> {
-          bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
-          Bitmap hwBitmap = bitmap.copy(Config.HARDWARE, false);
-          hwBitmap.writeToParcel(Parcel.obtain(), 0);
-        });
+    strictModeTest(() -> {
+      bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
+      Bitmap hwBitmap = bitmap.copy(Config.HARDWARE, false);
+      hwBitmap.writeToParcel(Parcel.obtain(), 0);
+    });
   }
 
   @Test
