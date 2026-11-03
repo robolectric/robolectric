@@ -1591,15 +1591,15 @@ public class ShadowPackageManager {
       }
       if (o1.preferredOrder != o2.preferredOrder) {
         // higher priority is before lower
-        return -Integer.compare(o1.preferredOrder, o2.preferredOrder);
+        return Integer.compare(o2.preferredOrder, o1.preferredOrder);
       }
       if (o1.priority != o2.priority) {
         // higher priority is before lower
-        return -Integer.compare(o1.priority, o2.priority);
+        return Integer.compare(o2.priority, o1.priority);
       }
       if (o1.match != o2.match) {
         // higher match is before lower
-        return -Integer.compare(o1.match, o2.match);
+        return Integer.compare(o2.match, o1.match);
       }
       return 0;
     }
