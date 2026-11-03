@@ -1,3 +1,4 @@
+import com.android.build.api.variant.HostTestBuilder
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -31,6 +32,9 @@ androidComponents {
   beforeVariants { variantBuilder ->
     // composeui does not support AndroidTest now.
     variantBuilder.enableAndroidTest = false
+    if (variantBuilder.buildType == "release") {
+      variantBuilder.hostTests.getValue(HostTestBuilder.UNIT_TEST_TYPE).enable = true
+    }
   }
 }
 
