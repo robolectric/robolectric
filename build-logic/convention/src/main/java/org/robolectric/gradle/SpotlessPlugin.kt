@@ -12,7 +12,7 @@ class SpotlessPlugin : Plugin<Project> {
     project.extensions.configure<SpotlessExtension> {
       // Add configuration for Java files
       java {
-        googleJavaFormat("1.36.1")
+        googleJavaFormat("2.0.0")
         target("**/*.java")
         targetExclude(
           "processor/src/test/resources/org/robolectric/**/*.java",
