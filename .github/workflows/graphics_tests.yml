@@ -26,8 +26,23 @@ jobs:
           macos-26-intel, # Tests Mac x86_64
           macos-latest, # Tests Mac arm64
           ubuntu-latest, # Tests Linux x86_64
+          ubuntu-24.04-arm, # Tests Linux arm64
           windows-latest, # Tests Windows x86_64
         ]
+        include:
+          # nativeruntime-dist-compat has a Linux arm64 library for O through U. From V, the
+          # native runtime comes from the android-all jars, which only have a Linux x86_64
+          # library, so only the native graphics tests run, on every SDK from O through U.
+          # TODO: add more SDK levels as the android-all jars for SDK 35 and above are
+          #  republished to include Linux arm64 native runtime libraries.
+          - device: ubuntu-24.04-arm
+            setup-android-sdk: true
+            # A test without an SDK in its @Config only runs on the target SDK. A minSdk
+            # default runs each test on every SDK from it, and enabledSdks keeps the ones
+            # up to U.
+            nativegraphics-min-sdk: 26
+            gradle-tasks: ':integration_tests:nativegraphics:testDebugUnitTest'
+            gradle-args: '"-Drobolectric.enabledSdks=26,27,28,29,30,31,32,33,34"'
 
     name: Graphics Tests
     runs-on: ${{ matrix.device }}
@@ -45,16 +60,30 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      # Arm's ubuntu-24.04-arm image omits the Android SDK that the x86_64 images include.
+      - name: Set up Android SDK
+        if: matrix.setup-android-sdk
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36'
+
+      - name: Set the default minSdk of the native graphics tests
+        if: matrix.nativegraphics-min-sdk
+        run: |
+          mkdir -p integration_tests/nativegraphics/src/test/resources
+          echo "minSdk=${{ matrix.nativegraphics-min-sdk }}" \
+            > integration_tests/nativegraphics/src/test/resources/robolectric.properties
+
       - name: Run unit tests
         env:
           SKIP_ERRORPRONE: true
           SKIP_JAVADOC: true
         run: >
           ./gradlew
-          :integration_tests:nativegraphics:testDebugUnitTest
-          :integration_tests:roborazzi:verifyRoborazziDebug
+          ${{ matrix.gradle-tasks || ':integration_tests:nativegraphics:testDebugUnitTest :integration_tests:roborazzi:verifyRoborazziDebug' }}
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
+          ${{ matrix.gradle-args }}
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7

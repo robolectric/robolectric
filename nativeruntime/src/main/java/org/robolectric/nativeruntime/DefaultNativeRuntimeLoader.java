@@ -609,7 +609,11 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private static boolean isSupported() {
     return (OsUtil.isMac()
             && (Objects.equals(arch(), "aarch64") || Objects.equals(arch(), "x86_64")))
-        || (OsUtil.isLinux() && Objects.equals(arch(), "x86_64"))
+        || (OsUtil.isLinux()
+            && (Objects.equals(arch(), "x86_64")
+                // nativeruntime-dist-compat has a Linux aarch64 library for O through U. From V,
+                // the library comes from the android-all jar, which only has Linux x86_64.
+                || (Objects.equals(arch(), "aarch64") && !isAndroidVOrGreater())))
         || (OsUtil.isWindows() && Objects.equals(arch(), "x86_64"));
   }
 
