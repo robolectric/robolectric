@@ -36,6 +36,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # Remove compromised eMudhra certificates from preinstalled CA bundles.
+      # See https://github.com/curl/curl/blob/master/.github/actions/macos-fix-certs/action.yml.
+      - name: Fix macOS CA root bundle
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          ls -lA /etc/ssl/cert.pem
+          t="$(mktemp)" && \
+            awk -v s='=== /C=IN/OU=emSign PKI/O=eMudhra Technologies Limited/CN=emSign ECC Root CA - G3' \
+              '/^(===|###) /{skip=0} $0==s{skip=1} !skip' /etc/ssl/cert.pem | \
+            awk -v s='=== /C=US/OU=emSign PKI/O=eMudhra Inc/CN=emSign ECC Root CA - C3' \
+              '/^(===|###) /{skip=0} $0==s{skip=1} !skip' | \
+            awk -v s='=== /C=US/OU=emSign PKI/O=eMudhra Inc/CN=emSign Root CA - C1' \
+              '/^(===|###) /{skip=0} $0==s{skip=1} !skip' > "$t" && \
+            [ -s "$t" ] && sudo install -m 0644 -o root -g wheel "$t" /etc/ssl/cert.pem; rm -f "$t"
+          ls -lA /etc/ssl/cert.pem
+
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
