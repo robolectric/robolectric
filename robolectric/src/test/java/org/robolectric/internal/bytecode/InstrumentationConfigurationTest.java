@@ -85,6 +85,13 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldNotAcquireJdkPackages() {
+    // jdk.net.LinuxSocketOptions loads libextnet, which may only be loaded by one class loader.
+    assertThat(config.shouldAcquire("jdk.net.Sockets")).isFalse();
+    assertThat(config.shouldAcquire("jdk.internal.misc.Unsafe")).isFalse();
+  }
+
+  @Test
   public void shouldNotAcquireShadowClass() {
     assertThat(config.shouldAcquire("org.robolectric.shadow.api.Shadow")).isTrue();
   }

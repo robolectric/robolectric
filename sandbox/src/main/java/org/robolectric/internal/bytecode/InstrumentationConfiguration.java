@@ -40,7 +40,7 @@ public class InstrumentationConfiguration {
           "com.sun.",
           "java.",
           "javax.",
-          "jdk.internal.",
+          "jdk.",
           "org.junit.",
           "org.robolectric.annotation.",
           "org.robolectric.internal.",
