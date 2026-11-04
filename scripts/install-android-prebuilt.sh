@@ -74,31 +74,12 @@ build_signed_packages() {
     (cd "${TEMP_DIR}/staging" && zip -r "../android-all-${AA_VERSION}-bundle.zip" .)
 }
 
-mavenize() {
-    local FILE_NAME_BASE=android-all-${AA_VERSION}
-    mvn install:install-file \
-      -Dfile="${STAGING_DIR}/${FILE_NAME_BASE}.jar" \
-      -DgroupId=org.robolectric \
-      -DartifactId=android-all \
-      -Dversion="${AA_VERSION}" \
-      -Dpackaging=jar \
-      -DpomFile="${STAGING_DIR}/${ANDROID_ALL_POM}"
-
-    mvn install:install-file \
-      -Dfile="${STAGING_DIR}/${FILE_NAME_BASE}-sources.jar" \
-      -DgroupId=org.robolectric \
-      -DartifactId=android-all \
-      -Dversion="${AA_VERSION}" \
-      -Dpackaging=jar \
-      -Dclassifier=sources
-
-    mvn install:install-file \
-      -Dfile="${STAGING_DIR}/${FILE_NAME_BASE}-javadoc.jar" \
-      -DgroupId=org.robolectric \
-      -DartifactId=android-all \
-      -Dversion="${AA_VERSION}" \
-      -Dpackaging=jar \
-      -Dclassifier=javadoc
+install_to_maven_local() {
+    # The staging directory is already in Maven repository layout, so installing the
+    # artifacts in the local Maven repository is a copy.
+    local MAVEN_LOCAL_DIR="${HOME}/.m2/repository/org/robolectric/android-all/${AA_VERSION}"
+    mkdir -p "${MAVEN_LOCAL_DIR}"
+    cp "${STAGING_DIR}"/* "${MAVEN_LOCAL_DIR}"
 }
 
 echo "Creating android-all package in ${TEMP_DIR}"
@@ -108,7 +89,7 @@ cp "${JAR_DIR}/${ANDROID_ALL}" "${STAGING_DIR}"
 generate_empty_javadoc
 generate_empty_sources
 build_signed_packages
-mavenize
+install_to_maven_local
 
 echo "Done generating bundle ${TEMP_DIR}/android-all-${AA_VERSION}-bundle.zip"
 echo "Save the temp directory:"

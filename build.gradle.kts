@@ -1,9 +1,7 @@
 import groovy.util.Node
-import javax.inject.Inject
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.gradle.process.ExecOperations
 import org.gradle.work.DisableCachingByDefault
 import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
@@ -147,6 +145,8 @@ val aggregateDocs =
 
 @Suppress("UNCHECKED_CAST") val allSdks = project.extra["allSdks"] as List<AndroidSdk>
 
+val mavenLocal = providers.systemProperty("user.home").map { "$it/.m2/repository" }
+
 val prefetchSdkTasks = allSdks.map { androidSdk ->
   val configuration = configurations.register("sdk${androidSdk.apiLevel}")
   dependencies.add(configuration.name, androidSdk.coordinates)
@@ -161,6 +161,7 @@ val prefetchSdkTasks = allSdks.map { androidSdk ->
     artifactId = androidSdk.artifactId
     version = androidSdk.version
     sdkFiles.from(configuration)
+    mavenLocalRepository = mavenLocal
   }
 }
 
@@ -179,6 +180,7 @@ val prefetchInstrumentedSdkTasks = allSdks.map { androidSdk ->
     artifactId = androidSdk.preinstrumentedArtifactId
     version = androidSdk.preinstrumentedVersion
     sdkFiles.from(configuration)
+    mavenLocalRepository = mavenLocal
   }
 }
 
@@ -207,31 +209,24 @@ abstract class PrefetchSdkTask : DefaultTask() {
   @get:Input abstract val artifactId: Property<String>
   @get:Input abstract val version: Property<String>
   @get:InputFiles abstract val sdkFiles: ConfigurableFileCollection
-
-  @get:Inject abstract val execOperations: ExecOperations
+  @get:Internal abstract val mavenLocalRepository: Property<String>
 
   @TaskAction
   fun prefetchSdk() {
     logger.lifecycle("Prefetching {}...", coordinates.get())
 
-    // Prefetch into Maven local repo...
-    execOperations
-      .exec {
-        commandLine(
-          "mvn",
-          "-q",
-          "dependency:get",
-          "-DrepoUrl=https://maven.google.com",
-          "-DgroupId=${groupId.get()}",
-          "-DartifactId=${artifactId.get()}",
-          "-Dversion=${version.get()}",
-        )
-      }
-      .rethrowFailure()
-      .assertNormalExitValue()
-
-    // Causes dependencies to be resolved:
-    sdkFiles.files
+    // Resolving the configuration fetches the jar, and the preinstrumented build reads it from the
+    // Maven local repository, so copy it there.
+    val jarFileName = "${artifactId.get()}-${version.get()}.jar"
+    val jarFile = sdkFiles.files.single { it.name == jarFileName }
+    val mavenLocalJarFile =
+      File(
+        mavenLocalRepository.get(),
+        "${groupId.get().replace('.', '/')}/${artifactId.get()}/${version.get()}/$jarFileName",
+      )
+    if (jarFile != mavenLocalJarFile && !mavenLocalJarFile.exists()) {
+      jarFile.copyTo(mavenLocalJarFile)
+    }
   }
 }
 
