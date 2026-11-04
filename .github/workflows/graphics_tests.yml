@@ -12,6 +12,11 @@ on:
 
   # Run by the release workflow.
   workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to test'
+        type: string
+        required: true
 
 concurrency:
   # When called by another workflow, github.workflow is the caller's name.
@@ -54,6 +59,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v6

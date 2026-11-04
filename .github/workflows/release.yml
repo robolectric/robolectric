@@ -1,13 +1,18 @@
 # Stages a Robolectric release on the Central Portal and checks it. Publishing the release is left
 # to a maintainer. See "Performing a Release" in the wiki for the manual steps this automates.
 #
-# Run it from the Actions tab, choosing the branch under "Use workflow from":
+# Run it from the Actions tab, from `master` (the workflow always runs master's copy of itself), and
+# choose what to release:
 #
-# * `master`: stages the first version of the next release line. With `4.18-SNAPSHOT` in
-#   gradle.properties, that's `4.18-beta-1` (or `4.18` if "beta" is unchecked), for a new
-#   `robolectric-4.18.x` branch.
-# * `robolectric-X.Y.x`: stages the next version of that line: the next beta (`X.Y-beta-N`) or
-#   `X.Y` until `X.Y` is released, then the next patch release (`X.Y.1`, `X.Y.2`...).
+# * "Point release": stages the next version of the newest `robolectric-X.Y.x` branch: the next
+#   beta (`X.Y-beta-N`) or `X.Y` until `X.Y` is released, then the next patch release (`X.Y.1`,
+#   `X.Y.2`...). Use the cherry-pick workflow to get fixes into that branch first.
+# * "New release line": stages the first version of the next release line from master. With
+#   `4.18-SNAPSHOT` in gradle.properties, that's `4.18-beta-1` (or `4.18` if "beta" is unchecked),
+#   for a new `robolectric-4.18.x` branch.
+#
+# The tests and the build use the code of the release branch (or master); the check project in
+# .github/release-check comes from master.
 #
 # The version comes from gradle.properties and the existing `robolectric-*` tags. The workflow runs
 # the tests, stages the signed artifacts on the Central Portal, and checks the staged artifacts
@@ -24,6 +29,13 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      release:
+        description: 'What to release'
+        type: choice
+        options:
+          - Point release
+          - New release line
+        default: Point release
       beta:
         description: 'Release a beta (X.Y-beta-N) instead of X.Y. Ignored for patch releases.'
         type: boolean
@@ -43,6 +55,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       branch: ${{ steps.version.outputs.branch }}
+      sha: ${{ steps.version.outputs.sha }}
       new-branch: ${{ steps.version.outputs.new-branch }}
       next-snapshot: ${{ steps.version.outputs.next-snapshot }}
     steps:
@@ -55,6 +68,7 @@ jobs:
       - name: Determine the version
         id: version
         env:
+          RELEASE: ${{ inputs.release }}
           BETA: ${{ inputs.beta }}
           REF_NAME: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
@@ -64,7 +78,10 @@ jobs:
 
           [[ "$REPOSITORY" == robolectric/robolectric ]] || fail "Releases are only made from robolectric/robolectric."
 
-          if [[ "$REF_NAME" == master ]]; then
+          [[ "$REF_NAME" == master ]] ||
+            fail "Run this workflow from master, not $REF_NAME. Choose the kind of release in the form instead."
+
+          if [[ "$RELEASE" == "New release line" ]]; then
             current=$(sed -n 's/^thisVersion=//p' gradle.properties)
             [[ "$current" =~ ^([0-9]+)\.([0-9]+)-SNAPSHOT$ ]] ||
               fail "master's gradle.properties has thisVersion=$current, expected X.Y-SNAPSHOT."
@@ -72,16 +89,20 @@ jobs:
             next_snapshot="${BASH_REMATCH[1]}.$((BASH_REMATCH[2] + 1))-SNAPSHOT"
             branch="robolectric-$series.x"
             if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
-              fail "$branch already exists. Run this workflow from $branch to release its next version."
+              fail "$branch already exists. Choose \"Point release\" to release its next version."
             fi
             new_branch=true
-          elif [[ "$REF_NAME" =~ ^robolectric-([0-9]+\.[0-9]+)\.x$ ]]; then
+            sha=$(git rev-parse HEAD)
+          else
+            # The newest release branch, as in the cherry-pick workflow.
+            branch=$(git branch -r --list 'origin/robolectric-*.x' | sed 's|^ *origin/||' |
+              grep -E '^robolectric-[0-9]+\.[0-9]+\.x$' | sort -V | tail -1 || true)
+            [[ -n "$branch" ]] || fail "There is no robolectric-X.Y.x release branch."
+            [[ "$branch" =~ ^robolectric-([0-9]+\.[0-9]+)\.x$ ]]
             series="${BASH_REMATCH[1]}"
-            branch="$REF_NAME"
             new_branch=false
             next_snapshot=""
-          else
-            fail "Run this workflow from master or from a robolectric-X.Y.x branch, not $REF_NAME."
+            sha=$(git rev-parse "origin/$branch")
           fi
 
           # The highest N of the tags robolectric-<prefix>N, or 0.
@@ -107,20 +128,25 @@ jobs:
           {
             echo "version=$version"
             echo "branch=$branch"
+            echo "sha=$sha"
             echo "new-branch=$new_branch"
             echo "next-snapshot=$next_snapshot"
           } >> "$GITHUB_OUTPUT"
-          echo "### Releasing Robolectric $version from $branch" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Releasing Robolectric $version from $branch ($sha)" >> "$GITHUB_STEP_SUMMARY"
 
   tests:
     name: Tests
     needs: version
     uses: ./.github/workflows/tests.yml
+    with:
+      ref: ${{ needs.version.outputs.sha }}
 
   graphics-tests:
     name: Graphics tests
     needs: version
     uses: ./.github/workflows/graphics_tests.yml
+    with:
+      ref: ${{ needs.version.outputs.sha }}
 
   stage:
     name: Stage on the Central Portal
@@ -135,6 +161,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.sha }}
 
       - name: Set the version
         run: sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
@@ -256,7 +284,7 @@ jobs:
           NEW_BRANCH: ${{ needs.version.outputs.new-branch }}
           NEXT_SNAPSHOT: ${{ needs.version.outputs.next-snapshot }}
           DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
-          SHA: ${{ github.sha }}
+          SHA: ${{ needs.version.outputs.sha }}
         run: |
           {
             echo "### Robolectric $VERSION is staged and checked"
