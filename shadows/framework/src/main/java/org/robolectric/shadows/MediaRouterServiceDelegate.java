@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.media.MediaRoute2Info;
 import android.media.RoutingSessionInfo;
+import android.os.UserHandle;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 
@@ -18,6 +19,15 @@ public class MediaRouterServiceDelegate {
       "com.android.server.media/.SystemMediaRoute2Provider";
 
   public List<MediaRoute2Info> getSystemRoutes(String callerPackageName, boolean isProxyRouter) {
+    return getSystemRoutes();
+  }
+
+  public List<MediaRoute2Info> getSystemRoutes(String callerPackageName) {
+    return getSystemRoutes();
+  }
+
+  public List<MediaRoute2Info> getSystemRoutesForProxyRouter(
+      String callerPackageName, String targetPackageName, UserHandle targetUser) {
     return getSystemRoutes();
   }
 

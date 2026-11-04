@@ -2,7 +2,9 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Matrix;
 import android.os.Build;
@@ -124,12 +126,23 @@ public class ShadowMotionEventTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.R)
+  @Config(minSdk = Build.VERSION_CODES.R, maxSdk = Build.VERSION_CODES.CINNAMON_BUN)
   public void getCursorPosition_nonMouseSource_returnsInvalidCursorPosition() {
     assertThat(event.getXCursorPosition())
         .isEqualTo(NativeInput.MotionEvent.INVALID_CURSOR_POSITION);
     assertThat(event.getYCursorPosition())
         .isEqualTo(NativeInput.MotionEvent.INVALID_CURSOR_POSITION);
+  }
+
+  // Starting in POST_CINNAMON_BUN, MotionEvent#getXCursorPosition and
+  // MotionEvent#getYCursorPosition throw IllegalStateException when the event has no cursor
+  // position (e.g., for non-mouse sources where nativeGetX/YCursorPosition returns NaN), instead
+  // of returning INVALID_CURSOR_POSITION (NaN).
+  @Test
+  @Config(minSdk = POST_CINNAMON_BUN)
+  public void getCursorPosition_nonMouseSource_throwsIllegalStateException() {
+    assertThrows(IllegalStateException.class, () -> event.getXCursorPosition());
+    assertThrows(IllegalStateException.class, () -> event.getYCursorPosition());
   }
 
   @Test

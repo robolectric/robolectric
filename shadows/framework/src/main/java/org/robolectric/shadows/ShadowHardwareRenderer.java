@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -45,8 +46,14 @@ public class ShadowHardwareRenderer {
     return nCreateProxy(translucent, rootRenderNode);
   }
 
-  @Implementation(minSdk = CINNAMON_BUN)
+  @Implementation(minSdk = CINNAMON_BUN, maxSdk = CINNAMON_BUN)
   protected static long nCreateProxy(boolean translucent, long rootRenderNode, boolean useIpc) {
+    return nCreateProxy(translucent, rootRenderNode);
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected static long nCreateProxy(
+      boolean translucent, long rootRenderNode, boolean useIpc, int rendererType) {
     return nCreateProxy(translucent, rootRenderNode);
   }
 

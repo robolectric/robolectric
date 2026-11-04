@@ -174,7 +174,12 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
   }
 
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE, methodName = "nSetColorMode")
+  // Starting in VANILLA_ICE_CREAM, callNativeMethodsByDefault = true invokes the native
+  // libandroid_runtime.so binding directly instead of HardwareRendererNatives.
+  @Implementation(
+      minSdk = UPSIDE_DOWN_CAKE,
+      maxSdk = UPSIDE_DOWN_CAKE,
+      methodName = "nSetColorMode")
   protected static float nSetColorModePostT(long nativeProxy, int colorMode) {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
     return 0.0f;
