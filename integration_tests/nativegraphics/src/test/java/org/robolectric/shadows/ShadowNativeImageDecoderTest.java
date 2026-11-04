@@ -159,8 +159,8 @@ public class ShadowNativeImageDecoderTest {
         resId -> ImageDecoder.createSource(getAsDirectByteBuffer(resId)),
         resId -> ImageDecoder.createSource(getAsReadOnlyByteBuffer(resId)));
 
-    // TODO(hoisie): Support file sources in Android V+.
-    if (RuntimeEnvironment.getApiLevel() < VANILLA_ICE_CREAM) {
+    // From V, the native runtime does not support file sources on Windows.
+    if (RuntimeEnvironment.getApiLevel() < VANILLA_ICE_CREAM || !OsUtil.isWindows()) {
       builder.add(resId -> ImageDecoder.createSource(getAsFile(resId)));
     }
 

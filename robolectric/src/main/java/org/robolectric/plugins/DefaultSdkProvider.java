@@ -76,9 +76,9 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(TIRAMISU, new DefaultSdk(TIRAMISU, "13", "9030017", "Tiramisu", 9));
     knownSdks.put(UPSIDE_DOWN_CAKE, new DefaultSdk(UPSIDE_DOWN_CAKE, "14", "10818077", "REL", 17));
     knownSdks.put(
-        VANILLA_ICE_CREAM, new DefaultSdk(VANILLA_ICE_CREAM, "15", "13954326", "REL", 17));
-    knownSdks.put(BAKLAVA, new DefaultSdk(BAKLAVA, "16", "13921718", "REL", 21));
-    knownSdks.put(CINNAMON_BUN, new DefaultSdk(CINNAMON_BUN, "17", "15733970", "REL", 21));
+        VANILLA_ICE_CREAM, new DefaultSdk(VANILLA_ICE_CREAM, "15", "14663667-2", "REL", 17));
+    knownSdks.put(BAKLAVA, new DefaultSdk(BAKLAVA, "16", "13921718-2", "REL", 21));
+    knownSdks.put(CINNAMON_BUN, new DefaultSdk(CINNAMON_BUN, "17", "16653203", "REL", 21));
   }
 
   @Override
