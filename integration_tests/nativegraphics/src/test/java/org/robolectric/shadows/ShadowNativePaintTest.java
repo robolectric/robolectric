@@ -11,7 +11,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2024,11 +2024,14 @@ public class ShadowNativePaintTest {
     }
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): fix in V and above
+  // From Baklava, setElegantTextHeight is ignored for apps targeting Baklava and above.
+  @Config(maxSdk = VANILLA_ICE_CREAM)
   @Test
   public void testElegantText() {
     final Paint p = new Paint();
     p.setTextSize(10);
+    // From V, elegant text height is on by default for apps targeting V and above.
+    p.setElegantTextHeight(false);
     assertFalse(p.isElegantTextHeight());
     final float nonElegantTop = p.getFontMetrics().top;
     final float nonElegantBottom = p.getFontMetrics().bottom;
