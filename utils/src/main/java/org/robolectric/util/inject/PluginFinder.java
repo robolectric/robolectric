@@ -186,8 +186,8 @@ class PluginFinder {
                     try (BufferedReader reader =
                         new BufferedReader(
                             new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
-                      while (reader.ready()) {
-                        String s = reader.readLine();
+                      String s;
+                      while ((s = reader.readLine()) != null) {
                         int startPositionOfComment = s.indexOf('#');
                         if (startPositionOfComment != -1) {
                           s = s.substring(0, startPositionOfComment);
