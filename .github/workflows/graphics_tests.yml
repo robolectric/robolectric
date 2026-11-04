@@ -35,18 +35,18 @@ jobs:
         ]
         include:
           # nativeruntime-dist-compat has a Linux arm64 library for O through U. From V, the
-          # native runtime comes from the android-all jars, which only have a Linux x86_64
-          # library, so only the native graphics tests run, on every SDK from O through U.
-          # TODO: add more SDK levels as the android-all jars for SDK 35 and above are
+          # native runtime comes from the android-all jars, which only have a Linux arm64
+          # library for V, so only the native graphics tests run, on every SDK from O through V.
+          # TODO: add more SDK levels as the android-all jars for SDK 36 and above are
           #  republished to include Linux arm64 native runtime libraries.
           - device: ubuntu-24.04-arm
             setup-android-sdk: true
             # A test without an SDK in its @Config only runs on the target SDK. A minSdk
             # default runs each test on every SDK from it, and enabledSdks keeps the ones
-            # up to U.
+            # up to V.
             nativegraphics-min-sdk: 26
             gradle-tasks: ':integration_tests:nativegraphics:testDebugUnitTest'
-            gradle-args: '"-Drobolectric.enabledSdks=26,27,28,29,30,31,32,33,34"'
+            gradle-args: '"-Drobolectric.enabledSdks=26,27,28,29,30,31,32,33,34,35"'
 
     name: Graphics Tests
     runs-on: ${{ matrix.device }}
