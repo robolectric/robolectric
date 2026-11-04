@@ -68,6 +68,18 @@ public class SandboxServiceResourcesTest {
   }
 
   @Test
+  public void cacheIsEnabledByDefault() throws Exception {
+    Path directory = temporaryFolder.newFolder().toPath();
+    try (CountingClassLoader parent = parent(directory);
+        SandboxClassLoader loader = sandbox(parent)) {
+      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).isEmpty();
+      writeResource(directory, SERVICE_RESOURCE, FirstProvider.class.getName());
+      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).isEmpty();
+      assertThat(parent.serviceLookups).isEqualTo(1);
+    }
+  }
+
+  @Test
   public void cacheRetainsMissingLocationsForOneSandboxOnly() throws Exception {
     System.setProperty(CACHE_PROPERTY, "true");
     Path directory = temporaryFolder.newFolder().toPath();
@@ -84,7 +96,8 @@ public class SandboxServiceResourcesTest {
   }
 
   @Test
-  public void defaultBehaviorObservesNewServiceLocations() throws Exception {
+  public void disabledCacheObservesNewServiceLocations() throws Exception {
+    System.setProperty(CACHE_PROPERTY, "false");
     Path directory = temporaryFolder.newFolder().toPath();
     try (CountingClassLoader parent = parent(directory);
         SandboxClassLoader loader = sandbox(parent)) {

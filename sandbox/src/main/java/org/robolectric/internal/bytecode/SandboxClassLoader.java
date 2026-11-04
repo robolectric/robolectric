@@ -46,10 +46,11 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
   private final String dumpClassesDirectory;
-  // Enable only if descriptor locations in the sandbox and its parent class loader stay fixed.
-  // The cache stores URLs, so changes to the contents of an existing descriptor remain visible.
+  // Set robolectric.cacheServiceLoaderResources=false if descriptor locations in the sandbox or its
+  // parent class loader change. The cache stores URLs, so changes to the contents of an existing
+  // descriptor remain visible.
   private final boolean cacheServiceLoaderResources =
-      Boolean.getBoolean("robolectric.cacheServiceLoaderResources");
+      Boolean.parseBoolean(System.getProperty("robolectric.cacheServiceLoaderResources", "true"));
   private final Map<String, List<URL>> serviceLoaderResources = new HashMap<>();
   private boolean isClosed;
 
