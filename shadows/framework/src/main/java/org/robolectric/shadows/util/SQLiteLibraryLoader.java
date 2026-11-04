@@ -83,8 +83,8 @@ public class SQLiteLibraryLoader {
   public static boolean isOsSupported() {
     String prefix = getOsPrefix();
     String arch = getArchitecture();
-    // We know macOS with aarch64 arch is not supported by sqlite4java now.
-    return !(OS_MAC.equals(prefix) && OS_ARCH_ARM64.equals(arch));
+    // sqlite4java has no native library for aarch64 on macOS or Linux.
+    return !((OS_MAC.equals(prefix) || OS_LINUX.equals(prefix)) && OS_ARCH_ARM64.equals(arch));
   }
 
   private void loadFromDirectory(final File libPath) {
