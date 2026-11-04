@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Instrumentation;
 import android.app.UiAutomation;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -22,12 +23,12 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -355,17 +356,21 @@ public class ShadowUiAutomationTest {
   @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   @GraphicsMode(GraphicsMode.Mode.NATIVE)
   public void getRootInActiveWindow_instrumentationTestLooperMode() {
-    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+    UiAutomation uiAutomation = instrumentation.getUiAutomation();
     AtomicBoolean clicked = new AtomicBoolean(false);
-    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            Button button = new Button(activity);
-            button.setText("Instrumentation Button");
-            button.setOnClickListener(v -> clicked.set(true));
-            activity.setContentView(button);
-          });
-      InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    AtomicReference<ActivityController<TestActivity>> controller = new AtomicReference<>();
+    instrumentation.runOnMainSync(
+        () -> {
+          controller.set(Robolectric.buildActivity(TestActivity.class).setup());
+          Activity activity = controller.get().get();
+          Button button = new Button(activity);
+          button.setText("Instrumentation Button");
+          button.setOnClickListener(v -> clicked.set(true));
+          activity.setContentView(button);
+        });
+    try {
+      instrumentation.waitForIdleSync();
 
       AccessibilityNodeInfo root = uiAutomation.getRootInActiveWindow();
 
@@ -375,8 +380,10 @@ public class ShadowUiAutomationTest {
           root.findAccessibilityNodeInfosByText("Instrumentation Button");
       assertThat(buttons).hasSize(1);
       assertThat(buttons.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK)).isTrue();
-      InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+      instrumentation.waitForIdleSync();
       assertThat(clicked.get()).isTrue();
+    } finally {
+      instrumentation.runOnMainSync(() -> controller.get().close());
     }
   }
 }
