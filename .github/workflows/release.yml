@@ -425,17 +425,63 @@ jobs:
           echo "Pushed \`$TAG\` and \`$BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create a draft GitHub release
+        shell: python
         run: |
-          set -euo pipefail
-          if gh release view "$TAG" > /dev/null 2>&1; then
-            echo "The release $TAG already exists."
-          else
-            prerelease=()
-            [[ "$VERSION" == *-beta-* ]] && prerelease=(--prerelease)
-            gh release create "$TAG" --draft --verify-tag --generate-notes --title "Robolectric $VERSION" "${prerelease[@]}"
-          fi
-          url=$(gh release view "$TAG" --json url -q .url)
-          echo "Edit and publish the [draft release notes]($url)." >> "$GITHUB_STEP_SUMMARY"
+          import os
+          import re
+          import subprocess
+
+          version = os.environ["VERSION"]
+          tag = os.environ["TAG"]
+          repo = os.environ["GITHUB_REPOSITORY"]
+
+
+          def version_key(tag):
+            """Orders robolectric-X.Y[.Z][-beta-N] tags, with X.Y-beta-N before X.Y."""
+            match = re.fullmatch(r"robolectric-(\d+(?:\.\d+)+)(?:-beta-(\d+))?", tag)
+            if not match:
+              return None
+            numbers = tuple(int(n) for n in match[1].split("."))
+            return numbers, (0, int(match[2])) if match[2] else (1, 0)
+
+
+          def previous_tag():
+            """The tag the notes start from, as for earlier releases: the previous beta for
+            X.Y-beta-N, otherwise the latest X.Y or X.Y.Z before this version."""
+            match = re.fullmatch(r"(.*)-beta-(\d+)", version)
+            if match and int(match[2]) > 1:
+              return f"robolectric-{match[1]}-beta-{int(match[2]) - 1}"
+            refs = subprocess.run(
+                ["git", "ls-remote", "--tags", "--refs", "origin", "robolectric-*"],
+                check=True, capture_output=True, text=True).stdout
+            releases = [line.split("refs/tags/")[1] for line in refs.splitlines()]
+            releases = [t for t in releases if "-beta-" not in t and version_key(t)]
+            earlier = [t for t in releases if version_key(t) < version_key(tag)]
+            return max(earlier, key=version_key, default=None)
+
+
+          if subprocess.run(["gh", "release", "view", tag], capture_output=True).returncode == 0:
+            print(f"The release {tag} already exists.")
+          else:
+            create = ["gh", "release", "create", tag, "--draft", "--verify-tag",
+                      "--title", f"Robolectric {version}"]
+            if "-beta-" in version:
+              create.append("--prerelease")
+            # Without a start tag, GitHub picks an older release (the previous line's tags aren't
+            # on this branch), and the notes can exceed the 125,000 characters a release allows.
+            previous = previous_tag()
+            if previous is None:
+              subprocess.run(create + ["--generate-notes"], check=True)
+            elif subprocess.run(
+                create + ["--generate-notes", "--notes-start-tag", previous]).returncode != 0:
+              print(f"Couldn't generate the notes from {previous}; linking the changes instead.")
+              changes = f"https://github.com/{repo}/compare/{previous}...{tag}"
+              subprocess.run(create + ["--notes", f"**Full Changelog**: {changes}"], check=True)
+
+          url = subprocess.run(["gh", "release", "view", tag, "--json", "url", "-q", ".url"],
+                               check=True, capture_output=True, text=True).stdout.strip()
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            summary.write(f"Edit and publish the [draft release notes]({url}).\n")
 
       - name: Open a PR to bump master to the next snapshot
         if: needs.version.outputs.new-branch == 'true'
