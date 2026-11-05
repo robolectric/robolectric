@@ -144,7 +144,7 @@ jobs:
   graphics-tests:
     name: Graphics tests
     needs: version
-    uses: ./.github/workflows/graphics_tests.yml
+    uses: ./.github/workflows/native_tests.yml
     with:
       ref: ${{ needs.version.outputs.sha }}
 
