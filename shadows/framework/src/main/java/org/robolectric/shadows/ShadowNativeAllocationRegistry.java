@@ -6,7 +6,11 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import libcore.util.NativeAllocationRegistry;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -16,6 +20,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link NativeAllocationRegistry} that is backed by native code */
 @Implements(
@@ -25,6 +30,12 @@ import org.robolectric.util.reflector.ForType;
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeAllocationRegistry {
+
+  /**
+   * The registered allocations that aren't freed yet, by free function, like the per-class counts
+   * of NativeAllocationRegistry.getMetrics() from Baklava.
+   */
+  private static final Map<Long, Long> liveAllocations = new ConcurrentHashMap<>();
 
   @RealObject protected NativeAllocationRegistry realNativeAllocationRegistry;
 
@@ -59,8 +70,11 @@ public class ShadowNativeAllocationRegistry {
     // Binder), or for classes that simulate native pointers (like binary resources) but don't
     // actually use native libraries.
     if (nativePtr != 0 && hasValidFreeFunction()) {
-      return reflector(NativeAllocationRegistryReflector.class, realNativeAllocationRegistry)
-          .registerNativeAllocation(referent, nativePtr);
+      NativeAllocationRegistryReflector registry =
+          reflector(NativeAllocationRegistryReflector.class, realNativeAllocationRegistry);
+      Runnable freer = registry.registerNativeAllocation(referent, nativePtr);
+      liveAllocations.merge(registry.getFreeFunction(), 1L, Long::sum);
+      return freer;
     } else {
       return () -> {};
     }
@@ -72,9 +86,22 @@ public class ShadowNativeAllocationRegistry {
         != 0;
   }
 
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation
   protected static void applyFreeFunction(long freeFunction, long nativePtr) {
-    NativeAllocationRegistryNatives.applyFreeFunction(freeFunction, nativePtr);
+    if (RuntimeEnvironment.getApiLevel() <= UPSIDE_DOWN_CAKE) {
+      NativeAllocationRegistryNatives.applyFreeFunction(freeFunction, nativePtr);
+    } else {
+      reflector(NativeAllocationRegistryReflector.class).applyFreeFunction(freeFunction, nativePtr);
+    }
+    liveAllocations.merge(freeFunction, -1L, Long::sum);
+  }
+
+  /**
+   * Returns the number of registered native allocations that aren't freed yet, by free function. A
+   * compat version of NativeAllocationRegistry.getMetrics(), which is only in Baklava and later.
+   */
+  static Map<Long, Long> getMetricsCompat() {
+    return new HashMap<>(liveAllocations);
   }
 
   @ForType(NativeAllocationRegistry.class)
@@ -84,6 +111,10 @@ public class ShadowNativeAllocationRegistry {
 
     @Accessor("freeFunction")
     long getFreeFunction();
+
+    @Static
+    @Direct
+    void applyFreeFunction(long freeFunction, long nativePtr);
   }
 
   /** Shadow picker for {@link NativeAllocationRegistry}. */
