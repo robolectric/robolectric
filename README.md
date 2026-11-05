@@ -103,6 +103,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.18-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.19-SNAPSHOT"
 }
 ```
