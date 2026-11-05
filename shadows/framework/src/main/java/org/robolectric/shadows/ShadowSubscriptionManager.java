@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -10,7 +10,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.content.Intent;
@@ -28,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -90,39 +90,15 @@ public class ShadowSubscriptionManager {
   }
 
   /** Returns value set with {@link #setDefaultSmsSubscriptionId(int)}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected static int getDefaultSmsSubscriptionId() {
     return defaultSmsSubscriptionId;
   }
 
   /** Returns value set with {@link #setDefaultVoiceSubscriptionId(int)}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected static int getDefaultVoiceSubscriptionId() {
     return defaultVoiceSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultSubId() {
-    return defaultSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultVoiceSubId() {
-    return defaultVoiceSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultSmsSubId() {
-    return defaultSmsSubscriptionId;
-  }
-
-  @Implementation(maxSdk = M)
-  @HiddenApi
-  protected static int getDefaultDataSubId() {
-    return defaultDataSubscriptionId;
   }
 
   /** Sets the value that will be returned by {@link #getActiveDataSubscriptionId()}. */
@@ -255,7 +231,8 @@ public class ShadowSubscriptionManager {
    * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
    * {@link #addOnSubscriptionsChangedListener} and {@link #removeOnSubscriptionsChangedListener}.
    */
-  private final List<OnSubscriptionsChangedListenerWrapper> listeners = new ArrayList<>();
+  private final List<OnSubscriptionsChangedListenerWrapper> listeners =
+      new CopyOnWriteArrayList<>();
 
   /**
    * Cache of subscription ids used by {@link #isNetworkRoaming}. Managed by {@link

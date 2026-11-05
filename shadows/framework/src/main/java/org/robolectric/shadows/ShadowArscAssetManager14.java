@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
+import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
@@ -182,10 +184,17 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         forceRefresh);
   }
 
-  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = CINNAMON_BUN)
   protected static void nativeSetApkAssets(
       long ptr, @Nonnull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
     nativeSetApkAssets(ptr, apkAssets, invalidateCaches);
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN, methodName = "nativeSetApkAssets")
+  protected static int nativeSetApkAssetsPostCinnamonBun(
+      long ptr, @Nonnull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
+    nativeSetApkAssets(ptr, apkAssets, invalidateCaches);
+    return NO_ERROR;
   }
 }
 // namespace android

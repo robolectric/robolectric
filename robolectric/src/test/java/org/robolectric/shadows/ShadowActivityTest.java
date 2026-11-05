@@ -947,7 +947,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void requestsPermissions() {
     TestActivity activity = Robolectric.setupActivity(TestActivity.class);
     activity.requestPermissions(new String[] {Manifest.permission.CAMERA}, 1007);
@@ -1439,7 +1438,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermission_shouldReturnRequestedPermissions() {
     // GIVEN
     String[] permission = {Manifest.permission.CAMERA};
@@ -1573,7 +1571,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void initializeVoiceInteractor_succeeds() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     shadowOf(activity).initializeVoiceInteractor();

@@ -4,7 +4,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.ColorStateList;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -65,12 +64,8 @@ public class ShadowGradientDrawable extends ShadowDrawable {
     return color;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected int getShape() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-      return shape;
-    }
-
     return reflector(GradientDrawableReflector.class, realGradientDrawable).getShape();
   }
 

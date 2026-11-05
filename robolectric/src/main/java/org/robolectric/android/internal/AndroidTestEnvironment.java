@@ -29,6 +29,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Looper;
 import android.os.Process;
 import android.provider.FontsContract;
@@ -65,6 +66,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
@@ -221,11 +223,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
-    Locale locale =
-        apiLevel >= VERSION_CODES.N
-            ? androidConfiguration.getLocales().get(0)
-            : androidConfiguration.locale;
-    Locale.setDefault(locale);
+    if (apiLevel >= VERSION_CODES.N) {
+      // LocaleList.setDefault will internally call java.util.Locale.setDefault()
+      LocaleList.setDefault(androidConfiguration.getLocales());
+    } else {
+      Locale.setDefault(androidConfiguration.locale);
+    }
 
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       if (Looper.myLooper() == null) {
@@ -726,7 +729,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private static boolean shouldLoadNativeRuntime() {
     GraphicsMode.Mode graphicsMode = ConfigurationRegistry.get(GraphicsMode.Mode.class);
     SQLiteMode.Mode sqliteMode = ConfigurationRegistry.get(SQLiteMode.Mode.class);
-    return graphicsMode == GraphicsMode.Mode.NATIVE || sqliteMode == SQLiteMode.Mode.NATIVE;
+    ResourcesMode.Mode resourcesMode = ConfigurationRegistry.get(ResourcesMode.Mode.class);
+    return graphicsMode == GraphicsMode.Mode.NATIVE
+        || sqliteMode == SQLiteMode.Mode.NATIVE
+        || resourcesMode == ResourcesMode.Mode.NATIVE;
   }
 
   // TODO move/replace this with packageManager

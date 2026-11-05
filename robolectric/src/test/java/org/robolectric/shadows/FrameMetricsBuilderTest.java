@@ -42,6 +42,15 @@ public class FrameMetricsBuilderTest {
   }
 
   @Test
+  @Config(minSdk = 36)
+  public void frameTimelineVsyncId() throws Exception {
+    FrameMetrics metrics =
+        new FrameMetricsBuilder().setMetric(FrameMetrics.FRAME_TIMELINE_VSYNC_ID, 123L).build();
+
+    assertThat(metrics.getMetric(FrameMetrics.FRAME_TIMELINE_VSYNC_ID)).isEqualTo(123L);
+  }
+
+  @Test
   public void allTimeMetrics() throws Exception {
     FrameMetrics metrics =
         new FrameMetricsBuilder()

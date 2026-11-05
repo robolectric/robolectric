@@ -3,7 +3,6 @@ package org.robolectric.android;
 import android.app.WindowConfiguration;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.util.Locale;
@@ -224,7 +223,7 @@ public class DeviceConfig {
    * href="http://robolectric.org/device-configuration/">here</a>.
    */
   static void applyRules(Configuration configuration, DisplayMetrics displayMetrics, int apiLevel) {
-    Locale locale = getLocale(configuration, apiLevel);
+    Locale locale = getLocale(configuration);
 
     String language = locale == null ? "" : locale.getLanguage();
     if (language.isEmpty()) {
@@ -374,14 +373,8 @@ public class DeviceConfig {
     displayMetrics.heightPixels = oldPxWidth;
   }
 
-  private static Locale getLocale(Configuration configuration, int apiLevel) {
-    Locale locale;
-    if (apiLevel > Build.VERSION_CODES.M) {
-      locale = configuration.getLocales().get(0);
-    } else {
-      locale = configuration.locale;
-    }
-    return locale;
+  private static Locale getLocale(Configuration configuration) {
+    return configuration.getLocales().get(0);
   }
 
   private static int getScreenLayoutSize(Configuration configuration) {

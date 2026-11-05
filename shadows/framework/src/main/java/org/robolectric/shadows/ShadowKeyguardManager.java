@@ -123,8 +123,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(boolean)}, or
-   * false by default.
+   * Returns the value set by {@link #setIsDeviceSecure(boolean)}, or false by default.
    *
    * @see #setIsDeviceSecure(boolean)
    */
@@ -134,7 +133,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >=M, sets the value to be returned by {@link #isDeviceSecure()}.
+   * Sets the value to be returned by {@link #isDeviceSecure()}.
    *
    * @see #isDeviceSecure()
    */
@@ -143,8 +142,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or
-   * false by default.
+   * Returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or false by default.
    *
    * @see #setIsDeviceSecure(int, boolean)
    */
@@ -154,7 +152,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >=M, sets the value to be returned by {@link #isDeviceSecure(int)}.
+   * Sets the value to be returned by {@link #isDeviceSecure(int)}.
    *
    * @see #isDeviceSecure(int)
    */

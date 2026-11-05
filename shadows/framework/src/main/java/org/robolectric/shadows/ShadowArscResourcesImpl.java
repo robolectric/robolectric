@@ -1,21 +1,15 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.content.res.ResourcesImpl;
 import android.graphics.drawable.Drawable;
-import android.os.ParcelFileDescriptor;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -58,33 +52,6 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
     return resettableArrays;
   }
 
-  /**
-   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will be
-   * returned if the resource is found. If the resource cannot be found, {@link
-   * Resources.NotFoundException} will be thrown.
-   */
-  @Implementation(maxSdk = M)
-  public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    InputStream inputStream =
-        reflector(ResourcesImplReflector.class, realResourcesImpl).openRawResource(id);
-    if (!(inputStream instanceof FileInputStream)) {
-      // todo fixme
-      return null;
-    }
-
-    FileInputStream fis = (FileInputStream) inputStream;
-    try {
-      return new AssetFileDescriptor(
-          ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-    } catch (IOException e) {
-      throw newNotFoundException(id);
-    }
-  }
-
-  private Resources.NotFoundException newNotFoundException(int id) {
-    return new Resources.NotFoundException("resource ID #0x" + Integer.toHexString(id));
-  }
-
   @Implementation(maxSdk = N_MR1)
   public Drawable loadDrawable(
       Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache)
@@ -110,9 +77,6 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
 
   @ForType(ResourcesImpl.class)
   interface ResourcesImplReflector {
-
-    @Direct
-    InputStream openRawResource(int id);
 
     @Direct
     Drawable loadDrawable(

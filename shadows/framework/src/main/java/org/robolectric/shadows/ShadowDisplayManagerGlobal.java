@@ -49,6 +49,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false)
@@ -57,9 +58,11 @@ public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
 
   // value of EVENT_DISPLAY constants changed in post Baklava
-  private static final int EVENT_DISPLAY_ADDED = getApiLevel() > BAKLAVA ? 1 << 1 : 1;
+  private static final int EVENT_DISPLAY_ADDED =
+      reflector(DisplayManagerGlobalReflector.class).getEventDisplayAdded();
   private static final int EVENT_DISPLAY_BASIC_CHANGED = getApiLevel() > BAKLAVA ? 1 << 2 : 2;
-  private static final int EVENT_DISPLAY_REMOVED = getApiLevel() > BAKLAVA ? 1 << 8 : 3;
+  private static final int EVENT_DISPLAY_REMOVED =
+      reflector(DisplayManagerGlobalReflector.class).getEventDisplayRemoved();
 
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
@@ -170,6 +173,10 @@ public class ShadowDisplayManagerGlobal {
 
   void removeDisplay(int displayId) {
     mDm.removeDisplay(displayId);
+  }
+
+  int getNextDisplayId() {
+    return mDm.nextDisplayId;
   }
 
   /**
@@ -324,6 +331,9 @@ public class ShadowDisplayManagerGlobal {
     public void resizeVirtualDisplay(
         IVirtualDisplayCallback token, int width, int height, int densityDpi) {
       Integer id = virtualDisplayIds.get(token);
+      if (id == null) {
+        return;
+      }
       DisplayInfo displayInfo = displayInfos.get(id);
 
       displayInfo.logicalDensityDpi = densityDpi;
@@ -346,6 +356,9 @@ public class ShadowDisplayManagerGlobal {
     // @Override
     public void setVirtualDisplayState(IVirtualDisplayCallback token, boolean isOn) {
       Integer id = virtualDisplayIds.get(token);
+      if (id == null) {
+        return;
+      }
       DisplayInfo displayInfo = displayInfos.get(id);
       int newState = isOn ? Display.STATE_ON : Display.STATE_OFF;
       if (displayInfo.state != newState) {
@@ -411,6 +424,7 @@ public class ShadowDisplayManagerGlobal {
       }
 
       displayInfos.remove(displayId);
+      virtualDisplayIds.values().removeIf(id -> id == displayId);
       notifyListeners(displayId, EVENT_DISPLAY_REMOVED);
     }
 
@@ -487,6 +501,14 @@ public class ShadowDisplayManagerGlobal {
 
   @ForType(DisplayManagerGlobal.class)
   interface DisplayManagerGlobalReflector {
+    @Static
+    @Accessor("EVENT_DISPLAY_ADDED")
+    int getEventDisplayAdded();
+
+    @Static
+    @Accessor("EVENT_DISPLAY_REMOVED")
+    int getEventDisplayRemoved();
+
     @Accessor("mDm")
     void setDm(IDisplayManager displayManager);
 

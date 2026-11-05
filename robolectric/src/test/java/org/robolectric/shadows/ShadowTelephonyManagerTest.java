@@ -55,6 +55,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.DeadObjectException;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.AvailableNetworkInfo;
@@ -143,7 +144,7 @@ public class ShadowTelephonyManagerTest {
   private TelephonyManager newTelephonyManager(Integer subId) {
     Class<?>[] parameters;
     Object[] arguments;
-    if (subId == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+    if (subId == null) {
       parameters = new Class<?>[] {Context.class};
       arguments = new Object[] {ApplicationProvider.getApplicationContext()};
     } else {
@@ -2040,5 +2041,39 @@ public class ShadowTelephonyManagerTest {
             telephonyManager.getIccAuthentication(
                 /* appType= */ 1, /* authType= */ 1, /* data= */ "data"))
         .isEqualTo("iccAuth");
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void
+      createForPhoneAccountHandle_simulateDeadObject_throwsRuntimeExceptionWithDeadObjectCause() {
+    shadowOf(telephonyManager).setSimulateDeadObjectInCreateForPhoneAccountHandle(true);
+    PhoneAccountHandle handle = new PhoneAccountHandle(new ComponentName("pkg", "cls"), "id");
+
+    RuntimeException thrown =
+        assertThrows(
+            RuntimeException.class, () -> telephonyManager.createForPhoneAccountHandle(handle));
+    assertThat(thrown).hasCauseThat().isInstanceOf(DeadObjectException.class);
+    assertThrows(RuntimeException.class, () -> tmForSub5.createForPhoneAccountHandle(handle));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void createForPhoneAccountHandle_simulateDeadObjectDisabled_doesNotThrow() {
+    shadowOf(telephonyManager).setSimulateDeadObjectInCreateForPhoneAccountHandle(false);
+    PhoneAccountHandle handle = new PhoneAccountHandle(new ComponentName("pkg", "cls"), "id");
+
+    assertThat(telephonyManager.createForPhoneAccountHandle(handle)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void reset_clearsSimulateDeadObjectInCreateForPhoneAccountHandle() {
+    shadowOf(telephonyManager).setSimulateDeadObjectInCreateForPhoneAccountHandle(true);
+    PhoneAccountHandle handle = new PhoneAccountHandle(new ComponentName("pkg", "cls"), "id");
+
+    ShadowTelephonyManager.reset();
+
+    assertThat(telephonyManager.createForPhoneAccountHandle(handle)).isNull();
   }
 }

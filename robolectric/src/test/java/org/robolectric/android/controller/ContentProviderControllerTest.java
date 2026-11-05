@@ -9,14 +9,12 @@ import android.content.ContentResolver;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.net.Uri;
-import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.testing.TestContentProvider1;
 import org.robolectric.shadows.testing.TestContentProvider3And4;
 
@@ -152,10 +150,6 @@ public class ContentProviderControllerTest {
   static class NotInManifestContentProvider extends TestContentProvider1 {}
 
   private static void close(ContentProviderClient client) {
-    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.M) {
-      client.close();
-    } else {
-      client.release();
-    }
+    client.close();
   }
 }

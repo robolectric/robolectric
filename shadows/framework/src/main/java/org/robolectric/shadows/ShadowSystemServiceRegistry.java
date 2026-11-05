@@ -20,8 +20,6 @@ public class ShadowSystemServiceRegistry {
   private static final String STATIC_SERVICE_FETCHER_CLASS_NAME =
       "android.app.SystemServiceRegistry$StaticServiceFetcher";
   private static final String IS_CACHED_FIELD_NAME = "mIsCached";
-  private static final String STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_M =
-      "android.app.SystemServiceRegistry$StaticOuterContextServiceFetcher";
   private static final String STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_N =
       "android.app.SystemServiceRegistry$StaticApplicationContextServiceFetcher";
   private static final String CACHED_SERVICE_FETCHER_CLASS_NAME =
@@ -67,8 +65,6 @@ public class ShadowSystemServiceRegistry {
       switch (serviceFetcherClassName) {
         case STATIC_SERVICE_FETCHER_CLASS_NAME:
           return reflector(StaticServiceFetcherReflector.class, serviceFetcher);
-        case STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_M:
-          return reflector(ServiceFetcherReflectorM.class, serviceFetcher);
         case STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_N:
           return reflector(ServiceFetcherReflectorN.class, serviceFetcher);
         case CACHED_SERVICE_FETCHER_CLASS_NAME:
@@ -118,17 +114,6 @@ public class ShadowSystemServiceRegistry {
 
     @Accessor(IS_CACHED_FIELD_NAME)
     void setIsCached(boolean isCached);
-  }
-
-  /**
-   * Accessor interface for {@code
-   * android.app.SystemServiceRegistry.StaticOuterContextServiceFetcher}'s internals (for M).
-   */
-  @ForType(className = STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_M)
-  public interface ServiceFetcherReflectorM extends ServiceFetcherReflector {
-    @Override
-    @Accessor("mCachedInstance")
-    void setCachedInstance(Object o);
   }
 
   /**

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -16,8 +15,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accounts.Account;
@@ -45,7 +42,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
@@ -260,16 +256,6 @@ public class ShadowDevicePolicyManager {
       result = 31 * result + permission.hashCode();
       return result;
     }
-  }
-
-  @Implementation(maxSdk = M)
-  protected void __constructor__(Context context, Handler handler) {
-    init(context);
-    invokeConstructor(
-        DevicePolicyManager.class,
-        realObject,
-        from(Context.class, context),
-        from(Handler.class, handler));
   }
 
   @Implementation(minSdk = N, maxSdk = N_MR1)
@@ -867,11 +853,7 @@ public class ShadowDevicePolicyManager {
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING:
       case DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED:
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY:
-        break;
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER:
-        if (RuntimeEnvironment.getApiLevel() < N) {
-          throw new IllegalArgumentException("status " + status + " requires API " + N);
-        }
         break;
       default:
         throw new IllegalArgumentException("Unknown status: " + status);

@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -12,7 +12,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -311,16 +310,14 @@ public class ShadowServiceManager {
         new LauncherAppsDelegate());
 
     addBinderService(binderServices, Context.FINGERPRINT_SERVICE, IFingerprintService.class);
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      addBinderService(binderServices, Context.CONTEXTHUB_SERVICE, IContextHubService.class);
-      addBinderService(binderServices, Context.SOUND_TRIGGER_SERVICE, ISoundTriggerService.class);
-      addBinderService(
-          binderServices,
-          Context.WIFI_SCANNING_SERVICE,
-          IWifiScanner.class,
-          BinderType.DELEGATING_PROXY,
-          new WifiScannerDelegate());
-    }
+    addBinderService(binderServices, Context.CONTEXTHUB_SERVICE, IContextHubService.class);
+    addBinderService(binderServices, Context.SOUND_TRIGGER_SERVICE, ISoundTriggerService.class);
+    addBinderService(
+        binderServices,
+        Context.WIFI_SCANNING_SERVICE,
+        IWifiScanner.class,
+        BinderType.DELEGATING_PROXY,
+        new WifiScannerDelegate());
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       addBinderService(binderServices, Context.SHORTCUT_SERVICE, IShortcutService.class);
     }

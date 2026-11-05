@@ -992,9 +992,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * will return a {@link android.app.VoiceInteractor} instance
    */
   public void initializeVoiceInteractor() {
-    if (RuntimeEnvironment.getApiLevel() < N) {
-      throw new IllegalStateException("initializeVoiceInteractor requires API " + N);
-    }
     reflector(ActivityReflector.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
   }

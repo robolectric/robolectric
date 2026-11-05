@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;

@@ -15,6 +15,7 @@ import android.os.RemoteException;
 import android.telephony.satellite.SatelliteManager;
 import android.telephony.satellite.SatelliteManager.SatelliteException;
 import android.telephony.satellite.SatelliteModemStateCallback;
+import android.telephony.satellite.SatelliteStateChangeListener;
 import android.telephony.satellite.SatelliteSubscriberInfo;
 import android.telephony.satellite.SatelliteSubscriberProvisionStatus;
 import androidx.test.core.app.ApplicationProvider;
@@ -262,6 +263,64 @@ public class ShadowSatelliteManagerTest {
 
     assertThat(callback1Result.get()).isTrue();
     assertThat(callback2Result.get()).isTrue();
+  }
+
+  @Test
+  public void registerStateChangeListener_listenerIsTriggered() {
+    SatelliteManager satelliteManager = context.getSystemService(SatelliteManager.class);
+    AtomicReference<Boolean> isEnabled = new AtomicReference<>();
+    SatelliteStateChangeListener listener = isEnabled::set;
+
+    satelliteManager.registerStateChangeListener(directExecutor(), listener);
+    assertThat(getShadowSatelliteManager().getStateChangeListeners()).containsExactly(listener);
+    assertThat(isEnabled.get()).isNull();
+
+    getShadowSatelliteManager().setEnabledState(true);
+    assertThat(isEnabled.get()).isTrue();
+    getShadowSatelliteManager().setEnabledState(false);
+    assertThat(isEnabled.get()).isFalse();
+  }
+
+  @Test
+  public void registerStateChangeListener_whenStateAlreadyNotified_immediatelyTriggersListener() {
+    SatelliteManager satelliteManager = context.getSystemService(SatelliteManager.class);
+    getShadowSatelliteManager().setEnabledState(true);
+    AtomicReference<Boolean> isEnabled = new AtomicReference<>();
+    SatelliteStateChangeListener listener = isEnabled::set;
+
+    satelliteManager.registerStateChangeListener(directExecutor(), listener);
+
+    assertThat(isEnabled.get()).isTrue();
+  }
+
+  @Test
+  public void unregisterStateChangeListener_unregistersListener() {
+    SatelliteManager satelliteManager = context.getSystemService(SatelliteManager.class);
+    AtomicBoolean wasCalled = new AtomicBoolean(false);
+    SatelliteStateChangeListener listener = enabled -> wasCalled.set(true);
+    satelliteManager.registerStateChangeListener(directExecutor(), listener);
+
+    satelliteManager.unregisterStateChangeListener(listener);
+    assertThat(getShadowSatelliteManager().getStateChangeListeners()).isEmpty();
+    getShadowSatelliteManager().setEnabledState(true);
+
+    assertThat(wasCalled.get()).isFalse();
+  }
+
+  @Test
+  public void setEnabledState_triggersAllListeners() {
+    SatelliteManager satelliteManager = context.getSystemService(SatelliteManager.class);
+    AtomicReference<Boolean> listener1Result = new AtomicReference<>();
+    AtomicReference<Boolean> listener2Result = new AtomicReference<>();
+    SatelliteStateChangeListener listener1 = listener1Result::set;
+    SatelliteStateChangeListener listener2 = listener2Result::set;
+    satelliteManager.registerStateChangeListener(directExecutor(), listener1);
+    satelliteManager.registerStateChangeListener(directExecutor(), listener2);
+
+    getShadowSatelliteManager().setEnabledState(true);
+
+    assertThat(listener1Result.get()).isTrue();
+    assertThat(listener2Result.get()).isTrue();
   }
 
   @Test

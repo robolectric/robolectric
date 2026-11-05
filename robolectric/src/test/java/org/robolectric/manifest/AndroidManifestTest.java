@@ -228,14 +228,14 @@ public class AndroidManifestTest {
     assertThat(newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion())
         .isEqualTo(7);
     assertThat(newConfigWith("noattributes.xml", "").getTargetSdkVersion())
-        .isEqualTo(VERSION_CODES.M);
+        .isEqualTo(VERSION_CODES.N);
   }
 
   @Test
-  public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToM() throws Exception {
+  public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToN() throws Exception {
     assertThat(newConfigWith("minsdk17.xml", "android:minSdkVersion=\"17\"").getMinSdkVersion())
         .isEqualTo(17);
-    assertThat(newConfigWith("noattributes.xml", "").getMinSdkVersion()).isEqualTo(VERSION_CODES.M);
+    assertThat(newConfigWith("noattributes.xml", "").getMinSdkVersion()).isEqualTo(VERSION_CODES.N);
   }
 
   @Test

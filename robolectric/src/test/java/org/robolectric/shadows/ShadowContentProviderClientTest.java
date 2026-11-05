@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ContentProvider;
@@ -15,9 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ContentProviderController;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.testing.TestContentProvider1;
 
 @RunWith(AndroidJUnit4.class)
@@ -43,11 +39,7 @@ public class ShadowContentProviderClientTest {
   @After
   public void tearDown() {
     if (client != null) {
-      if (RuntimeEnvironment.getApiLevel() > M) {
-        client.close();
-      } else {
-        client.release();
-      }
+      client.close();
     }
   }
 
@@ -70,13 +62,5 @@ public class ShadowContentProviderClientTest {
     assertThat(shadow.isReleased()).isFalse();
     client.release();
     assertThat(shadow.isReleased()).isTrue();
-  }
-
-  @Test
-  @Config(maxSdk = M)
-  public void release_shouldFailWhenCalledTwice() {
-    ContentProviderClient client = contentResolver.acquireContentProviderClient(AUTHORITY);
-    client.release();
-    assertThrows(IllegalStateException.class, () -> client.release());
   }
 }

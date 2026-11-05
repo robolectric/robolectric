@@ -4,7 +4,7 @@ import com.android.internal.policy.PhoneWindow;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Shadow for RotationWatcher for API 23+ */
+/** Shadow for RotationWatcher */
 @Implements(
     className = "com.android.internal.policy.PhoneWindow$RotationWatcher",
     isInAndroidSdk = false)

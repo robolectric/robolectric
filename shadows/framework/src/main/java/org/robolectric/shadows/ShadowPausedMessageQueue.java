@@ -187,10 +187,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   private void updateListener() {
     QueueListener listener = queueListenerRef.get();
-    // if listener is non null, we know poll() is blocking the Looper thread and its safe for us to
-    // call
-    // hasExecutableMsg
-    if (listener != null && hasExecutableMsg()) {
+    if (listener != null) {
       listener.onExecutableMsg();
     }
   }

@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -114,6 +115,85 @@ public class ShadowCall {
     }
   }
 
+  /**
+   * Sets the state of the {@link android.telecom.Call}.
+   *
+   * @param state the new state of the call (e.g., {@link android.telecom.Call#STATE_RINGING}).
+   */
+  public void setState(int state) {
+    reflector(ReflectorCall.class, realObject).setState(state);
+  }
+
+  /**
+   * Sets the {@link android.telecom.Call.Details} of the {@link android.telecom.Call}.
+   *
+   * @param details the details to attach to this call.
+   */
+  public void setDetails(Call.Details details) {
+    reflector(ReflectorCall.class, realObject).setDetails(details);
+  }
+
+  /**
+   * Simulates a call state change by notifying all registered {@link android.telecom.Call.Callback}
+   * instances.
+   *
+   * @param state the new call state to pass to the callbacks.
+   */
+  public void triggerStateChanged(int state) {
+    List<Object> records = reflector(ReflectorCall.class, realObject).getCallbackRecords();
+    if (records != null) {
+      for (Object record : records) {
+        Call.Callback callback = reflector(CallbackRecordReflector.class, record).getCallback();
+        if (callback != null) {
+          callback.onStateChanged(realObject, state);
+        }
+      }
+    }
+  }
+
+  /**
+   * Simulates a call details change by notifying all registered {@link
+   * android.telecom.Call.Callback} instances.
+   *
+   * @param details the new call details to pass to the callbacks.
+   */
+  public void triggerDetailsChanged(Call.Details details) {
+    List<Object> records = reflector(ReflectorCall.class, realObject).getCallbackRecords();
+    if (records != null) {
+      for (Object record : records) {
+        Call.Callback callback = reflector(CallbackRecordReflector.class, record).getCallback();
+        if (callback != null) {
+          callback.onDetailsChanged(realObject, details);
+        }
+      }
+    }
+  }
+
+  /**
+   * Simulates the destruction of the call by notifying all registered {@link
+   * android.telecom.Call.Callback} instances.
+   */
+  public void triggerCallDestroyed() {
+    List<Object> records = reflector(ReflectorCall.class, realObject).getCallbackRecords();
+    if (records != null) {
+      for (Object record : records) {
+        Call.Callback callback = reflector(CallbackRecordReflector.class, record).getCallback();
+        if (callback != null) {
+          callback.onCallDestroyed(realObject);
+        }
+      }
+    }
+  }
+
+  /**
+   * Sets the {@link android.telecom.InCallAdapter} of the {@link android.telecom.Call}.
+   *
+   * @param adapter the adapter to attach to this call.
+   */
+  public void setInCallAdapter(Object adapter) {
+    reflector(ReflectorCall.class, realObject).setInCallAdapter(adapter);
+  }
+
   public String getId() {
     return reflector(ReflectorCall.class, realObject).getId();
   }
@@ -136,5 +216,26 @@ public class ShadowCall {
 
     @Accessor("mInCallAdapter")
     InCallAdapter getInCallAdapter();
+
+    @Accessor("mState")
+    void setState(int state);
+
+    @Accessor("mDetails")
+    void setDetails(Call.Details details);
+
+    @Accessor("mCallbackRecords")
+    List<Object> getCallbackRecords();
+
+    @Accessor("mCallbackRecords")
+    void setCallbackRecords(List<Object> callbackRecords);
+
+    @Accessor("mInCallAdapter")
+    void setInCallAdapter(Object adapter);
+  }
+
+  @ForType(className = "android.telecom.CallbackRecord")
+  interface CallbackRecordReflector {
+    @Accessor("mCallback")
+    Call.Callback getCallback();
   }
 }

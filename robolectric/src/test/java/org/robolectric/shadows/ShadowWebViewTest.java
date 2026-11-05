@@ -721,7 +721,6 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldCreateWebMessageChannel() {
     WebMessagePort[] channel = shadowOf(webView).createWebMessageChannel();
 
@@ -730,7 +729,6 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getCreatedPorts_returnsCreatedPortsList() {
     shadowOf(webView).createWebMessageChannel();
     assertThat(shadowOf(webView).getCreatedPorts()).isNotEmpty();

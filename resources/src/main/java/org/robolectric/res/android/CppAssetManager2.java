@@ -15,6 +15,7 @@ import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -207,6 +208,9 @@ public class CppAssetManager2 {
   // which involves some calculation.
   //  private std.unordered_map<int, util.unique_cptr<ResolvedBag>> cached_bags_;
   private final Map<Integer, ResolvedBag> cached_bags_ = new HashMap<>();
+
+  // Cached set of resolved resource values.
+  @VisibleForTesting final Map<Integer, ResolvedValue> cachedResolvedValues = new HashMap<>();
 
   //  };
 
@@ -907,12 +911,99 @@ public class CppAssetManager2 {
   //  ApkAssetsCookie ResolveReference(ApkAssetsCookie cookie, Res_value in_out_value,
   //                                   ResTable_config in_out_selected_config, int* in_out_flags,
   //                                   int* out_last_reference);
+  @VisibleForTesting
+  static class ResolvedValue {
+    final ApkAssetsCookie cookie;
+    final Res_value value;
+    final ResTable_config selectedConfig;
+    final int flags;
+    final int lastReference;
+
+    ResolvedValue(
+        ApkAssetsCookie cookie,
+        Res_value value,
+        ResTable_config selectedConfig,
+        int flags,
+        int lastReference) {
+      this.cookie = cookie;
+      this.value = value != null ? new Res_value(value) : null;
+      this.selectedConfig = selectedConfig != null ? new ResTable_config(selectedConfig) : null;
+      this.flags = flags;
+      this.lastReference = lastReference;
+    }
+  }
+
   public ApkAssetsCookie ResolveReference(
+      ApkAssetsCookie cookie,
+      Ref<Res_value> inOutValue,
+      final Ref<ResTable_config> inOutSelectedConfig,
+      final Ref<Integer> inOutFlags,
+      final Ref<Integer> outLastReference) {
+    return resolveReference(
+        cookie, inOutValue, inOutSelectedConfig, inOutFlags, outLastReference, false);
+  }
+
+  public ApkAssetsCookie resolveReference(
+      ApkAssetsCookie cookie,
+      Ref<Res_value> inOutValue,
+      final Ref<ResTable_config> inOutSelectedConfig,
+      final Ref<Integer> inOutFlags,
+      final Ref<Integer> outLastReference,
+      boolean cacheValue) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "ResolveReference",
+            () ->
+                resolveReferenceMeasured(
+                    cookie,
+                    inOutValue,
+                    inOutSelectedConfig,
+                    inOutFlags,
+                    outLastReference,
+                    cacheValue));
+  }
+
+  private ApkAssetsCookie resolveReferenceMeasured(
       ApkAssetsCookie cookie,
       Ref<Res_value> in_out_value,
       final Ref<ResTable_config> in_out_selected_config,
       final Ref<Integer> in_out_flags,
-      final Ref<Integer> out_last_reference) {
+      final Ref<Integer> outLastReference,
+      boolean cacheValue) {
+    if (in_out_value == null
+        || in_out_value.get() == null
+        || in_out_value.get().dataType != Res_value.TYPE_REFERENCE
+        || in_out_value.get().data == 0) {
+      return cookie;
+    }
+
+    final int originalFlags =
+        (in_out_flags != null && in_out_flags.get() != null) ? in_out_flags.get() : 0;
+    final int originalResId = in_out_value.get().data;
+    if (cacheValue) {
+      ResolvedValue cached = cachedResolvedValues.get(originalResId);
+      if (cached != null) {
+        PerfStatsCollector.getInstance().incrementCount("ResolveReference_hit");
+        in_out_value.set(cached.value != null ? new Res_value(cached.value) : null);
+        if (in_out_selected_config != null) {
+          in_out_selected_config.set(
+              cached.selectedConfig != null ? new ResTable_config(cached.selectedConfig) : null);
+        }
+        if (outLastReference != null) {
+          outLastReference.set(cached.lastReference);
+        }
+        if (in_out_flags != null) {
+          in_out_flags.set(originalFlags | cached.flags);
+        }
+        return cached.cookie;
+      }
+      PerfStatsCollector.getInstance().incrementCount("ResolveReference_miss");
+    } else {
+      PerfStatsCollector.getInstance().incrementCount("ResolveReference_nocache");
+    }
+
+    final Ref<Integer> lastRef = outLastReference != null ? outLastReference : new Ref<>(0);
+    int combinedFlags = 0;
     final int kMaxIterations = 20;
 
     for (int iteration = 0;
@@ -920,7 +1011,7 @@ public class CppAssetManager2 {
             && in_out_value.get().data != 0
             && iteration < kMaxIterations;
         iteration++) {
-      out_last_reference.set(in_out_value.get().data);
+      lastRef.set(in_out_value.get().data);
       final Ref<Integer> new_flags = new Ref<>(0);
       cookie =
           GetResource(
@@ -933,13 +1024,28 @@ public class CppAssetManager2 {
       if (cookie.intValue() == kInvalidCookie) {
         return K_INVALID_COOKIE;
       }
-      if (in_out_flags != null) {
-        in_out_flags.set(in_out_flags.get() | new_flags.get());
+      if (new_flags.get() != null) {
+        combinedFlags |= new_flags.get();
       }
-      if (out_last_reference.get() == in_out_value.get().data) {
+      if (lastRef.get() == in_out_value.get().data) {
         // This reference can't be resolved, so exit now and let the caller deal with it.
-        return cookie;
+        break;
       }
+    }
+
+    if (cacheValue) {
+      cachedResolvedValues.put(
+          originalResId,
+          new ResolvedValue(
+              cookie,
+              in_out_value.get(),
+              in_out_selected_config != null ? in_out_selected_config.get() : null,
+              combinedFlags,
+              lastRef.get()));
+    }
+
+    if (in_out_flags != null) {
+      in_out_flags.set(originalFlags | combinedFlags);
     }
     return cookie;
   }
@@ -1340,6 +1446,12 @@ public class CppAssetManager2 {
   // bitmask `diff`.
   //  void InvalidateCaches(int diff);
   private void InvalidateCaches(int diff) {
+    invalidateCaches(diff);
+  }
+
+  @VisibleForTesting
+  void invalidateCaches(int diff) {
+    cachedResolvedValues.clear();
     if (diff == 0xffffffff) {
       // Everything must go.
       cached_bags_.clear();
@@ -1614,6 +1726,13 @@ public class CppAssetManager2 {
           //          *in_out_type_spec_flags |= new_flags;
           in_out_type_spec_flags.set(in_out_type_spec_flags.get() | new_flags.get());
         }
+        return asset_manager_.resolveReference(
+            cookie,
+            in_out_value,
+            in_out_selected_config,
+            in_out_type_spec_flags,
+            out_last_ref,
+            true /* cacheValue */);
       }
       return asset_manager_.ResolveReference(
           cookie, in_out_value, in_out_selected_config, in_out_type_spec_flags, out_last_ref);
@@ -1628,23 +1747,28 @@ public class CppAssetManager2 {
       }
     }
 
-    // Sets this Theme to be a copy of `o` if `o` has the same AssetManager as this Theme.
-    // Returns false if the AssetManagers of the Themes were not compatible.
+    // Sets this Theme to be a copy of `o`.
+    // If `o` has a different AssetManager from this Theme, only system attributes are copied.
     //  boolean SetTo(final Theme& o);
+    @SuppressWarnings("ReferenceEquality")
     public boolean SetTo(final Theme o) {
+      return setTo(o, asset_manager_ != o.asset_manager_);
+    }
+
+    // Sets this Theme to be a copy of `o`.
+    // If `copyOnlySystem` is true, only attributes from the system package (0x01) are copied.
+    public boolean setTo(final Theme o, boolean copyOnlySystem) {
       if (this == o) {
         return true;
       }
 
       type_spec_flags_ = o.type_spec_flags_;
 
-      boolean copy_only_system = asset_manager_ != o.asset_manager_;
-
       // for (int p = 0; p < packages_.size(); p++) {
       //   final Package package_ = o.packages_[p].get();
       for (int p = 0; p < packages_.length; p++) {
         ThemePackage package_ = o.packages_[p];
-        if (package_ == null || (copy_only_system && p != 0x01)) {
+        if (package_ == null || (copyOnlySystem && p != 0x01)) {
           // The other theme doesn't have this package, clear ours.
           packages_[p] = new ThemePackage();
           continue;

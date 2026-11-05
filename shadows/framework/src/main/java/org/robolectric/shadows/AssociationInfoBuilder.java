@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.companion.AssociatedDevice;
 import android.companion.AssociationInfo;
 import android.net.MacAddress;
 import com.google.common.base.Preconditions;
+import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -31,6 +33,7 @@ public class AssociationInfoBuilder {
   private boolean revoked;
   private long lastTimeConnectedMs;
   private int systemDataSyncFlags;
+  private boolean isTrusted;
 
   private AssociationInfoBuilder() {}
 
@@ -112,6 +115,11 @@ public class AssociationInfoBuilder {
     return this;
   }
 
+  public AssociationInfoBuilder setIsTrusted(boolean isTrusted) {
+    this.isTrusted = isTrusted;
+    return this;
+  }
+
   public AssociationInfo build() {
     try {
       MacAddress macAddress =
@@ -166,6 +174,13 @@ public class AssociationInfoBuilder {
         if (tag != null) {
           reflector(BuilderReflector.class, builder).setTag(tag);
         }
+        if (RuntimeEnvironment.getApiLevel() > CINNAMON_BUN) {
+          reflector(BuilderReflector.class, builder).setAssociationToken(new UUID(0L, 0L));
+        }
+        if (ReflectionHelpers.hasMethod(
+            AssociationInfo.Builder.class, "setTrusted", boolean.class)) {
+          reflector(BuilderReflector.class, builder).setTrusted(isTrusted);
+        }
         return builder.build();
       }
     } catch (ClassNotFoundException e) {
@@ -176,5 +191,9 @@ public class AssociationInfoBuilder {
   @ForType(AssociationInfo.Builder.class)
   private interface BuilderReflector {
     void setTag(String tag);
+
+    void setAssociationToken(UUID associationToken);
+
+    void setTrusted(boolean isTrusted);
   }
 }

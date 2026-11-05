@@ -631,7 +631,7 @@ public class AndroidManifest implements UsesSdk {
   @Override
   public int getMinSdkVersion() {
     parseAndroidManifest();
-    return minSdkVersion == null ? 23 : minSdkVersion;
+    return minSdkVersion == null ? 24 : minSdkVersion;
   }
 
   /**
@@ -641,7 +641,7 @@ public class AndroidManifest implements UsesSdk {
    * <p>Note that this value changes the behavior of some Android code (notably {@link
    * android.content.SharedPreferences}) to emulate old bugs.
    *
-   * @return the target SDK version, or M (23) by default
+   * @return the target SDK version, or N (24) by default
    */
   @Override
   public int getTargetSdkVersion() {

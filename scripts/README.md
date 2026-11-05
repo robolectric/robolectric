@@ -2,12 +2,16 @@
 
 **Note:** Based on [Android documentation](https://source.android.com/source/downloading.html).
 
-This tutorial will allow you to run the `build-android.sh` script in the Robolectric repository, resulting in the corresponding Android version's android-all jar.
+This tutorial will allow you to run the `build-android.sh` script in the
+Robolectric repository, resulting in the corresponding Android version's
+android-all jar.
 
 ## 1. Installing Repo
-Repo is a tool that makes it easier to work with Git in the context of Android. For more information about Repo, see the Developing section.
+Repo is a tool that makes it easier to work with Git in the context of Android.
+For more information about Repo, see the Developing section.
 
-To install Repo make sure you have a bin/ directory in your home directory and that it is included in your path:
+To install Repo make sure you have a bin/ directory in your home directory and
+that it is included in your path:
 ```
 $ mkdir ~/bin
 $ PATH=~/bin:$PATH
@@ -20,9 +24,11 @@ $ chmod a+x ~/bin/repo
 ```
 
 ## 2. Initializing a Repo client
-After installing Repo, set up your client to access the Android source repository:
+After installing Repo, set up your client to access the Android source
+repository:
 
-Create an empty directory to hold your working files. If you're using MacOS, this has to be on a case-sensitive filesystem. Give it any name you like:
+Create an empty directory to hold your working files. If you're using MacOS,
+this has to be on a case-sensitive filesystem. Give it any name you like:
 ```
 $ mkdir <WORKING_DIRECTORY>
 $ cd <WORKING_DIRECTORY>
@@ -52,32 +58,32 @@ Now use repo to sync the android source, and then build.
 
 The currently supported Android versions are:
 
-*  `6.0.1_r3`    - Marshmallow API 23
-*  `7.0.0_r1`    - Nougat API 24
-*  `7.1.0_r7`    - Nougat MR1 API 25
-*  `8.0.0_r4`    - Oreo API 26
-*  `8.1.0`       - Oreo MR1 API 27
-*  `9`           - P API 28
-*  `10`          - Q API 29
-*  `11`          - R API 30
-*  `12`          - S API 31
-*  `12.1`        - S V2 API 32
-*  `13`          - T API 33
-*  `14`          - U API 34
+* `7.0.0_r1` - Nougat API 24
+* `7.1.0_r7` - Nougat MR1 API 25
+* `8.0.0_r4` - Oreo API 26
+* `8.1.0` - Oreo MR1 API 27
+* `9` - P API 28
+* `10` - Q API 29
+* `11` - R API 30
+* `12` - S API 31
+* `12.1` - S V2 API 32
+* `13` - T API 33
+* `14` - U API 34
 
-Beware it can take upwards of 100 GB of space to sync and build. 
+Beware it can take upwards of 100 GB of space to sync and build.
 
 For more infomation see [Downloading and Building](https://source.android.com/source/requirements)
 
-Choose a <# parallel jobs> value roughly equal to # of free cores on your machine. YMMV.
-
+Choose a `<# parallel jobs>` value roughly equal to # of free cores on your
+machine. YMMV.
 
 ## 7. Run build-android.sh
 
 Signing Artifacts:
 The end of the script will prompt you to sign the new artifacts using GPG. See [Performing a Release](https://github.com/robolectric/robolectric-gradle-plugin/wiki/Performing-a-Release) for instructions on obtaining a GPG key pair.
 
-(Optional) You will be prompted a total of 4 times (once for each artifact). To make this easier, run this command beforehand:
+(Optional) You will be prompted a total of 4 times (once for each artifact). To
+make this easier, run this command beforehand:
 ```
 $ gpg-agent --daemon
 ```
@@ -88,4 +94,5 @@ $ export SIGNING_PASSWORD=<Passphrase for GPG signing key>
 $ build-android.sh <Path to AOSP source directory> <android version> <robolectric sub-version>
 ```
 
-For Robolectric version `6.0.1_r3-robolectric-0`, android version would be `6.0.1_r3` and  robolectric sub-version `0`.
+For Robolectric version `7.0.0_r1-robolectric-0`, android version would be
+`7.0.0_r1` and robolectric sub-version `0`.

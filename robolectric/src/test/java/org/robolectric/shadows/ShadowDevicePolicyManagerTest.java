@@ -1438,7 +1438,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void setStorageEncryptionStatus_ActiveDefaultKey() {
     shadowOf(devicePolicyManager).setStorageEncryptionStatus(ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY);
     assertThat(devicePolicyManager.getStorageEncryptionStatus())
@@ -1446,7 +1445,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setStorageEncryptionStatus_ActivePerUser() {
     shadowOf(devicePolicyManager).setStorageEncryptionStatus(ENCRYPTION_STATUS_ACTIVE_PER_USER);
     assertThat(devicePolicyManager.getStorageEncryptionStatus())
@@ -2266,7 +2264,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
     try {
       devicePolicyManager.getPermissionPolicy(testComponent);
@@ -2277,7 +2274,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void setPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
     try {
       devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
@@ -2288,7 +2284,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void setPermissionPolicy_isProfileOwner_setsPermissionPolicyCorrectly() {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
@@ -2299,7 +2294,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nullAdmin() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     devicePolicyManager.setSystemUpdatePolicy(null, policy);
@@ -2308,7 +2302,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nonNullAdmin() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     devicePolicyManager.setSystemUpdatePolicy(new ComponentName("testPkg", "testCls"), policy);
@@ -2317,13 +2310,11 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getSystemUpdatePolicyShouldReturnCorrectDefaultValue() {
     assertThat(devicePolicyManager.getSystemUpdatePolicy()).isNull();
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void getSystemUpdatePolicyShadowShouldReturnCorrectSetValue() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     shadowOf(devicePolicyManager).setSystemUpdatePolicy(policy);

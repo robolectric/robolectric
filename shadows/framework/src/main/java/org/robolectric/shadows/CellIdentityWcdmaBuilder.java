@@ -95,12 +95,7 @@ public class CellIdentityWcdmaBuilder {
   public CellIdentityWcdma build() {
     CellIdentityWcdmaReflector cellIdentityReflector = reflector(CellIdentityWcdmaReflector.class);
 
-    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.N) {
-      int mcc = parseInt(mccStr, Integer.MAX_VALUE);
-      int mnc = parseInt(mncStr, Integer.MAX_VALUE);
-
-      return cellIdentityReflector.newCellIdentityWcdma(mcc, mnc, lac, cid, psc);
-    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.P) {
+    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.P) {
       int mcc = parseInt(mccStr, Integer.MAX_VALUE);
       int mnc = parseInt(mncStr, Integer.MAX_VALUE);
 
@@ -135,9 +130,6 @@ public class CellIdentityWcdmaBuilder {
 
     @Constructor
     CellIdentityWcdma newCellIdentityWcdma();
-
-    @Constructor
-    CellIdentityWcdma newCellIdentityWcdma(int mcc, int mnc, int lac, int cid, int psc);
 
     @Constructor
     CellIdentityWcdma newCellIdentityWcdma(int mcc, int mnc, int lac, int cid, int psc, int uarfcn);

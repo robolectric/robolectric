@@ -5,7 +5,6 @@ import static android.content.res.Configuration.DENSITY_DPI_NONE;
 import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import android.text.TextUtils;
@@ -333,13 +332,9 @@ public class ConfigurationV25 {
 
   private static List<Locale> getLocales(Configuration config) {
     List<Locale> locales = new ArrayList<>();
-    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.M) {
-      LocaleList localeList = config.getLocales();
-      for (int i = 0; i < localeList.size(); i++) {
-        locales.add(localeList.get(i));
-      }
-    } else if (config.locale != null) {
-      locales.add(config.locale);
+    LocaleList localeList = config.getLocales();
+    for (int i = 0; i < localeList.size(); i++) {
+      locales.add(localeList.get(i));
     }
     return locales;
   }

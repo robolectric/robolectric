@@ -20,7 +20,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link android.app.VoiceInteractor}. */
-@Implements(value = VoiceInteractor.class)
+@Implements(VoiceInteractor.class)
 public class ShadowVoiceInteractor {
 
   private int directActionsInvalidationCount = 0;

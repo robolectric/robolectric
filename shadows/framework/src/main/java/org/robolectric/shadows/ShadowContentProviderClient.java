@@ -11,7 +11,6 @@ import android.content.OperationApplicationException;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
@@ -19,7 +18,6 @@ import android.os.RemoteException;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -121,13 +119,9 @@ public class ShadowContentProviderClient {
   }
 
   public boolean isReleased() {
-    ContentProviderClientReflector contentProviderClientReflector =
-        reflector(ContentProviderClientReflector.class, realContentProviderClient);
-    if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.M) {
-      return contentProviderClientReflector.getReleased();
-    } else {
-      return contentProviderClientReflector.getClosed().get();
-    }
+    return reflector(ContentProviderClientReflector.class, realContentProviderClient)
+        .getClosed()
+        .get();
   }
 
   void setContentProvider(ContentProvider provider) {
@@ -139,9 +133,6 @@ public class ShadowContentProviderClient {
 
     @Accessor("mStable")
     boolean getStable();
-
-    @Accessor("mReleased")
-    boolean getReleased();
 
     @Accessor("mClosed")
     AtomicBoolean getClosed();

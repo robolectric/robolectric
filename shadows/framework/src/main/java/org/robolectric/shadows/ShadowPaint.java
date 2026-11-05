@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -10,7 +9,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
-import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.ColorFilter;
@@ -24,8 +22,6 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.TextLayoutMode;
-import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -394,19 +390,6 @@ public class ShadowPaint {
     return Math.max(0f, textScaleX) * textWidth;
   }
 
-  @Implementation(maxSdk = M)
-  protected static int native_breakText(
-      long native_object,
-      long native_typeface,
-      char[] text,
-      int index,
-      int count,
-      float maxWidth,
-      int bidiFlags,
-      float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
-  }
-
   @Implementation(minSdk = N, maxSdk = O_MR1)
   protected static int nBreakText(
       long nObject,
@@ -437,18 +420,6 @@ public class ShadowPaint {
       measuredWidth[0] = maxWidth;
     }
     return text.length;
-  }
-
-  @Implementation(maxSdk = M)
-  protected static int native_breakText(
-      long native_object,
-      long native_typeface,
-      String text,
-      boolean measureForwards,
-      float maxWidth,
-      int bidiFlags,
-      float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
   }
 
   @Implementation(minSdk = N, maxSdk = O_MR1)
@@ -489,22 +460,19 @@ public class ShadowPaint {
 
   @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
-    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
-      // TODO: hack, just set values to those we see on emulator
-      int descent = 7;
-      int ascent = -28;
-      int leading = 0;
+    // TODO: hack, just set values to those we see on emulator
+    int descent = 7;
+    int ascent = -28;
+    int leading = 0;
 
-      if (fmi != null) {
-        fmi.top = -32;
-        fmi.ascent = ascent;
-        fmi.descent = descent;
-        fmi.bottom = 9;
-        fmi.leading = leading;
-      }
-      return descent - ascent + leading;
+    if (fmi != null) {
+      fmi.top = -32;
+      fmi.ascent = ascent;
+      fmi.descent = descent;
+      fmi.bottom = 9;
+      fmi.leading = leading;
     }
-    return 0;
+    return descent - ascent + leading;
   }
 
   @Implementation(minSdk = O, maxSdk = O_MR1)
@@ -521,11 +489,6 @@ public class ShadowPaint {
     return nGetFontMetricsInt(nativePaint, (FontMetricsInt) fmi);
   }
 
-  @Implementation(maxSdk = M)
-  protected int getFontMetricsInt(FontMetricsInt fmi) {
-    return nGetFontMetricsInt(0, fmi);
-  }
-
   @Implementation(minSdk = P)
   protected static float nGetRunAdvance(
       long paintPtr,
@@ -536,11 +499,8 @@ public class ShadowPaint {
       int contextEnd,
       boolean isRtl,
       int offset) {
-    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
-      // be consistent with measureText for measurements, and measure 1 pixel per char
-      return end - start;
-    }
-    return 0f;
+    // be consistent with measureText for measurements, and measure 1 pixel per char
+    return end - start;
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
@@ -597,20 +557,6 @@ public class ShadowPaint {
       boolean isRtl,
       int offset) {
     return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
-  }
-
-  @Implementation(maxSdk = M)
-  protected static float native_getRunAdvance(
-      long nativeObject,
-      long nativeTypeface,
-      char[] text,
-      int start,
-      int end,
-      int contextStart,
-      int contextEnd,
-      boolean isRtl,
-      int offset) {
-    return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
 
   @Implementation(minSdk = O)

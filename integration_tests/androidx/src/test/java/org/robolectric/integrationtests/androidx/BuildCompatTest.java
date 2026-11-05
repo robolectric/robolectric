@@ -14,15 +14,8 @@ import org.robolectric.annotation.Config;
 public class BuildCompatTest {
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void isAtLeastN() {
     assertThat(BuildCompat.isAtLeastN()).isTrue();
-  }
-
-  @Test
-  @Config(maxSdk = Build.VERSION_CODES.M)
-  public void isAtLeastN_preN() {
-    assertThat(BuildCompat.isAtLeastN()).isFalse();
   }
 
   @Test

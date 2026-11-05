@@ -2,24 +2,37 @@ package org.robolectric.shadows;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.input.VirtualKeyEvent.ACTION_DOWN;
+import static android.media.AudioRecord.READ_BLOCKING;
+import static android.media.AudioRecord.READ_NON_BLOCKING;
+import static android.media.AudioRecord.RECORDSTATE_RECORDING;
+import static android.media.AudioRecord.RECORDSTATE_STOPPED;
+import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.audio.AudioCapture;
+import android.companion.virtual.audio.AudioInjection;
+import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraCallback;
 import android.companion.virtual.camera.VirtualCameraConfig;
@@ -31,6 +44,8 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.DisplayManager.DisplayListener;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualKeyEvent;
@@ -44,14 +59,20 @@ import android.hardware.input.VirtualMouseScrollEvent;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
+import android.media.AudioFormat;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntConsumer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -63,10 +84,12 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSource;
 import org.robolectric.shadows.ShadowVirtualDeviceManager.ShadowVirtualDevice;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -133,6 +156,92 @@ public class ShadowVirtualDeviceManagerTest {
     }
     // When device is closed, listener is notified.
     verify(listener).onVirtualDeviceClosed(1);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener_acrossDeviceContexts() {
+    Context deviceContext = context.createDeviceContext(Context.DEVICE_ID_DEFAULT);
+    VirtualDeviceManager deviceContextVirtualDeviceManager =
+        deviceContext.getSystemService(VirtualDeviceManager.class);
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    deviceContextVirtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), listener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      verify(listener).onVirtualDeviceCreated(/* deviceId= */ 1);
+    }
+    verify(listener).onVirtualDeviceClosed(/* deviceId= */ 1);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void
+      testRegisterVirtualDeviceListener_unregisterDuringCallback_doesNotThrowConcurrentModificationException() {
+    VirtualDeviceListener secondListener = mock(VirtualDeviceListener.class);
+    VirtualDeviceListener selfUnregisteringListener =
+        new VirtualDeviceListener() {
+          @Override
+          public void onVirtualDeviceCreated(int deviceId) {
+            virtualDeviceManager.unregisterVirtualDeviceListener(this);
+          }
+
+          @Override
+          public void onVirtualDeviceClosed(int deviceId) {}
+        };
+    virtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), selfUnregisteringListener);
+    virtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), secondListener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      verify(secondListener).onVirtualDeviceCreated(/* deviceId= */ 1);
+    }
+    verify(secondListener).onVirtualDeviceClosed(/* deviceId= */ 1);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testUnregisterVirtualDeviceListener() {
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    virtualDeviceManager.registerVirtualDeviceListener(MoreExecutors.directExecutor(), listener);
+    virtualDeviceManager.unregisterVirtualDeviceListener(listener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {}
+
+    verifyNoInteractions(listener);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener_nullExecutor_throwsNullPointerException() {
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    assertThrows(
+        NullPointerException.class,
+        () -> virtualDeviceManager.registerVirtualDeviceListener(null, listener));
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener_nullListener_throwsNullPointerException() {
+    Executor executor = MoreExecutors.directExecutor();
+    assertThrows(
+        NullPointerException.class,
+        () -> virtualDeviceManager.registerVirtualDeviceListener(executor, null));
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testUnregisterVirtualDeviceListener_nullListener_throwsNullPointerException() {
+    assertThrows(
+        NullPointerException.class,
+        () -> virtualDeviceManager.unregisterVirtualDeviceListener(null));
   }
 
   @Test
@@ -604,6 +713,72 @@ public class ShadowVirtualDeviceManagerTest {
   }
 
   @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testCreateVirtualDisplay_displayIdAvailableDuringOnDisplayAddedCallback() {
+    DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+    AtomicReference<int[]> displayIdsDuringCallback = new AtomicReference<>();
+    DisplayListener displayListener =
+        new DisplayListener() {
+          @Override
+          public void onDisplayAdded(int displayId) {
+            List<android.companion.virtual.VirtualDevice> devices =
+                virtualDeviceManager.getVirtualDevices();
+            if (!devices.isEmpty()) {
+              displayIdsDuringCallback.set(devices.get(0).getDisplayIds());
+            }
+          }
+
+          @Override
+          public void onDisplayRemoved(int displayId) {}
+
+          @Override
+          public void onDisplayChanged(int displayId) {}
+        };
+    displayManager.registerDisplayListener(displayListener, /* handler= */ null);
+
+    try {
+      Surface surface = new Surface(new SurfaceTexture(/* texName= */ 0));
+      try (VirtualDevice firstDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+        VirtualDisplay firstDisplay =
+            firstDevice.createVirtualDisplay(
+                getVirtualDisplayConfig("firstDisplay", surface, /* flags= */ 0),
+                MoreExecutors.directExecutor(),
+                mockDisplayCallback);
+        ShadowLooper.idleMainLooper();
+
+        assertThat(displayIdsDuringCallback.get()).isNotNull();
+        assertThat(displayIdsDuringCallback.get())
+            .asList()
+            .contains(firstDisplay.getDisplay().getDisplayId());
+        firstDisplay.release();
+      }
+
+      // Create a second virtual device and display after the first display was released so that
+      // DisplayManagerGlobal's nextDisplayId is greater than max(getDisplayIds()) + 1.
+      displayIdsDuringCallback.set(null);
+      try (VirtualDevice secondDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("bar").build())) {
+        VirtualDisplay secondDisplay =
+            secondDevice.createVirtualDisplay(
+                getVirtualDisplayConfig("secondDisplay", surface, /* flags= */ 0),
+                MoreExecutors.directExecutor(),
+                mockDisplayCallback);
+        ShadowLooper.idleMainLooper();
+
+        assertThat(displayIdsDuringCallback.get()).isNotNull();
+        assertThat(displayIdsDuringCallback.get())
+            .asList()
+            .contains(secondDisplay.getDisplay().getDisplayId());
+      }
+    } finally {
+      displayManager.unregisterDisplayListener(displayListener);
+    }
+  }
+
+  @Test
   @Config(sdk = VANILLA_ICE_CREAM)
   public void testCreateVirtualCamera() {
     VirtualCameraCallback callback = mock(VirtualCameraCallback.class);
@@ -654,6 +829,269 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(activityVirtualDevices).isNotNull();
       assertThat(activityVirtualDevices).isEqualTo(applicationVirtualDevices);
     }
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testReset_closesActiveDevicesAndPreservesListenersForSubsequentCreations() {
+    DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+    VirtualDeviceListener deviceListener = mock(VirtualDeviceListener.class);
+    DisplayListener displayListener = mock(DisplayListener.class);
+    virtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), deviceListener);
+    displayManager.registerDisplayListener(displayListener, /* handler= */ null);
+
+    try {
+      VirtualDevice firstDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build());
+      Surface surface = new Surface(new SurfaceTexture(/* texName= */ 0));
+      VirtualDisplay firstDisplay =
+          firstDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("firstDisplay", surface, /* flags= */ 0),
+              MoreExecutors.directExecutor(),
+              mockDisplayCallback);
+      int firstDisplayId = firstDisplay.getDisplay().getDisplayId();
+      ShadowLooper.idleMainLooper();
+
+      verify(deviceListener).onVirtualDeviceCreated(/* deviceId= */ 1);
+      verify(displayListener).onDisplayAdded(firstDisplayId);
+
+      ShadowVirtualDevice.reset();
+      ShadowLooper.idleMainLooper();
+
+      ShadowVirtualDevice shadowFirstDevice = Shadow.extract(firstDevice);
+      assertThat(shadowFirstDevice.isClosed()).isTrue();
+      assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
+      verify(deviceListener).onVirtualDeviceClosed(/* deviceId= */ 1);
+      verify(displayListener).onDisplayRemoved(firstDisplayId);
+      // Operations on a display after its VirtualDevice was closed should be safe no-ops.
+      firstDisplay.setSurface(null);
+      firstDisplay.resize(DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_DPI);
+      firstDisplay.release();
+
+      try (VirtualDevice secondDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("bar").build())) {
+        assertThat(secondDevice.getDeviceId()).isEqualTo(1);
+        verify(deviceListener, times(2)).onVirtualDeviceCreated(/* deviceId= */ 1);
+      }
+    } finally {
+      displayManager.unregisterDisplayListener(displayListener);
+    }
+  }
+
+  @Test
+  public void testCreateVirtualAudioDevice_audioCapture_readsFromShadowAudioRecord() {
+    Shadows.shadowOf((Application) context)
+        .grantPermissions(Manifest.permission.MODIFY_AUDIO_ROUTING);
+    AudioFormat captureFormat = createAudioCaptureFormat();
+    AtomicBoolean observedIsBlocking = new AtomicBoolean(true);
+    byte[] expectedBytes = new byte[] {10, 20, 30, 40};
+    ShadowAudioRecord.setSourceProvider(audioRecord ->
+        new AudioRecordSource() {
+          @Override
+          public int readInByteArray(
+              byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
+            observedIsBlocking.set(isBlocking);
+            int toCopy = Math.min(expectedBytes.length, sizeInBytes);
+            System.arraycopy(expectedBytes, 0, audioData, offsetInBytes, toCopy);
+            return toCopy;
+          }
+
+          @Override
+          public int readInDirectBuffer(ByteBuffer buffer, int sizeInBytes, boolean isBlocking) {
+            observedIsBlocking.set(isBlocking);
+            int maxBytes = Math.min(buffer.remaining(), sizeInBytes);
+            int toCopy = Math.min(expectedBytes.length, maxBytes);
+            buffer.put(expectedBytes, 0, toCopy);
+            return toCopy;
+          }
+        });
+
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      VirtualDisplay virtualDisplay =
+          virtualDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("audioDisplay", /* surface= */ null, /* flags= */ 0),
+              /* executor= */ null,
+              /* callback= */ null);
+      VirtualAudioDevice virtualAudioDevice =
+          virtualDevice.createVirtualAudioDevice(
+              virtualDisplay, /* executor= */ null, /* callback= */ null);
+      assertThat(
+              virtualDevice.createVirtualAudioDevice(
+                  virtualDisplay, /* executor= */ null, /* callback= */ null))
+          .isSameInstanceAs(virtualAudioDevice);
+
+      AudioCapture audioCapture = virtualAudioDevice.startAudioCapture(captureFormat);
+      assertThat(audioCapture.getFormat()).isEqualTo(captureFormat);
+      assertThat(audioCapture.getRecordingState()).isEqualTo(RECORDSTATE_RECORDING);
+      assertThat(virtualAudioDevice.getAudioCapture()).isSameInstanceAs(audioCapture);
+      // Before any app UIDs are routed, the backing AudioRecord has not been created yet.
+      assertThat(audioCapture.read(new byte[8], 0, 8)).isEqualTo(0);
+
+      ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+      shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100);
+
+      byte[] byteOutput = new byte[8];
+      int arrayBytesRead = audioCapture.read(byteOutput, 1, 7, READ_NON_BLOCKING);
+      assertThat(arrayBytesRead).isEqualTo(4);
+      assertThat(observedIsBlocking.get()).isFalse();
+      assertThat(Arrays.copyOfRange(byteOutput, 1, 5)).isEqualTo(expectedBytes);
+
+      ByteBuffer directBuffer = ByteBuffer.allocateDirect(8);
+      int bufferBytesRead = audioCapture.read(directBuffer, 8, READ_BLOCKING);
+      assertThat(bufferBytesRead).isEqualTo(4);
+      assertThat(observedIsBlocking.get()).isTrue();
+      assertThat(directBuffer.position()).isEqualTo(0);
+      byte[] copiedFromBuffer = new byte[4];
+      directBuffer.get(copiedFromBuffer);
+      assertThat(copiedFromBuffer).isEqualTo(expectedBytes);
+
+      audioCapture.stop();
+      assertThat(audioCapture.getRecordingState()).isEqualTo(RECORDSTATE_STOPPED);
+
+      audioCapture.startRecording();
+      assertThat(audioCapture.getRecordingState()).isEqualTo(RECORDSTATE_RECORDING);
+      assertThat(audioCapture.read(new byte[8], 0, 8)).isEqualTo(4);
+
+      // Clearing routed app UIDs releases the backing AudioRecord stream.
+      shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged();
+      assertThat(audioCapture.read(new byte[8], 0, 8)).isEqualTo(0);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testCreateVirtualAudioDevice_customAudioDevicePolicy_createsAudioCapture() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0,
+            new VirtualDeviceParams.Builder()
+                .setName("customAudio")
+                .setDevicePolicy(
+                    VirtualDeviceParams.POLICY_TYPE_AUDIO, VirtualDeviceParams.DEVICE_POLICY_CUSTOM)
+                .build())) {
+      // DEVICE_POLICY_CUSTOM uses Context.createDeviceContext(deviceId) for AudioPolicy.
+      Shadows.shadowOf((Application) context)
+          .grantPermissions(virtualDevice.getDeviceId(), Manifest.permission.MODIFY_AUDIO_ROUTING);
+      VirtualDisplay virtualDisplay =
+          virtualDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("audioDisplay", /* surface= */ null, /* flags= */ 0),
+              /* executor= */ null,
+              /* callback= */ null);
+      VirtualAudioDevice virtualAudioDevice =
+          virtualDevice.createVirtualAudioDevice(
+              virtualDisplay, /* executor= */ null, /* callback= */ null);
+      AudioCapture audioCapture = virtualAudioDevice.startAudioCapture(createAudioCaptureFormat());
+      ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+      shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100);
+
+      ByteBuffer directBuffer = ByteBuffer.allocateDirect(16);
+      assertThat(audioCapture.read(directBuffer, 16)).isEqualTo(16);
+    }
+  }
+
+  @Test
+  public void testCreateVirtualAudioDevice_audioInjection_writesToAudioTrack() {
+    Shadows.shadowOf((Application) context)
+        .grantPermissions(Manifest.permission.MODIFY_AUDIO_ROUTING);
+    AudioFormat injectionFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48000)
+            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
+            .build();
+
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      VirtualDisplay virtualDisplay =
+          virtualDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("audioDisplay", /* surface= */ null, /* flags= */ 0),
+              /* executor= */ null,
+              /* callback= */ null);
+      VirtualAudioDevice virtualAudioDevice =
+          virtualDevice.createVirtualAudioDevice(
+              virtualDisplay, /* executor= */ null, /* callback= */ null);
+      AudioInjection audioInjection = virtualAudioDevice.startAudioInjection(injectionFormat);
+      ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+      shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100);
+
+      ByteBuffer buffer = ByteBuffer.allocateDirect(16);
+      int bytesWritten = audioInjection.write(buffer, 16, WRITE_BLOCKING);
+
+      assertThat(bytesWritten).isEqualTo(16);
+    }
+  }
+
+  @Test
+  public void
+      testNotifyAppsNeedingAudioRoutingChanged_withoutAudioSession_throwsIllegalStateException() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+
+      assertThrows(
+          IllegalStateException.class,
+          () -> shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100));
+    }
+  }
+
+  @Test
+  public void testCreateVirtualAudioDevice_closeLifecycle_clearsAudioCaptureAndAllowsRecreation() {
+    Shadows.shadowOf((Application) context)
+        .grantPermissions(Manifest.permission.MODIFY_AUDIO_ROUTING);
+    AudioFormat captureFormat = createAudioCaptureFormat();
+
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+    ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+
+    VirtualDisplay virtualDisplay =
+        virtualDevice.createVirtualDisplay(
+            getVirtualDisplayConfig("audioDisplay", /* surface= */ null, /* flags= */ 0),
+            /* executor= */ null,
+            /* callback= */ null);
+    VirtualAudioDevice firstAudioDevice =
+        virtualDevice.createVirtualAudioDevice(
+            virtualDisplay, /* executor= */ null, /* callback= */ null);
+    AudioCapture firstCapture = firstAudioDevice.startAudioCapture(captureFormat);
+    shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100);
+    assertThat(firstCapture.read(new byte[16], 0, 16)).isEqualTo(16);
+
+    firstAudioDevice.close();
+    assertThat(firstAudioDevice.getAudioCapture()).isNull();
+    assertThat(firstCapture.read(new byte[16], 0, 16)).isEqualTo(0);
+    // Closing the VirtualAudioDevice ends the active audio session, so routing notifications
+    // should fail until a new VirtualAudioDevice is created and starts a session.
+    assertThrows(
+        IllegalStateException.class,
+        () -> shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100));
+
+    VirtualAudioDevice secondAudioDevice =
+        virtualDevice.createVirtualAudioDevice(
+            virtualDisplay, /* executor= */ null, /* callback= */ null);
+    assertThat(secondAudioDevice).isNotSameInstanceAs(firstAudioDevice);
+    AudioCapture secondCapture = secondAudioDevice.startAudioCapture(captureFormat);
+    shadowVirtualDevice.notifyAppsNeedingAudioRoutingChanged(10100);
+    assertThat(secondCapture.read(new byte[16], 0, 16)).isEqualTo(16);
+
+    virtualDevice.close();
+    assertThat(secondAudioDevice.getAudioCapture()).isNull();
+    assertThat(secondCapture.read(new byte[16], 0, 16)).isEqualTo(0);
+  }
+
+  private static AudioFormat createAudioCaptureFormat() {
+    return new AudioFormat.Builder()
+        .setSampleRate(48000)
+        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+        .setChannelMask(AudioFormat.CHANNEL_IN_STEREO)
+        .build();
   }
 
   private VirtualDisplayConfig getVirtualDisplayConfig(String name, Surface surface, int flags) {

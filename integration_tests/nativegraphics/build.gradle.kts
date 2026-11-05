@@ -15,10 +15,7 @@ android {
     targetSdk = 36
     unitTests {
       isIncludeAndroidResources = true
-      all {
-        it.systemProperty("robolectric.graphicsMode", "NATIVE")
-        it.systemProperty("robolectric.enableFrameInfoVsyncOffsetFix", "true")
-      }
+      all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }
     }
   }
 

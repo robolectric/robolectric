@@ -21,7 +21,7 @@ import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -34,7 +34,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.Manifest.permission;
 import android.annotation.DrawableRes;
@@ -1012,8 +1011,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       return;
     }
     // Android don't override the enabled field of component with the actual value.
-    boolean isEnabledForFiltering =
-        isComponentEnabled && (VERSION.SDK_INT < 24 || isApplicationEnabled);
+    boolean isEnabledForFiltering = isComponentEnabled && isApplicationEnabled;
     if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
       throw new NameNotFoundException("Disabled component: " + componentInfo);
     }
@@ -1235,23 +1233,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected String getPermissionControllerPackageName() {
     return PERMISSION_CONTROLLER_PACKAGE_NAME;
-  }
-
-  @Implementation(maxSdk = M)
-  protected void getPackageSizeInfo(
-      String pkgName,
-      int uid,
-      final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
-    final PackageStats packageStats = packageStatsMap.get(pkgName);
-    new Handler(Looper.getMainLooper())
-        .post(() -> {
-          try {
-            ((IPackageStatsObserver) observer)
-                .onGetStatsCompleted(packageStats, packageStats != null);
-          } catch (RemoteException remoteException) {
-            remoteException.rethrowFromSystemServer();
-          }
-        });
   }
 
   @Implementation(minSdk = N)

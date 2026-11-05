@@ -62,11 +62,12 @@ public class ShadowNativeImageDecoder {
     if (ais.read() != -1) {
       throw new IOException("Unable to access full contents of asset");
     }
+    int limit = buffer.position();
     if (RuntimeEnvironment.getApiLevel() > UPSIDE_DOWN_CAKE) {
       return reflector(ImageDecoderReflector.class)
-          .nCreate(buffer, 0, bytesRead, preferAnimation, source);
+          .nCreate(buffer, 0, limit, preferAnimation, source);
     } else {
-      return nCreate(buffer, 0, bytesRead, preferAnimation, source);
+      return nCreate(buffer, 0, limit, preferAnimation, source);
     }
   }
 

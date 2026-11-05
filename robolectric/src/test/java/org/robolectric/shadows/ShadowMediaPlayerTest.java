@@ -265,7 +265,6 @@ public class ShadowMediaPlayerTest {
     }
   }
 
-  @Config(minSdk = Config.OLDEST_SDK)
   @Test
   public void testSetDataSourceMediaDataSource() {
     MediaDataSource mediaDataSource =

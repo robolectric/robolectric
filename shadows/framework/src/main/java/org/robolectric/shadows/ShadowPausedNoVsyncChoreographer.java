@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.annotation.Filter.Order.BEFORE;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
-import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Choreographer;
 import java.util.concurrent.TimeUnit;
@@ -50,12 +49,6 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowPausedNoVsyncChoreographer extends ShadowPausedChoreographer {
 
   @RealObject private Choreographer realChoreographer;
-
-  @Implementation
-  protected void __constructor__(Looper looper, long layerHandle) {
-    reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper, layerHandle);
-    activeChoreographers.add(realChoreographer);
-  }
 
   @Implementation
   protected static boolean getUseVsync() {

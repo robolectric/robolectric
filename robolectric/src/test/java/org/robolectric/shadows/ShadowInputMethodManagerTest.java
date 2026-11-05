@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -179,6 +180,23 @@ public class ShadowInputMethodManagerTest {
 
       assertThat(activityIsAcceptingText).isEqualTo(applicationIsAcceptingText);
     }
+  }
+
+  @Test
+  public void getStylusHandwritingViews_returnsEmptyListByDefault() {
+    assertThat(shadow.getStylusHandwritingViews()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void startStylusHandwriting_recordsViewsInOrder() {
+    View first = new View(ApplicationProvider.getApplicationContext());
+    View second = new View(ApplicationProvider.getApplicationContext());
+
+    manager.startStylusHandwriting(first);
+    manager.startStylusHandwriting(second);
+
+    assertThat(shadow.getStylusHandwritingViews()).containsExactly(first, second).inOrder();
   }
 
   private static class CapturingResultReceiver extends ResultReceiver {

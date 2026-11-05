@@ -28,25 +28,6 @@ public interface ActivityReflector {
   @Accessor("mToken")
   IBinder getToken();
 
-  // <= M
-  void attach(
-      Context context,
-      ActivityThread activityThread,
-      Instrumentation instrumentation,
-      IBinder token,
-      int ident,
-      Application application,
-      Intent intent,
-      ActivityInfo activityInfo,
-      CharSequence title,
-      Activity parent,
-      String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
-          Object lastNonConfigurationInstances,
-      Configuration configuration,
-      String referer,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor);
-
   // <= N_MR1
   void attach(
       Context context,
@@ -147,24 +128,7 @@ public interface ActivityReflector {
           Object lastNonConfigurationInstances) {
     Configuration config = new Configuration(application.getResources().getConfiguration());
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel <= Build.VERSION_CODES.M) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          token,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          null,
-          lastNonConfigurationInstances,
-          config,
-          "referrer",
-          null);
-    } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
+    if (apiLevel <= Build.VERSION_CODES.N_MR1) {
       attach(
           baseContext,
           activityThread,
@@ -272,8 +236,6 @@ public interface ActivityReflector {
   void performStart();
 
   void performStart(String reason);
-
-  void performStop();
 
   void performStop(boolean preserveWindow);
 

@@ -25,7 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-@Implements(value = CarrierConfigManager.class)
+@Implements(CarrierConfigManager.class)
 public class ShadowCarrierConfigManager {
 
   /**

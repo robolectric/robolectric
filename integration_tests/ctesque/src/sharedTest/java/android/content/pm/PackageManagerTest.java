@@ -202,34 +202,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  @Config(maxSdk = 23)
-  @SdkSuppress(maxSdkVersion = 23)
-  public void getPackageInfo_disabledApplication_stillReturned_below24() throws Exception {
-    pm.setApplicationEnabledSetting(
-        context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
-
-    PackageInfo packageInfo =
-        pm.getPackageInfo(context.getPackageName(), GET_SERVICES | GET_ACTIVITIES);
-    ActivityInfo[] activities = filterExtraneous(packageInfo.activities);
-
-    assertThat(packageInfo.packageName).isEqualTo(context.getPackageName());
-    assertThat(packageInfo.applicationInfo.enabled).isFalse();
-
-    // Seems that although disabled app makes everything disabled it is still returned with its
-    // manifest state below API 23
-    assertThat(activities).hasLength(3);
-    assertThat(packageInfo.services).hasLength(1);
-
-    assertThat(activities[0].enabled).isTrue();
-    assertThat(packageInfo.services[0].enabled).isTrue();
-    assertThat(activities[0].isEnabled()).isFalse();
-    assertThat(packageInfo.services[0].isEnabled()).isFalse();
-  }
-
-  @Test
-  @Config(minSdk = 24)
-  @SdkSuppress(minSdkVersion = 24)
-  public void getPackageInfo_disabledApplication_stillReturned_after24() throws Exception {
+  public void getPackageInfo_disabledApplication_stillReturned() throws Exception {
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 

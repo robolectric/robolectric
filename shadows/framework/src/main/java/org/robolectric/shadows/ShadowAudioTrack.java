@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -16,7 +16,6 @@ import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
@@ -243,11 +242,6 @@ public class ShadowAudioTrack {
     return minBufferSize;
   }
 
-  @Implementation(maxSdk = M)
-  protected int native_get_native_frame_count() {
-    return bufferSizeInFrames;
-  }
-
   @Implementation(minSdk = N)
   protected int native_get_buffer_size_frames() {
     return bufferSizeInFrames;
@@ -258,21 +252,6 @@ public class ShadowAudioTrack {
         isPcm(audioTrack.getAudioFormat())
             ? buffSizeInBytes / getFrameSizeInBytes()
             : buffSizeInBytes;
-  }
-
-  @Implementation(maxSdk = M)
-  protected int native_setup(
-      Object /*WeakReference<AudioTrack>*/ audioTrack,
-      Object /*AudioAttributes*/ attributes,
-      int sampleRate,
-      int channelMask,
-      int channelIndexMask,
-      int audioFormat,
-      int buffSizeInBytes,
-      int mode,
-      int[] sessionId) {
-    setBufferSizeInFrames(buffSizeInBytes);
-    return AudioTrack.SUCCESS;
   }
 
   @Implementation(minSdk = N, maxSdk = O_MR1)

@@ -7,6 +7,7 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -39,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.VersionCalculator;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBluetoothDeviceTest {
@@ -748,7 +748,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setDeviceConnected_withTransport_isConnected() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -768,7 +768,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setDeviceDisconnected_withTransport_isNotConnected() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -785,7 +785,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setConnected_withTransportTrue_setsIsConnectedToTrue() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -797,7 +797,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void
       setConnected_withTransportFalse_whenOtherTransportsRemain_doesNotSetIsConnectedToFalse() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
@@ -813,7 +813,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setConnected_withTransportFalse_whenNoTransportsRemain_setsIsConnectedToFalse() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -827,7 +827,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setConnected_withTransportTrue_addsToConnectedTransports() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -841,7 +841,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setConnected_withTransportFalse_removesFromConnectedTransports() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -856,7 +856,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Config(minSdk = CINNAMON_BUN)
   public void setConnected_withTransportFalseAndNotConnected_connectedTransportsIsEmpty() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =

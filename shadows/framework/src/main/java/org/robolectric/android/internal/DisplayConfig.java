@@ -1,6 +1,5 @@
 package org.robolectric.android.internal;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -217,9 +216,7 @@ public final class DisplayConfig {
       supportedColorModes =
           Arrays.copyOf(other.supportedColorModes, other.supportedColorModes.length);
     }
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      hdrCapabilities = other.hdrCapabilities;
-    }
+    hdrCapabilities = other.hdrCapabilities;
     if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       hdrSdrRatio = other.hdrSdrRatio;
     }
@@ -343,9 +340,7 @@ public final class DisplayConfig {
       other.colorMode = colorMode;
       other.supportedColorModes = Arrays.copyOf(supportedColorModes, supportedColorModes.length);
     }
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      other.hdrCapabilities = hdrCapabilities;
-    }
+    other.hdrCapabilities = hdrCapabilities;
     if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       other.hdrSdrRatio = hdrSdrRatio;
     }

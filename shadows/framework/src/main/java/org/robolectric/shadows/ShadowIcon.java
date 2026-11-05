@@ -20,7 +20,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Icon.class)
+@Implements(Icon.class)
 public class ShadowIcon {
 
   @Nullable private static Executor executorOverride;

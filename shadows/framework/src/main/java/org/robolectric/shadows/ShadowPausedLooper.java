@@ -372,7 +372,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @VisibleForTesting
   synchronized void resetLooperToInitialState() {
-    looperControlService.reset();
+    if (looperControlService != null) {
+      looperControlService.reset();
+    }
   }
 
   @Filter(order = Order.AFTER)

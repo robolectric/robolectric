@@ -413,7 +413,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void isSystemUser() {
     assertThat(userManager.isSystemUser()).isTrue();
 
@@ -677,7 +676,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void switchToSecondaryUser_system() {
     assertThat(userManager.isSystemUser()).isTrue();
     shadowOf(userManager).addUser(10, "secondary_user", 0);

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -15,7 +16,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Activity;
 import android.app.Application;

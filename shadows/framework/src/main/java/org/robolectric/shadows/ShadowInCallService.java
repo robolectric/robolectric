@@ -32,7 +32,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link android.telecom.InCallService}. */
-@Implements(value = InCallService.class)
+@Implements(InCallService.class)
 public class ShadowInCallService extends ShadowService {
   @RealObject private InCallService inCallService;
   private static final int MSG_ADD_CALL = 2;

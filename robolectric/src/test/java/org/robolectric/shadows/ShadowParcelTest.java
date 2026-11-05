@@ -29,7 +29,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowParcel.UnreliableBehaviorError;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -1358,7 +1357,6 @@ public class ShadowParcelTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void testReadWriteFileDescriptor() throws Exception {
     File file = new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test");
     RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");

@@ -1,4 +1,4 @@
-name: Graphics Tests
+name: Native Tests
 
 on:
   push:
@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 jobs:
-  graphics_tests:
+  native_tests:
     strategy:
       fail-fast: false
       matrix:
@@ -47,7 +47,7 @@ jobs:
             nativegraphics-min-sdk: 26
             gradle-tasks: ':integration_tests:nativegraphics:testDebugUnitTest'
 
-    name: Graphics Tests
+    name: Native Tests
     runs-on: ${{ matrix.device }}
 
     steps:
@@ -86,7 +86,7 @@ jobs:
           SKIP_JAVADOC: true
         run: >
           ./gradlew
-          ${{ matrix.gradle-tasks || ':integration_tests:nativegraphics:testDebugUnitTest :integration_tests:roborazzi:verifyRoborazziDebug' }}
+          ${{ matrix.gradle-tasks || ':integration_tests:nativegraphics:testDebugUnitTest :integration_tests:roborazzi:verifyRoborazziDebug :integration_tests:ctesque:testDebugUnitTestNativeResources' }}
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
           ${{ matrix.gradle-args }}

@@ -1,10 +1,7 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.text.Html;
 import android.text.Spanned;
@@ -16,7 +13,6 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowHtmlTest {
@@ -57,30 +53,12 @@ public class ShadowHtmlTest {
     assertThat(spanned.toString()).isEqualTo("foo");
   }
 
-  @Config(maxSdk = M)
-  @Test
-  public void testArraycopyLegacyShort() {
-    //noinspection deprecation
-    Html.fromHtml(HTML_SHORT, null, null);
-  }
-
-  @Config(maxSdk = M)
-  @Test
-  public void testArraycopyLegacyLong() {
-    //noinspection deprecation
-    Html.fromHtml(HTML_LONG, null, null);
-  }
-
-  @TargetApi(N)
-  @Config(minSdk = N)
   @Test
   public void testArraycopyShort() {
     Html.fromHtml(HTML_SHORT, Html.FROM_HTML_MODE_LEGACY, null, null);
   }
 
   /** this test requires that {@link org.ccil.cowan.tagsoup.HTMLScanner} be instrumented. */
-  @TargetApi(N)
-  @Config(minSdk = N)
   @Test
   public void testArraycopyLong() {
     Html.fromHtml(HTML_LONG, Html.FROM_HTML_MODE_LEGACY, null, null);

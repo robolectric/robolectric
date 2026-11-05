@@ -56,6 +56,22 @@ public class ShadowWindowManagerGlobalTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.N)
+  public void startDragAndDrop_withoutClipData_startsDrag() {
+    ShadowWindowManagerGlobal.clearLastDragClipData();
+    View view =
+        Robolectric.buildActivity(DragActivity.class)
+            .setup()
+            .get()
+            .findViewById(android.R.id.content);
+
+    boolean started = view.startDragAndDrop(null, new DragShadowBuilder(view), null, 0);
+
+    assertThat(started).isTrue();
+    assertThat(ShadowWindowManagerGlobal.getLastDragClipData()).isNull();
+  }
+
+  @Test
   public void getLastDragClipData() {
     MotionEvent downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     Robolectric.buildActivity(DragActivity.class)

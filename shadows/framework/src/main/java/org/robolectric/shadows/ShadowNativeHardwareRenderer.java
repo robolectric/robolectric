@@ -16,7 +16,6 @@ import android.graphics.Bitmap.Config;
 import android.graphics.FrameInfo;
 import android.graphics.HardwareRenderer;
 import android.graphics.HardwareRenderer.ASurfaceTransactionCallback;
-import android.graphics.HardwareRenderer.FrameCompleteCallback;
 import android.graphics.HardwareRenderer.FrameDrawingCallback;
 import android.graphics.HardwareRenderer.PictureCapturedCallback;
 import android.graphics.HardwareRenderer.PrepareSurfaceControlForWebviewCallback;
@@ -177,7 +176,12 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
   }
 
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE, methodName = "nSetColorMode")
+  // Starting in VANILLA_ICE_CREAM, callNativeMethodsByDefault = true invokes the native
+  // libandroid_runtime.so binding directly instead of HardwareRendererNatives.
+  @Implementation(
+      minSdk = UPSIDE_DOWN_CAKE,
+      maxSdk = UPSIDE_DOWN_CAKE,
+      methodName = "nSetColorMode")
   protected static float nSetColorModePostT(long nativeProxy, int colorMode) {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
     return 0.0f;
@@ -417,12 +421,6 @@ public class ShadowNativeHardwareRenderer {
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSetFrameCallback(long nativeProxy, FrameDrawingCallback callback) {
     HardwareRendererNatives.nSetFrameCallback(nativeProxy, callback);
-  }
-
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
-  protected static void nSetFrameCompleteCallback(
-      long nativeProxy, FrameCompleteCallback callback) {
-    HardwareRendererNatives.nSetFrameCompleteCallback(nativeProxy, callback);
   }
 
   @Implementation(minSdk = R)

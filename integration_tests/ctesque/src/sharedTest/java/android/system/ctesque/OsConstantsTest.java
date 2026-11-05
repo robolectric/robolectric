@@ -58,7 +58,8 @@ public final class OsConstantsTest {
           "MADV_COLD",
           "MADV_PAGEOUT",
           "MADV_POPULATE_READ",
-          "MADV_POPULATE_WRITE");
+          "MADV_POPULATE_WRITE",
+          "POSIX_FADV_NORMAL");
 
   @Test
   public void valuesAreDistinct() throws Exception {

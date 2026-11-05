@@ -4,6 +4,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_PROFILES;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -341,6 +342,25 @@ public class ShadowCrossProfileAppsTest {
 
     assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
     assertThat(startedActivity.getIntent()).isSameInstanceAs(intent);
+    assertThat(startedActivity.getActivity()).isSameInstanceAs(activity);
+    assertThat(startedActivity.getOptions()).isSameInstanceAs(options);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void startActivityWithComponentAndOptions_startActivityContainsComponentAndOptions() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    setPermissions(INTERACT_ACROSS_PROFILES);
+    ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
+    Activity activity = new Activity();
+    Bundle options = new Bundle();
+
+    crossProfileApps.startActivity(component, userHandle1, activity, options);
+    StartedActivity startedActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+    assertThat(startedActivity.getComponentName()).isEqualTo(component);
+    assertThat(startedActivity.getUserHandle()).isEqualTo(userHandle1);
     assertThat(startedActivity.getActivity()).isSameInstanceAs(activity);
     assertThat(startedActivity.getOptions()).isSameInstanceAs(options);
   }

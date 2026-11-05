@@ -9,11 +9,13 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.LocaleList;
 import android.text.format.DateUtils;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
@@ -166,5 +168,19 @@ public class RuntimeEnvironmentTest {
                 .getConfiguration()
                 .orientation)
         .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  @Test
+  public void setQualifiers_setsDefaultLocaleList() {
+    RuntimeEnvironment.setQualifiers("ja");
+    assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ja"));
+    assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
+  }
+
+  @Test
+  public void setQualifiers_withPlusPrefix_setsDefaultLocaleList() {
+    RuntimeEnvironment.setQualifiers("+ja");
+    assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ja"));
+    assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
   }
 }

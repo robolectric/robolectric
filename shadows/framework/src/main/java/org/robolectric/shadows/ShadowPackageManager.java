@@ -33,6 +33,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Arrays.asList;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -1883,6 +1884,8 @@ public class ShadowPackageManager {
    * <p>Defaults to {@code PackageManager.RESTRICTION_NONE} if {@code
    * setDistractingPackageRestrictions} has not been called for {@code pkg}.
    */
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  @SuppressWarnings("ProtectedImplementationLintCheck")
   public int getDistractingPackageRestrictions(String pkg) {
     return distractingPackageRestrictions.getOrDefault(pkg, PackageManager.RESTRICTION_NONE);
   }

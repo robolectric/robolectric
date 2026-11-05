@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static org.robolectric.shadows.ShadowArscApkAssets9.FRAMEWORK_APK_PATH;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.content.res.ApkAssets;
 import android.content.res.loader.AssetsProvider;
@@ -19,7 +21,7 @@ import org.robolectric.util.reflector.Static;
 
 @Implements(
     value = ApkAssets.class,
-    minSdk = VANILLA_ICE_CREAM,
+    minSdk = BAKLAVA,
     callNativeMethodsByDefault = true,
     shadowPicker = ShadowApkAssets.Picker.class,
     isInAndroidSdk = false)
@@ -55,9 +57,16 @@ public class ShadowNativeApkAssets extends ShadowApkAssets {
             });
   }
 
-  @Implementation
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static void nativeDestroy(long ptr) {
     // ignoring nativeDestroy in order to cache assets across tests
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected static long nativeGetFinalizer() {
+    // Return 0 to avoid registering a NativeAllocationRegistry finalizer, in order to cache
+    // native ApkAssets pointers across tests.
+    return 0;
   }
 
   @ForType(ApkAssets.class)

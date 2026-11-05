@@ -165,7 +165,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void canGetAndSetBleScanAlwaysAvailable() {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -353,7 +352,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = Config.OLDEST_SDK)
   public void isLeEnabled() {
     // Le is enabled when either BT or BLE is enabled. Check all states.
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

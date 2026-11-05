@@ -2,8 +2,10 @@ package org.robolectric.shadows;
 
 import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -12,7 +14,12 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.audio.IAudioConfigChangedCallback;
+import android.companion.virtual.audio.IAudioRoutingCallback;
+import android.companion.virtual.audio.VirtualAudioDevice;
+import android.companion.virtual.audio.VirtualAudioDevice.AudioConfigurationChangeCallback;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.sensor.VirtualSensor;
@@ -30,12 +37,19 @@ import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.Surface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -51,6 +65,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -58,15 +73,17 @@ import org.robolectric.util.reflector.WithType;
 @Implements(value = VirtualDeviceManager.class, minSdk = UPSIDE_DOWN_CAKE, isInAndroidSdk = false)
 public class ShadowVirtualDeviceManager {
 
-  private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices = new ArrayList<>();
+  private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices =
+      new CopyOnWriteArrayList<>();
+  private static final Map<VirtualDeviceListener, Executor> virtualDeviceListeners =
+      new ConcurrentHashMap<>();
   private Context context;
-  private static IVirtualDeviceManager service;
-  @RealObject VirtualDeviceManager realObject;
+  private IVirtualDeviceManager service;
 
   @Filter
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
     this.context = context;
-    ShadowVirtualDeviceManager.service = service;
+    this.service = service;
   }
 
   @SuppressWarnings("ProtectedImplementationLintCheck")
@@ -79,7 +96,7 @@ public class ShadowVirtualDeviceManager {
         reflector(DeviceManagerVirtualDeviceReflector.class)
             .newInstance(service, context, associationId, (VirtualDeviceParams) params);
     mVirtualDevices.add(device);
-    maybeNotifyVirtualDeviceListeners(context, device.getDeviceId(), /* isClosing= */ false);
+    maybeNotifyVirtualDeviceCreated(device.getDeviceId());
     return device;
   }
 
@@ -112,7 +129,7 @@ public class ShadowVirtualDeviceManager {
                 virtualDevice.getDeviceId(),
                 virtualDeviceReflector.getPersistentDeviceId(),
                 deviceName);
-          } else {
+          } else if (getApiLevel() <= CINNAMON_BUN) {
             return accessor.newInstanceC(
                 ReflectionHelpers.createDelegatingProxy(
                     IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
@@ -121,6 +138,16 @@ public class ShadowVirtualDeviceManager {
                 virtualDeviceReflector.getPersistentDeviceId(),
                 deviceName,
                 deviceName);
+          } else {
+            return accessor.newInstancePostC(
+                ReflectionHelpers.createDelegatingProxy(
+                    IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
+                virtualDevice.getDeviceId(),
+                0, /* profile */
+                virtualDeviceReflector.getPersistentDeviceId(),
+                deviceName,
+                deviceName,
+                Collections.emptySet());
           }
         })
         .collect(Collectors.toList());
@@ -144,6 +171,16 @@ public class ShadowVirtualDeviceManager {
         .anyMatch(virtualDevice -> virtualDevice.getDeviceId() == deviceId);
   }
 
+  @Filter(minSdk = VANILLA_ICE_CREAM, order = Order.AFTER)
+  protected void registerVirtualDeviceListener(Executor executor, VirtualDeviceListener listener) {
+    virtualDeviceListeners.put(listener, executor);
+  }
+
+  @Filter(minSdk = VANILLA_ICE_CREAM, order = Order.AFTER)
+  protected void unregisterVirtualDeviceListener(VirtualDeviceListener listener) {
+    virtualDeviceListeners.remove(listener);
+  }
+
   /** Shadow for inner class VirtualDeviceManager.VirtualDevice. */
   @Implements(
       value = VirtualDeviceManager.VirtualDevice.class,
@@ -152,7 +189,7 @@ public class ShadowVirtualDeviceManager {
   public static class ShadowVirtualDevice {
     private static final AtomicInteger nextDeviceId = new AtomicInteger(1);
     private static final AtomicInteger nextCameraId = new AtomicInteger(1);
-    static final List<VirtualCamera> virtualCameras = new ArrayList<>();
+    static final List<VirtualCamera> virtualCameras = new CopyOnWriteArrayList<>();
 
     @RealObject VirtualDeviceManager.VirtualDevice realVirtualDevice;
     private VirtualDeviceParams params;
@@ -162,7 +199,8 @@ public class ShadowVirtualDeviceManager {
     private Integer pendingIntentResultCode = LAUNCH_SUCCESS;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private Context context;
-    private final List<Integer> displayIds = new ArrayList<>();
+    private final List<Integer> displayIds = new CopyOnWriteArrayList<>();
+    @Nullable private volatile IAudioRoutingCallback audioRoutingCallback;
 
     @Filter(order = Order.AFTER)
     protected void __constructor__(
@@ -179,7 +217,9 @@ public class ShadowVirtualDeviceManager {
             reflector(DeviceManagerVirtualDeviceReflector.class, realVirtualDevice)
                 .getVirtualDeviceInternal();
         if (internalDevice != null) {
-          IVirtualDevice proxy = ReflectionHelpers.createNullProxy(IVirtualDevice.class);
+          IVirtualDevice proxy =
+              ReflectionHelpers.createDelegatingProxy(
+                  IVirtualDevice.class, new VirtualDeviceDelegateImpl());
           reflector(VirtualDeviceInternalReflector.class, internalDevice).setVirtualDevice(proxy);
         }
       }
@@ -204,9 +244,19 @@ public class ShadowVirtualDeviceManager {
     @SuppressWarnings("ProtectedImplementationLintCheck")
     @Implementation
     public void close() {
-      isClosed.set(true);
-      mVirtualDevices.remove(realVirtualDevice);
-      maybeNotifyVirtualDeviceListeners(context, deviceId, /* isClosing= */ true);
+      if (isClosed.compareAndSet(false, true)) {
+        mVirtualDevices.remove(realVirtualDevice);
+        if (realVirtualDevice != null) {
+          DeviceManagerVirtualDeviceReflector deviceReflector =
+              reflector(DeviceManagerVirtualDeviceReflector.class, realVirtualDevice);
+          if (deviceReflector.getVirtualDeviceInternal() != null) {
+            deviceReflector.close();
+          }
+        }
+        audioRoutingCallback = null;
+        removeDisplays();
+        maybeNotifyVirtualDeviceClosed(deviceId);
+      }
     }
 
     public int[] getDisplayIds() {
@@ -363,11 +413,12 @@ public class ShadowVirtualDeviceManager {
         @Nonnull VirtualDisplayConfig config,
         @Nullable Executor executor,
         @Nullable VirtualDisplay.Callback callback) {
-      VirtualDisplay display =
-          DisplayManagerGlobal.getInstance()
-              .createVirtualDisplay(context, null, config, callback, executor);
-      displayIds.add(display.getDisplay().getDisplayId());
-      return display;
+      // Pre-register the display ID that DisplayManagerGlobal will assign so that synchronous
+      // DisplayListener.onDisplayAdded callbacks can see it in getDisplayIds().
+      DisplayManagerGlobal displayManagerGlobal = DisplayManagerGlobal.getInstance();
+      ShadowDisplayManagerGlobal shadowDisplayManagerGlobal = Shadow.extract(displayManagerGlobal);
+      displayIds.add(shadowDisplayManagerGlobal.getNextDisplayId());
+      return displayManagerGlobal.createVirtualDisplay(context, null, config, callback, executor);
     }
 
     @Implementation
@@ -385,6 +436,42 @@ public class ShadowVirtualDeviceManager {
               .setSurface(surface)
               .build();
       return createVirtualDisplay(config, executor, callback);
+    }
+
+    @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = VANILLA_ICE_CREAM)
+    protected VirtualAudioDevice createVirtualAudioDevice(
+        @Nonnull VirtualDisplay display,
+        @Nullable Executor executor,
+        @Nullable AudioConfigurationChangeCallback callback) {
+      // On VANILLA_ICE_CREAM, VirtualDeviceInternal.createVirtualAudioDevice references
+      // android.companion.virtualdevice.flags.Flags.deviceAwareRecordAudioPermission(), which may
+      // be stripped from reduced runtime jars. Its default value on V is true (matching Baklava+,
+      // where the flag check was removed).
+      requireNonNull(display, "display must not be null");
+      Object internalDevice =
+          reflector(DeviceManagerVirtualDeviceReflector.class, realVirtualDevice)
+              .getVirtualDeviceInternal();
+      VirtualDeviceInternalReflector internalReflector =
+          reflector(VirtualDeviceInternalReflector.class, internalDevice);
+      VirtualAudioDevice virtualAudioDevice = internalReflector.getVirtualAudioDevice();
+      if (virtualAudioDevice == null) {
+        Context appContext =
+            params != null
+                    && params.getDevicePolicy(VirtualDeviceParams.POLICY_TYPE_AUDIO)
+                        == VirtualDeviceParams.DEVICE_POLICY_CUSTOM
+                ? context.createDeviceContext(deviceId)
+                : context;
+        virtualAudioDevice =
+            new VirtualAudioDevice(
+                appContext,
+                internalReflector.getVirtualDevice(),
+                display,
+                executor,
+                callback,
+                () -> internalReflector.setVirtualAudioDevice(null));
+        internalReflector.setVirtualAudioDevice(virtualAudioDevice);
+      }
+      return virtualAudioDevice;
     }
 
     public void setPendingIntentCallbackResultCode(int resultCode) {
@@ -411,30 +498,105 @@ public class ShadowVirtualDeviceManager {
               .getDirectChannelCallback();
     }
 
+    /**
+     * Notifies the active virtual audio session that the set of app UIDs needing audio routing has
+     * changed, triggering creation (when {@code appUids} is non-empty) or release (when empty) of
+     * the backing {@link android.media.AudioRecord} and/or {@link android.media.AudioTrack}
+     * streams.
+     *
+     * <p>Must be called after starting audio capture or injection via {@link
+     * android.companion.virtual.audio.VirtualAudioDevice}. Creating the backing audio streams
+     * requires {@link android.Manifest.permission#MODIFY_AUDIO_ROUTING} to be granted on the
+     * context (for {@link VirtualDeviceParams#DEVICE_POLICY_CUSTOM} audio policy, grant the
+     * permission for this virtual device's {@link #getDeviceId()}).
+     */
+    public void notifyAppsNeedingAudioRoutingChanged(int... appUids) {
+      requireNonNull(appUids, "appUids must not be null");
+      IAudioRoutingCallback callback = audioRoutingCallback;
+      if (callback == null) {
+        throw new IllegalStateException("No active virtual audio session");
+      }
+      try {
+        callback.onAppsNeedingAudioRoutingChanged(appUids);
+      } catch (RemoteException e) {
+        throw e.rethrowFromSystemServer();
+      }
+    }
+
     @Resetter
     public static void reset() {
       nextDeviceId.set(1);
       nextCameraId.set(1);
+      for (VirtualDeviceManager.VirtualDevice virtualDevice : mVirtualDevices) {
+        ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).close();
+      }
       mVirtualDevices.clear();
       virtualCameras.clear();
-      service = null;
+    }
+
+    private class VirtualDeviceDelegateImpl {
+      @SuppressWarnings("unused")
+      public int getDeviceId() {
+        return deviceId;
+      }
+
+      @SuppressWarnings("unused")
+      public int getDevicePolicy(int policyType) {
+        return params == null
+            ? VirtualDeviceParams.DEVICE_POLICY_DEFAULT
+            : params.getDevicePolicy(policyType);
+      }
+
+      @SuppressWarnings("unused")
+      public void onAudioSessionStarting(
+          int displayId,
+          IAudioRoutingCallback routingCallback,
+          IAudioConfigChangedCallback configChangedCallback) {
+        audioRoutingCallback = routingCallback;
+      }
+
+      @SuppressWarnings("unused")
+      public void onAudioSessionEnded() {
+        audioRoutingCallback = null;
+      }
+    }
+
+    private void removeDisplays() {
+      DisplayManagerGlobal displayManagerGlobal = ShadowDisplayManagerGlobal.getGlobalInstance();
+      if (displayManagerGlobal != null) {
+        ShadowDisplayManagerGlobal shadowDisplayManagerGlobal =
+            Shadow.extract(displayManagerGlobal);
+        for (int displayId : displayIds) {
+          try {
+            shadowDisplayManagerGlobal.removeDisplay(displayId);
+          } catch (IllegalStateException e) {
+            // Display was already removed (e.g. via VirtualDisplay.release()).
+          }
+        }
+      }
+      displayIds.clear();
     }
   }
 
-  private static void maybeNotifyVirtualDeviceListeners(
-      Context context, int deviceId, boolean isClosing) {
+  @Resetter
+  public static void reset() {
+    virtualDeviceListeners.clear();
+  }
+
+  private static void maybeNotifyVirtualDeviceCreated(int deviceId) {
+    maybeNotifyVirtualDeviceListeners(listener -> listener.onVirtualDeviceCreated(deviceId));
+  }
+
+  private static void maybeNotifyVirtualDeviceClosed(int deviceId) {
+    maybeNotifyVirtualDeviceListeners(listener -> listener.onVirtualDeviceClosed(deviceId));
+  }
+
+  private static void maybeNotifyVirtualDeviceListeners(Consumer<VirtualDeviceListener> action) {
     if (getApiLevel() > UPSIDE_DOWN_CAKE) {
-      VirtualDeviceManager vdm = context.getSystemService(VirtualDeviceManager.class);
-      List<?> listeners =
-          reflector(VirtualDeviceManagerReflector.class, vdm).getVirtualDeviceListeners();
-      for (Object listener : listeners) {
-        if (isClosing) {
-          reflector(VirtualDeviceListenerDelegateReflector.class, listener)
-              .onVirtualDeviceClosed(deviceId);
-        } else {
-          reflector(VirtualDeviceListenerDelegateReflector.class, listener)
-              .onVirtualDeviceCreated(deviceId);
-        }
+      for (Map.Entry<VirtualDeviceListener, Executor> entry : virtualDeviceListeners.entrySet()) {
+        VirtualDeviceListener listener = entry.getKey();
+        Executor executor = entry.getValue();
+        executor.execute(() -> action.accept(listener));
       }
     }
   }
@@ -511,6 +673,16 @@ public class ShadowVirtualDeviceManager {
         CharSequence displayName);
 
     @Constructor
+    VirtualDevice newInstancePostC(
+        IVirtualDevice virtualDevice,
+        int id,
+        int profileId,
+        String persistentId,
+        String name,
+        CharSequence displayName,
+        Set<String> requiredDisplayCategories);
+
+    @Constructor
     VirtualDevice newInstance(int id, String name);
   }
 
@@ -521,10 +693,20 @@ public class ShadowVirtualDeviceManager {
 
     @Accessor("mVirtualDevice")
     void setVirtualDevice(IVirtualDevice virtualDevice);
+
+    @Accessor("mVirtualAudioDevice")
+    @Nullable
+    VirtualAudioDevice getVirtualAudioDevice();
+
+    @Accessor("mVirtualAudioDevice")
+    void setVirtualAudioDevice(@Nullable VirtualAudioDevice virtualAudioDevice);
   }
 
   @ForType(VirtualDeviceManager.VirtualDevice.class)
   interface DeviceManagerVirtualDeviceReflector {
+    @Direct
+    void close();
+
     String getPersistentDeviceId();
 
     @Accessor("mVirtualDeviceInternal")
@@ -545,22 +727,6 @@ public class ShadowVirtualDeviceManager {
         int flags,
         Executor executor,
         VirtualDisplay.Callback callback);
-  }
-
-  @ForType(VirtualDeviceManager.class)
-  private interface VirtualDeviceManagerReflector {
-
-    @Accessor("mVirtualDeviceListeners")
-    List<?> getVirtualDeviceListeners();
-  }
-
-  @ForType(
-      className = "android.companion.virtual.VirtualDeviceManager$VirtualDeviceListenerDelegate")
-  private interface VirtualDeviceListenerDelegateReflector {
-
-    void onVirtualDeviceCreated(int deviceId);
-
-    void onVirtualDeviceClosed(int deviceId);
   }
 
   private interface VirtualDeviceDelegate {
