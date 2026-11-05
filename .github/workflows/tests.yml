@@ -136,7 +136,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}-${{ matrix.shard }}
+          name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}
           path: |
             **/build/reports/*
             **/build/outputs/*/connected/*

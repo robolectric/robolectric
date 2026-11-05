@@ -1,0 +1,31 @@
+# Checks the GitHub workflows with actionlint, which also runs shellcheck on their scripts, so a
+# broken workflow is caught in review instead of in the next push run. Only warnings and errors
+# fail it.
+name: Lint workflows
+
+on:
+  pull_request:
+    branches: [ master, google ]
+    paths:
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          SHELLCHECK_OPTS: --severity=warning
+        run: |
+          set -euo pipefail
+          # actionlint (https://github.com/rhysd/actionlint) is a widely-used static checker
+          # for GitHub Actions workflows, maintained by Ryosuke Yamazaki (@rhysd).
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v$ACTIONLINT_VERSION/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" |
+            tar xz actionlint
+          ./actionlint -color
