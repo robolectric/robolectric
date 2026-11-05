@@ -307,6 +307,10 @@ public class NativeInput {
     private int mMetaState;
     private int mButtonState;
     private int mClassification;
+    // Stored in raw, un-offset coordinates like mRawXCursorPosition in
+    // frameworks/native/include/input/Input.h. The getters apply the offset.
+    private float mRawXCursorPosition = Float.NaN;
+    private float mRawYCursorPosition = Float.NaN;
     private float mXOffset;
     private float mYOffset;
     private float mXPrecision;
@@ -372,6 +376,19 @@ public class NativeInput {
 
     public int getClassification() {
       return mClassification;
+    }
+
+    public float getXCursorPosition() {
+      return mRawXCursorPosition + mXOffset;
+    }
+
+    public float getYCursorPosition() {
+      return mRawYCursorPosition + mYOffset;
+    }
+
+    public void setCursorPosition(float x, float y) {
+      mRawXCursorPosition = x - mXOffset;
+      mRawYCursorPosition = y - mYOffset;
     }
 
     public int getActionButton() {
@@ -715,6 +732,10 @@ public class NativeInput {
       mYOffset = yOffset;
       mXPrecision = xPrecision;
       mYPrecision = yPrecision;
+      // android_view_MotionEvent.cpp passes AMOTION_EVENT_INVALID_CURSOR_POSITION on every
+      // nativeInitialize, so a recycled event object must not keep the previous cursor position.
+      mRawXCursorPosition = Float.NaN;
+      mRawYCursorPosition = Float.NaN;
       mDownTime = downTime;
       mPointerProperties.clear();
       for (int i = 0; i < pointerCount; i++) {
@@ -735,6 +756,8 @@ public class NativeInput {
       mMetaState = other.mMetaState;
       mButtonState = other.mButtonState;
       mClassification = other.mClassification;
+      mRawXCursorPosition = other.mRawXCursorPosition;
+      mRawYCursorPosition = other.mRawYCursorPosition;
       mXOffset = other.mXOffset;
       mYOffset = other.mYOffset;
       mXPrecision = other.mXPrecision;
@@ -781,6 +804,8 @@ public class NativeInput {
       mYOffset *= scaleFactor;
       mXPrecision *= scaleFactor;
       mYPrecision *= scaleFactor;
+      mRawXCursorPosition *= scaleFactor;
+      mRawYCursorPosition *= scaleFactor;
       int numSamples = mSamplePointerCoords.size();
       for (int i = 0; i < numSamples; i++) {
         mSamplePointerCoords.get(i).scale(scaleFactor);
@@ -804,6 +829,18 @@ public class NativeInput {
       transformPoint(matrix, rawX + oldXOffset, rawY + oldYOffset, newX, newY);
       mXOffset = newX.get() - rawX;
       mYOffset = newY.get() - rawY;
+      if (!Float.isNaN(mRawXCursorPosition) && !Float.isNaN(mRawYCursorPosition)) {
+        final Ref<Float> cursorX = new Ref<>(0f);
+        final Ref<Float> cursorY = new Ref<>(0f);
+        transformPoint(
+            matrix,
+            mRawXCursorPosition + oldXOffset,
+            mRawYCursorPosition + oldYOffset,
+            cursorX,
+            cursorY);
+        mRawXCursorPosition = cursorX.get() - mXOffset;
+        mRawYCursorPosition = cursorY.get() - mYOffset;
+      }
       // Determine how the origin is transformed by the matrix so that we
       // can transform orientation vectors.
       final Ref<Float> originX = new Ref<>(0f);
@@ -896,6 +933,8 @@ public class NativeInput {
       mYOffset = parcel.readFloat();
       mXPrecision = parcel.readFloat();
       mYPrecision = parcel.readFloat();
+      mRawXCursorPosition = parcel.readFloat();
+      mRawYCursorPosition = parcel.readFloat();
       mDownTime = parcel.readLong();
       mPointerProperties = new ArrayList<>(pointerCount);
       mSampleEventTimes = new ArrayList<>(sampleCount);
@@ -938,6 +977,10 @@ public class NativeInput {
       parcel.writeFloat(mYOffset);
       parcel.writeFloat(mXPrecision);
       parcel.writeFloat(mYPrecision);
+      // MotionEvent::writeToParcel in frameworks/native/libs/input/Input.cpp carries the two raw
+      // cursor floats between yPrecision and downTime.
+      parcel.writeFloat(mRawXCursorPosition);
+      parcel.writeFloat(mRawYCursorPosition);
       parcel.writeLong(mDownTime);
       for (int i = 0; i < pointerCount; i++) {
         PointerProperties properties = mPointerProperties.get(i);

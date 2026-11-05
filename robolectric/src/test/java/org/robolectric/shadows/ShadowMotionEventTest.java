@@ -4,12 +4,16 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.graphics.Matrix;
 import android.os.Build;
+import android.os.Parcel;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMotionEventTest {
@@ -41,6 +45,99 @@ public class ShadowMotionEventTest {
     shadowMotionEvent.setPointerIds(2, 5);
     assertEquals(2, event.getPointerId(0));
     assertEquals(5, event.getPointerId(1));
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsPointerPositionForMouseEvent() {
+    event.setSource(InputDevice.SOURCE_MOUSE);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(5.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(10.0f);
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsNotSetForNonMouseEvent() {
+    assertThat(event.getXCursorPosition()).isNaN();
+    assertThat(event.getYCursorPosition()).isNaN();
+
+    event.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+
+    assertThat(event.getXCursorPosition()).isNaN();
+    assertThat(event.getYCursorPosition()).isNaN();
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsPreservedAcrossParcel() {
+    event.setSource(InputDevice.SOURCE_MOUSE);
+
+    Parcel parcel = Parcel.obtain();
+    event.writeToParcel(parcel, /* flags= */ 0);
+    parcel.setDataPosition(0);
+    MotionEvent unparceled = MotionEvent.CREATOR.createFromParcel(parcel);
+    parcel.recycle();
+
+    assertThat(unparceled.getXCursorPosition()).isEqualTo(5.0f);
+    assertThat(unparceled.getYCursorPosition()).isEqualTo(10.0f);
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsClearedWhenThePooledEventIsReused() {
+    event.setSource(InputDevice.SOURCE_MOUSE);
+
+    event.recycle();
+    MotionEvent reused = MotionEvent.obtain(100, 200, MotionEvent.ACTION_MOVE, 20.0f, 30.0f, 0);
+
+    assertThat(reused.getXCursorPosition()).isNaN();
+
+    reused.setSource(InputDevice.SOURCE_MOUSE);
+    assertThat(reused.getXCursorPosition()).isEqualTo(20.0f);
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsPointerCentroidForMultiPointerMouseEvent() {
+    shadowMotionEvent.setPointer2(20.0f, 30.0f);
+
+    event.setSource(InputDevice.SOURCE_MOUSE);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(12.5f);
+    assertThat(event.getYCursorPosition()).isEqualTo(20.0f);
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIncludesLocationOffset() {
+    event.setSource(InputDevice.SOURCE_MOUSE);
+    event.offsetLocation(3.0f, 4.0f);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(8.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(14.0f);
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsScaledWithTheEvent() {
+    event.setSource(InputDevice.SOURCE_MOUSE);
+    event.scale(2.0f);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(10.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(20.0f);
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void cursorPositionIsTransformedWithTheEvent() {
+    event.setSource(InputDevice.SOURCE_MOUSE);
+    Matrix matrix = new Matrix();
+    matrix.setScale(2.0f, 2.0f);
+    event.transform(matrix);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(10.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(20.0f);
   }
 
   @Test

@@ -1,6 +1,7 @@
 package android.view;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.ext.truth.view.MotionEventSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerCoordsSubject.assertThat;
@@ -9,6 +10,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import android.content.Context;
 import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -17,6 +19,8 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
+import android.widget.FrameLayout;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.view.MotionEventBuilder;
 import androidx.test.core.view.PointerCoordsBuilder;
 import androidx.test.core.view.PointerPropertiesBuilder;
@@ -25,6 +29,7 @@ import androidx.test.filters.SdkSuppress;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -508,6 +513,37 @@ public class MotionEventTest {
 
     assertThat(motionEvent2).x().isWithin(TOLERANCE).of(2.0f);
     assertThat(motionEvent2).y().isWithin(TOLERANCE).of(2.0f);
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = R)
+  public void mouseEvent_dispatchedToChildOfNestedViewGroup() {
+    Context context = ApplicationProvider.getApplicationContext();
+    FrameLayout outer = new FrameLayout(context);
+    FrameLayout inner = new FrameLayout(context);
+    FrameLayout.LayoutParams innerParams = new FrameLayout.LayoutParams(100, 100);
+    innerParams.leftMargin = 100;
+    innerParams.topMargin = 100;
+    outer.addView(inner, innerParams);
+    View target = new View(context);
+    inner.addView(target, new FrameLayout.LayoutParams(50, 50));
+    AtomicBoolean targetTouched = new AtomicBoolean();
+    target.setOnTouchListener((v, event) -> {
+      targetTouched.set(true);
+      return true;
+    });
+    outer.measure(
+        View.MeasureSpec.makeMeasureSpec(200, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(200, View.MeasureSpec.EXACTLY));
+    outer.layout(0, 0, 200, 200);
+
+    // (110, 110) in outer is (10, 10) in inner, which is inside target.
+    motionEventDynamic =
+        MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, 110f, 110f, 0);
+    motionEventDynamic.setSource(InputDevice.SOURCE_MOUSE);
+    outer.dispatchTouchEvent(motionEventDynamic);
+
+    assertThat(targetTouched.get()).isTrue();
   }
 
   @Test

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.base.Preconditions.checkState;
@@ -488,6 +489,24 @@ public class ShadowMotionEvent extends ShadowInputEvent {
   protected static void nativeSetSource(long nativePtr, int source) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setSource(source);
+  }
+
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected static float nativeGetXCursorPosition(long nativePtr) {
+    return getNativeMotionEvent(nativePtr).getXCursorPosition();
+  }
+
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected static float nativeGetYCursorPosition(long nativePtr) {
+    return getNativeMotionEvent(nativePtr).getYCursorPosition();
+  }
+
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected static void nativeSetCursorPosition(long nativePtr, float x, float y) {
+    getNativeMotionEvent(nativePtr).setCursorPosition(x, y);
   }
 
   @Implementation
