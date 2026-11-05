@@ -261,7 +261,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, macos-26-intel, windows-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-26-intel, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -277,6 +277,13 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+
+      # Arm's ubuntu-24.04-arm image omits the Android SDK that the x86_64 images include.
+      - name: Set up Android SDK
+        if: matrix.os == 'ubuntu-24.04-arm'
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36'
 
       - name: Run the release check project against the staged version
         shell: bash
