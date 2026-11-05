@@ -89,7 +89,6 @@ jobs:
           ${{ matrix.gradle-tasks || ':integration_tests:nativegraphics:testDebugUnitTest :integration_tests:roborazzi:verifyRoborazziDebug :integration_tests:ctesque:testDebugUnitTestNativeResources' }}
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
-          ${{ matrix.gradle-args }}
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
