@@ -1,5 +1,6 @@
-# Stages a Robolectric release on the Central Portal and checks it. Publishing the release is left
-# to a maintainer. See "Performing a Release" in the wiki for the manual steps this automates.
+# Stages a Robolectric release on the Central Portal, checks it, and once a maintainer approves,
+# publishes it and pushes the release branch and tag. See "Performing a Release" in the wiki for
+# the manual steps this automates.
 #
 # Run it from the Actions tab, from `master` (the workflow always runs master's copy of itself), and
 # choose what to release:
@@ -16,9 +17,22 @@
 #
 # The version comes from gradle.properties and the existing `robolectric-*` tags. The workflow runs
 # the tests, stages the signed artifacts on the Central Portal, and checks the staged artifacts
-# with a small project on Linux, macOS and Windows. If the checks pass, the run summary lists the
-# deployment to publish and the commands to push the version commit and tag. If they fail, the
-# deployment is dropped. The workflow pushes, tags and publishes nothing.
+# with a small project on Linux, macOS and Windows. Until then nothing is public: the version
+# commit only exists in the run, and the staged deployment can still be dropped.
+#
+# If the checks pass, the "Publish" job waits for approval in the `release` environment (Settings >
+# Environments, with the maintainers as required reviewers; without it the job would not wait).
+# The run summary shows what will be released. Approving it:
+#
+# 1. publishes the deployment to Maven Central,
+# 2. pushes the version commit ("Bump version to X.") to the release branch, creating it for a new
+#    release line, and the `robolectric-X` tag,
+# 3. creates a draft GitHub release with generated notes, to edit and publish,
+# 4. for a new release line, opens a PR that bumps master to the next snapshot version.
+#
+# Publishing comes first because it can't be undone. If a step fails, re-run the job: each step
+# skips what was already done, and the deployment is kept. If the checks fail, or the approval is
+# rejected, the deployment is dropped and nothing is pushed.
 #
 # Secrets: SONATYPE_LOGIN and SONATYPE_PASSWORD (a Central Portal user token, as for snapshots),
 # SIGNING_KEY_ID, SIGNING_PASSWORD and SIGNING_SECRET_KEY_RING (the base64-encoded legacy
@@ -154,6 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deployment-id: ${{ steps.upload.outputs.deployment-id }}
+      tree: ${{ steps.set-version.outputs.tree }}
     env:
       VERSION: ${{ needs.version.outputs.version }}
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
@@ -164,8 +179,14 @@ jobs:
         with:
           ref: ${{ needs.version.outputs.sha }}
 
+      # The tree of the built code, so the publish job can check that the version commit it pushes
+      # has exactly this code.
       - name: Set the version
-        run: sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
+        id: set-version
+        run: |
+          sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
+          git add gradle.properties
+          echo "tree=$(git write-tree)" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK
         uses: actions/setup-java@v6
@@ -272,12 +293,12 @@ jobs:
           name: release-check-${{ matrix.os }}
           path: .github/release-check/build/test-results/**/TEST-*.xml
 
-  next-steps:
-    name: Next steps
+  summary:
+    name: Describe the release
     needs: [version, stage, check-staged]
     runs-on: ubuntu-latest
     steps:
-      - name: Describe how to release
+      - name: Describe what approving does
         env:
           VERSION: ${{ needs.version.outputs.version }}
           BRANCH: ${{ needs.version.outputs.branch }}
@@ -290,38 +311,169 @@ jobs:
             echo "### Robolectric $VERSION is staged and checked"
             echo
             echo "Deployment \`$DEPLOYMENT_ID\` is validated on the [Central Portal](https://central.sonatype.com/publishing/deployments)."
-            echo "To release it:"
+            echo "Nothing is public yet. Approving the \"Publish\" job will:"
             echo
-            echo "1. Push the version commit and the tag (built from $SHA):"
-            echo
-            echo '   ```sh'
-            echo "   git fetch origin && git checkout $SHA"
-            echo "   sed -i 's/^thisVersion=.*/thisVersion=$VERSION/' gradle.properties"
-            echo "   git commit -am 'Bump version to $VERSION.'"
-            echo "   git tag -a -m 'Version $VERSION' robolectric-$VERSION"
-            echo "   git push origin HEAD:refs/heads/$BRANCH robolectric-$VERSION"
-            echo '   ```'
-            echo
-            echo "2. Publish the deployment on the Central Portal."
-            echo "3. Publish the [GitHub release notes](https://github.com/${{ github.repository }}/releases/new?tag=robolectric-$VERSION)."
+            echo "1. Publish the deployment to Maven Central. This can't be undone."
             if [[ "$NEW_BRANCH" == true ]]; then
-              echo "4. Bump master to $NEXT_SNAPSHOT."
+              echo "2. Create \`$BRANCH\` from $SHA with the commit \"Bump version to $VERSION.\", and push the tag \`robolectric-$VERSION\`."
+            else
+              echo "2. Push the commit \"Bump version to $VERSION.\" on top of \`$BRANCH\` ($SHA), and the tag \`robolectric-$VERSION\`."
             fi
+            echo "3. Create a draft GitHub release for \`robolectric-$VERSION\` with generated notes."
+            if [[ "$NEW_BRANCH" == true ]]; then
+              echo "4. Open a PR that bumps master to $NEXT_SNAPSHOT."
+            fi
+            echo
+            echo "Rejecting it drops the deployment."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Publish
+    needs: [version, stage, check-staged, summary]
+    runs-on: ubuntu-latest
+    # Waits for a required reviewer to approve.
+    environment: release
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      started: ${{ steps.start.outputs.started }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BRANCH: ${{ needs.version.outputs.branch }}
+      NEW_BRANCH: ${{ needs.version.outputs.new-branch }}
+      NEXT_SNAPSHOT: ${{ needs.version.outputs.next-snapshot }}
+      SHA: ${{ needs.version.outputs.sha }}
+      TREE: ${{ needs.stage.outputs.tree }}
+      DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
+      TAG: robolectric-${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    # Each step checks whether it was already done, so the job can be re-run if a step fails.
+    steps:
+      # Tells drop-staged that the job was approved, so a failed attempt isn't dropped.
+      - name: Start
+        id: start
+        run: echo "started=true" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the deployment to Maven Central
+        env:
+          SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
+          portal=https://central.sonatype.com/api/v1/publisher
+          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          state() { api -X POST "$portal/status?id=$DEPLOYMENT_ID" | jq -r .deploymentState; }
+
+          state=$(state)
+          case "$state" in
+            VALIDATED) api -X POST "$portal/deployment/$DEPLOYMENT_ID" ;;
+            PUBLISHING|PUBLISHED) echo "Deployment $DEPLOYMENT_ID is already $state." ;;
+            *) echo "::error::Deployment $DEPLOYMENT_ID is $state, not VALIDATED."; exit 1 ;;
+          esac
+
+          # Publishing usually takes 10 to 30 minutes.
+          for _ in $(seq 360); do
+            state=$(state)
+            case "$state" in
+              PUBLISHED) echo "Published $VERSION to Maven Central." >> "$GITHUB_STEP_SUMMARY"; exit 0 ;;
+              FAILED) echo "::error::Publishing deployment $DEPLOYMENT_ID failed."; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::Deployment $DEPLOYMENT_ID was not published within an hour (state: $state). Re-run this job to keep waiting."
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.sha }}
+
+      - name: Push the version commit, the release branch and the tag
+        env:
+          ACTOR: ${{ github.actor }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*"; exit 1; }
+          git config user.name "$ACTOR"
+          git config user.email "$ACTOR_ID+$ACTOR@users.noreply.github.com"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            git fetch --depth 1 origin tag "$TAG"
+            [[ $(git rev-parse "$TAG^{tree}") == "$TREE" ]] || fail "$TAG already exists with different code."
+            echo "$TAG is already pushed."
+            exit 0
+          fi
+
+          sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
+          git add gradle.properties
+          [[ $(git write-tree) == "$TREE" ]] || fail "The version commit doesn't match the code that was built."
+          git commit -m "Bump version to $VERSION."
+          git tag -a -m "Version $VERSION" "$TAG"
+          # Fails without pushing anything if the branch moved during the release.
+          git push --atomic origin "HEAD:refs/heads/$BRANCH" "refs/tags/$TAG" ||
+            fail "Couldn't push $BRANCH and $TAG. If $BRANCH changed during the release, push the tag by hand."
+          echo "Pushed \`$TAG\` and \`$BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create a draft GitHub release
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "The release $TAG already exists."
+          else
+            prerelease=()
+            [[ "$VERSION" == *-beta-* ]] && prerelease=(--prerelease)
+            gh release create "$TAG" --draft --verify-tag --generate-notes --title "Robolectric $VERSION" "${prerelease[@]}"
+          fi
+          url=$(gh release view "$TAG" --json url -q .url)
+          echo "Edit and publish the [draft release notes]($url)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open a PR to bump master to the next snapshot
+        if: needs.version.outputs.new-branch == 'true'
+        run: |
+          set -euo pipefail
+          bump=bump-version-$NEXT_SNAPSHOT
+          url=$(gh pr list --head "$bump" --base master --state open --json url -q '.[0].url // empty')
+          git fetch --depth 1 origin master
+          git checkout -B "$bump" FETCH_HEAD
+          if grep -qx "thisVersion=$NEXT_SNAPSHOT" gradle.properties; then
+            echo "master is already at $NEXT_SNAPSHOT."
+            exit 0
+          fi
+          if [[ -z "$url" ]]; then
+            sed -i "s/^thisVersion=.*/thisVersion=$NEXT_SNAPSHOT/" gradle.properties
+            git commit -am "Bump version to $NEXT_SNAPSHOT."
+            git push --force origin "$bump"
+            url=$(gh pr create --base master --head "$bump" --title "Bump version to $NEXT_SNAPSHOT" \
+              --body "$VERSION is released from $BRANCH, so master moves on to $NEXT_SNAPSHOT. Opened by the release workflow; checks don't run on PRs opened by workflows, and the tests run on master after it's merged.")
+          fi
+          echo "Merge the [PR that bumps master to $NEXT_SNAPSHOT]($url)." >> "$GITHUB_STEP_SUMMARY"
 
   drop-staged:
     name: Drop the staged deployment
-    needs: [stage, check-staged]
-    if: always() && needs.stage.result == 'success' && needs.check-staged.result != 'success'
+    needs: [stage, check-staged, publish]
+    # When the checks failed, or the publish job was rejected or cancelled before it started.
+    if: always() && needs.stage.result == 'success' && needs.publish.outputs.started != 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Drop the deployment
+      - name: Drop the deployment unless it was published
         env:
           DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
           SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         run: |
+          set -euo pipefail
           token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
-          curl --fail-with-body --silent --show-error -X DELETE -H "Authorization: Bearer $token" \
-            "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID"
-          echo "Dropped deployment $DEPLOYMENT_ID because the checks of the staged artifacts failed." >> "$GITHUB_STEP_SUMMARY"
+          portal=https://central.sonatype.com/api/v1/publisher
+          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          # In case it was published anyway.
+          state=$(api -X POST "$portal/status?id=$DEPLOYMENT_ID" | jq -r .deploymentState)
+          case "$state" in
+            VALIDATED|FAILED)
+              api -X DELETE "$portal/deployment/$DEPLOYMENT_ID"
+              echo "Dropped deployment $DEPLOYMENT_ID: the checks failed or the release wasn't approved." >> "$GITHUB_STEP_SUMMARY" ;;
+            *)
+              echo "Deployment $DEPLOYMENT_ID is $state, so it was not dropped." >> "$GITHUB_STEP_SUMMARY" ;;
+          esac
