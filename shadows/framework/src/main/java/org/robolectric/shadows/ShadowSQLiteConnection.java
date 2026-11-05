@@ -2,64 +2,26 @@ package org.robolectric.shadows;
 
 import android.database.sqlite.SQLiteConnection;
 import android.os.SystemProperties;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.ReflectorObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.SQLiteMode;
-import org.robolectric.annotation.SQLiteMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /**
- * The base shadow class for {@link SQLiteConnection} shadow APIs.
- *
- * <p>The actual shadow class for {@link SQLiteConnection} will be selected during runtime by the
- * Picker.
+ * The base class of {@link ShadowNativeSQLiteConnection}, the shadow of {@link SQLiteConnection},
+ * with SQLite settings for tests.
  */
-@Implements(
-    className = "android.database.sqlite.SQLiteConnection",
-    isInAndroidSdk = false,
-    shadowPicker = ShadowSQLiteConnection.Picker.class)
 public class ShadowSQLiteConnection {
 
-  Throwable onCreate = new Throwable();
-
-  protected static AtomicBoolean useInMemoryDatabase = new AtomicBoolean();
-
-  /** Shadow {@link Picker} for {@link ShadowSQLiteConnection} */
-  public static class Picker extends SQLiteShadowPicker<ShadowSQLiteConnection> {
-    public Picker() {
-      super(ShadowLegacySQLiteConnection.class, ShadowNativeSQLiteConnection.class);
-    }
-  }
-
-  private final AtomicBoolean disposed = new AtomicBoolean();
-
-  @RealObject SQLiteConnection realObject;
-
-  @ReflectorObject SQLiteConnectionReflector sqliteConnectionReflector;
-
-  @Implementation
-  protected void dispose(boolean finalized) {
-    // On the JVM there may be two concurrent finalizer threads running if 'System.runFinalization'
-    // is called. Because CursorWindow.dispose is not thread safe, we can work around it
-    // by manually making it thread safe.
-    if (disposed.compareAndSet(false, true)) {
-      sqliteConnectionReflector.dispose(finalized);
-    }
-  }
-
+  /**
+   * Was only supported in the legacy SQLite mode, which was removed in Robolectric 4.19.
+   *
+   * @deprecated SQLite databases are native, and this always throws {@link
+   *     UnsupportedOperationException}.
+   */
+  @Deprecated
   public static void setUseInMemoryDatabase(boolean value) {
-    if (sqliteMode() == Mode.LEGACY) {
-      useInMemoryDatabase.set(value);
-    } else {
-      throw new UnsupportedOperationException(
-          "this action is not supported in " + sqliteMode() + " mode.");
-    }
+    throw new UnsupportedOperationException(
+        "setUseInMemoryDatabase was only supported in the legacy SQLite mode, which was removed in"
+            + " Robolectric 4.19.");
   }
 
   public static SQLiteMode.Mode sqliteMode() {
@@ -94,16 +56,5 @@ public class ShadowSQLiteConnection {
    */
   public static void setDefaultJournalMode(String value) {
     SystemProperties.set("debug.sqlite.journalmode", value);
-  }
-
-  @Resetter
-  public static void reset() {
-    useInMemoryDatabase.set(false);
-  }
-
-  @ForType(SQLiteConnection.class)
-  interface SQLiteConnectionReflector {
-    @Direct
-    void dispose(boolean finalized);
   }
 }

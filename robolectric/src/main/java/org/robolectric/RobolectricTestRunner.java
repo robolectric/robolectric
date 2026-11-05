@@ -281,22 +281,24 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     if (verifySdk) {
       sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+      // Like an unsupported SDK, an IllegalArgumentException fails only this test.
+      if (sqliteMode == SQLiteMode.Mode.LEGACY) {
+        throw new IllegalArgumentException(
+            "The legacy SQLite mode was removed in Robolectric 4.19, and SQLite is always native."
+                + " Remove @SQLiteMode(LEGACY), or the sqliteMode=LEGACY property, from "
+                + method.getDeclaringClass().getName()
+                + ".");
+      }
     }
     return sandboxManager.getAndroidSandbox(
-        classLoaderConfig, sdk, resourcesMode, looperMode, sqliteMode, graphicsMode);
+        classLoaderConfig, sdk, resourcesMode, looperMode, graphicsMode);
   }
 
   @Override
   protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
-    SQLiteMode.Mode sqliteMode =
-        roboMethod.configuration == null
-            ? SQLiteMode.Mode.LEGACY
-            : roboMethod.configuration.get(SQLiteMode.Mode.class);
-
     AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
-    androidSandbox.updateModes(sqliteMode);
     if (roboMethod.configuration != null) {
       // Class-level code (@BeforeClass, class rules) runs before any test sets up its environment.
       androidSandbox.updateConfigurationRegistry(roboMethod.configuration);

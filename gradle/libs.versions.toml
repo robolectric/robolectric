@@ -106,8 +106,6 @@ powermock = "2.0.9"
 
 snakeyaml = "2.7"
 
-sqlite4java = "1.0.392"
-
 # https://developer.android.com/jetpack/androidx/versions
 androidx-annotation = "1.11.0"
 androidx-appcompat = "1.8.0"
@@ -163,7 +161,6 @@ auto-service = { module = "com.google.auto.service:auto-service", version.ref = 
 auto-value-annotations = { module = "com.google.auto.value:auto-value-annotations", version.ref = "auto-value" }
 auto-value = { module = "com.google.auto.value:auto-value", version.ref = "auto-value" }
 
-
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
@@ -214,13 +211,6 @@ powermock-classloading-objenesis = { module = "org.powermock:powermock-classload
 robolectric-nativeruntime-dist-compat = { module = "org.robolectric:nativeruntime-dist-compat", version.ref = "robolectric-nativeruntime-dist-compat" }
 
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
-
-sqlite4java = { module = "com.almworks.sqlite4java:sqlite4java", version.ref = "sqlite4java" }
-sqlite4java-osx = { module = "com.almworks.sqlite4java:libsqlite4java-osx", version.ref = "sqlite4java" }
-sqlite4java-linux-amd64 = { module = "com.almworks.sqlite4java:libsqlite4java-linux-amd64", version.ref = "sqlite4java" }
-sqlite4java-win32-x64 = { module = "com.almworks.sqlite4java:sqlite4java-win32-x64", version.ref = "sqlite4java" }
-sqlite4java-linux-i386 = { module = "com.almworks.sqlite4java:libsqlite4java-linux-i386", version.ref = "sqlite4java" }
-sqlite4java-win32-x86 = { module = "com.almworks.sqlite4java:sqlite4java-win32-x86", version.ref = "sqlite4java" }
 
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
@@ -283,7 +273,6 @@ jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 [bundles]
 powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-objenesis"]
-sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle" }
