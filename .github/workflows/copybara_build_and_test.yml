@@ -1,6 +1,9 @@
 name: Copybara tests
 
 on:
+  push:
+    branches: [ google ]
+
   pull_request:
     branches: [ google ]
 
@@ -25,6 +28,8 @@ jobs:
           java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/google' }}
 
       - name: Build
         run: |

@@ -2,7 +2,7 @@ name: Native Tests
 
 on:
   push:
-    branches: [ master, 'robolectric-*.x' ]
+    branches: [ master, 'robolectric-*.x', 'google' ]
     paths-ignore:
       - '**.md'
 
@@ -65,6 +65,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/google' }}
 
       # Arm's ubuntu-24.04-arm image omits the Android SDK that the x86_64 images include.
       - name: Set up Android SDK
