@@ -4,13 +4,18 @@
 [![Build Status](https://github.com/robolectric/robolectric/actions/workflows/tests.yml/badge.svg)](https://github.com/robolectric/robolectric/actions?query=workflow%3Atests)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
 
-Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
+Robolectric is the industry-standard unit testing framework for Android. With
+Robolectric, your tests run in a simulated Android environment inside a JVM,
+without the overhead and flakiness of an emulator. Robolectric tests routinely
+run 10x faster than those on cold-started emulators.
 
-Robolectric supports running unit tests for *14* different versions of Android, ranging from Nougat (API level 24) to Cinnamon Bun (API level 37).
+Robolectric supports running unit tests for *14* different versions of Android,
+ranging from Nougat (API level 24) to Cinnamon Bun (API level 37).
 
 ## Usage
 
-To use Robolectric in your project, simply add the necessary dependencies to your module's `build.gradle`/`build.gradle.kts` file:
+To use Robolectric in your project, simply add the necessary dependencies to
+your module's `build.gradle`/`build.gradle.kts` file:
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
@@ -36,11 +41,15 @@ public class MyActivityTest {
 }
 ```
 
-For more information about how to install and use Robolectric in your project, extend its functionality, and join the community of contributors, you can visit [robolectric.org](https://robolectric.org).
+For more information about how to install and use Robolectric in your project,
+extend its functionality, and join the community of contributors, you can visit
+[robolectric.org](https://robolectric.org).
 
 ## Building and Contributing
 
-Robolectric is built using Gradle. Both Android Studio and IntelliJ can import the top-level `build.gradle.kts` file and will automatically generate their project files from it.
+Robolectric is built using Gradle. Both Android Studio and IntelliJ can import
+the top-level `build.gradle.kts` file and will automatically generate their
+project files from it.
 
 To get Robolectric up and running on your machine, check out
 [this guide](https://robolectric.org/building-robolectric/).
@@ -82,7 +91,9 @@ changes to eventually make their way to public Robolectric releases.
 
 ## Using Snapshots
 
-If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on the `master` and may contain bugs.
+If you would like to live on the bleeding edge, you can try running against a
+snapshot build. Keep in mind that snapshots represent the most recent changes on
+the `master` and may contain bugs.
 
 ### `build.gradle`
 

@@ -81,8 +81,10 @@ kapt {
 
 ### KSP processor module
 
-For Kotlin shadow packages, Robolectric provides a separate KSP processor in the `processor-ksp`
-module so that this (javac) `processor` artifact stays free of any Kotlin/KSP dependency. See
+For Kotlin shadow packages, Robolectric provides a separate KSP processor in the
+`processor-ksp` module so that this (javac) `processor` artifact stays free of
+any Kotlin/KSP dependency. See
+<!-- disableFinding(LINK_RELATIVE_G3DOC) -->
 [`processor-ksp/README.md`](../processor-ksp/README.md).
 
 ## Future enhancements
