@@ -27,9 +27,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  cache-version: v4
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -146,12 +143,6 @@ jobs:
 
       - name: Accept Android SDK licences
         run: yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
-
-      - name: Managed device cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.android/avd/gradle-managed
-          key: gmd-ubuntu-${{ matrix.api-level }}-${{ env.cache-version }}
 
       - name: Run device tests
         env:
