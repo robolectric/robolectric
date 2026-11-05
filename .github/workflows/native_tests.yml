@@ -2,7 +2,7 @@ name: Native Tests
 
 on:
   push:
-    branches: [ master, 'robolectric-*.x' ]
+    branches: [ master, 'robolectric-*.x', 'google' ]
     paths-ignore:
       - '**.md'
 
@@ -42,6 +42,8 @@ jobs:
           java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/google' }}
 
       - name: Show runner info
         run: uname -a
