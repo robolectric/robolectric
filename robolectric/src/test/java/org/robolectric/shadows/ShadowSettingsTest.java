@@ -343,8 +343,8 @@ public class ShadowSettingsTest {
   public void testConfig_putAndGetString() {
     assertThat(Settings.Config.putString("namespace", "key", "value", false)).isTrue();
     assertThat(Settings.Config.getString("namespace/key")).isEqualTo("value");
-    assertThat(Settings.Config.getString("namespace/missing_key")).isEqualTo(null);
-    assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
+    assertThat(Settings.Config.getString("namespace/missing_key")).isNull();
+    assertThat(Settings.Config.getString("missing_namespace/key")).isNull();
   }
 
   @Config(minSdk = UPSIDE_DOWN_CAKE)
@@ -352,8 +352,8 @@ public class ShadowSettingsTest {
   public void testConfig_putAndGetStrings() {
     assertThat(Settings.Config.putString("namespace", "key", "value", false)).isTrue();
     assertThat(Settings.Config.getString("namespace/key")).isEqualTo("value");
-    assertThat(Settings.Config.getString("namespace/missing_key")).isEqualTo(null);
-    assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
+    assertThat(Settings.Config.getString("namespace/missing_key")).isNull();
+    assertThat(Settings.Config.getString("missing_namespace/key")).isNull();
   }
 
   /** These are not public APIs, but they may be used by system apps in the Android platform. */

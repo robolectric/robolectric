@@ -701,7 +701,7 @@ public class ShadowWebViewTest {
 
   @Test
   public void getDownloadListener_noListenerSet_returnsNull() {
-    assertThat(shadowOf(webView).getDownloadListener()).isEqualTo(null);
+    assertThat(shadowOf(webView).getDownloadListener()).isNull();
   }
 
   @Test

@@ -936,9 +936,9 @@ public class ShadowActivityTest {
   public void decorViewSizeEqualToDisplaySize() {
     Activity activity = buildActivity(Activity.class).create().visible().get();
     View decorView = activity.getWindow().getDecorView();
-    assertThat(decorView).isNotEqualTo(null);
+    assertThat(decorView).isNotNull();
     ViewRootImpl root = decorView.getViewRootImpl();
-    assertThat(root).isNotEqualTo(null);
+    assertThat(root).isNotNull();
     assertThat(decorView.getWidth()).isNotEqualTo(0);
     assertThat(decorView.getHeight()).isNotEqualTo(0);
     Display display = ShadowDisplay.getDefaultDisplay();

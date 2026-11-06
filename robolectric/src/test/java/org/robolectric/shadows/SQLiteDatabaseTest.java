@@ -492,7 +492,7 @@ public class SQLiteDatabaseTest {
     int firstIndex = cursor.getColumnIndex("first_column");
     int nameIndex = cursor.getColumnIndex("name");
     assertThat(cursor.getString(nameIndex)).isEqualTo(name);
-    assertThat(cursor.getString(firstIndex)).isEqualTo(null);
+    assertThat(cursor.getString(firstIndex)).isNull();
     cursor.close();
   }
 

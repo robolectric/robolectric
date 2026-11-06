@@ -1116,7 +1116,7 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
     shadowOf(telephonyManager).setSimCountryIso(subId, null);
 
-    assertThat(callGetSimCountryIso(telephonyManager, subId)).isEqualTo(null);
+    assertThat(callGetSimCountryIso(telephonyManager, subId)).isNull();
   }
 
   @Test
@@ -1254,7 +1254,7 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, null);
 
     assertThat(telephonyManager.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
-        .isEqualTo(null);
+        .isNull();
   }
 
   @Test

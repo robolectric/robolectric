@@ -273,7 +273,7 @@ public class ShadowViewTest {
   public void shouldClearBackgroundResource() {
     view.setBackgroundResource(R.drawable.an_image);
     view.setBackgroundResource(0);
-    assertThat(view.getBackground()).isEqualTo(null);
+    assertThat(view.getBackground()).isNull();
   }
 
   @Test

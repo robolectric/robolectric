@@ -44,7 +44,7 @@ public class ShadowCursorWindowTest {
     assertThat(window.getInt(1, 0)).isEqualTo(34);
     assertThat(window.getString(1, 1)).isEqualTo("baz");
     assertThat(window.getFloat(1, 2)).isEqualTo(1.2f);
-    assertThat(window.getBlob(1, 3)).isEqualTo(null);
+    assertThat(window.getBlob(1, 3)).isNull();
 
     assertThat(window.getBlob(2, 3)).isEqualTo(new byte[] {});
     testCursor.close();

@@ -159,7 +159,7 @@ public class ShadowBluetoothGattServerTest {
     shadowOf(server).sendResponse(device, 0, 0, 0, null);
     assertThat(shadowOf(server).getResponses()).hasSize(2);
     assertThat(shadowOf(server).getResponses().get(0)).isEqualTo(RESPONSE_VALUE1);
-    assertThat(shadowOf(server).getResponses().get(1)).isEqualTo(null);
+    assertThat(shadowOf(server).getResponses().get(1)).isNull();
   }
 
   @Test
@@ -242,7 +242,7 @@ public class ShadowBluetoothGattServerTest {
         .isTrue();
     assertThat(shadowOf(server).getWrittenBytes()).hasSize(2);
     assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(PAYLOAD);
-    assertThat(shadowOf(server).getWrittenBytes().get(1)).isEqualTo(null);
+    assertThat(shadowOf(server).getWrittenBytes().get(1)).isNull();
   }
 
   @Test

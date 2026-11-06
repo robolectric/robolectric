@@ -63,7 +63,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   public void forNonexistentDisplay_getDisplayInfo_shouldReturnNull() {
-    assertThat(getGlobal().getDisplayInfo(3)).isEqualTo(null);
+    assertThat(getGlobal().getDisplayInfo(3)).isNull();
   }
 
   @Test

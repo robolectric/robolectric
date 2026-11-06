@@ -63,7 +63,7 @@ public class ShadowWifiInfoTest {
   @Test
   public void shouldReturnBSSID() {
     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-    assertThat(wifiInfo.getBSSID()).isEqualTo(null);
+    assertThat(wifiInfo.getBSSID()).isNull();
 
     shadowOf(wifiInfo).setBSSID("BSSID");
 

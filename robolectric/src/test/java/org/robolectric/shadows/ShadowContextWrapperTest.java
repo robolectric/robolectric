@@ -40,7 +40,6 @@ import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.IterableSubject;
-import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -435,12 +434,10 @@ public class ShadowContextWrapperTest {
 
   private static final class FooReceiver extends BroadcastReceiver {
     private int resultCode;
-    private final SettableFuture<Void> settableFuture = SettableFuture.create();
 
     @Override
     public void onReceive(Context context, Intent intent) {
       resultCode = getResultCode();
-      settableFuture.set(null);
     }
   }
 
