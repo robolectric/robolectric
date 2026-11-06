@@ -25,10 +25,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -66,7 +62,6 @@ import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -1697,11 +1692,7 @@ public class ShadowNativeStaticLayoutTest {
     TextPaint paint = new TextPaint();
     paint.setTypeface(tf);
 
-    ReplacementSpan firstReplacement = mock(ReplacementSpan.class);
-    ArgumentCaptor<FontMetricsInt> fm1Captor = ArgumentCaptor.forClass(FontMetricsInt.class);
-    when(firstReplacement.getSize(
-            any(Paint.class), any(CharSequence.class), anyInt(), anyInt(), fm1Captor.capture()))
-        .thenReturn(0);
+    RecordingReplacementSpan firstReplacement = new RecordingReplacementSpan();
     TextAppearanceSpan firstStyleSpan =
         new TextAppearanceSpan(
             null /* family */,
@@ -1710,15 +1701,7 @@ public class ShadowNativeStaticLayoutTest {
             null /* text color */,
             null /* link color */);
 
-    ReplacementSpan secondReplacement = mock(ReplacementSpan.class);
-    ArgumentCaptor<FontMetricsInt> fm2Captor = ArgumentCaptor.forClass(FontMetricsInt.class);
-    when(secondReplacement.getSize(
-            any(Paint.class),
-            any(CharSequence.class),
-            any(Integer.class),
-            any(Integer.class),
-            fm2Captor.capture()))
-        .thenReturn(0);
+    RecordingReplacementSpan secondReplacement = new RecordingReplacementSpan();
     TextAppearanceSpan secondStyleSpan =
         new TextAppearanceSpan(
             null /* family */,
@@ -1735,8 +1718,8 @@ public class ShadowNativeStaticLayoutTest {
 
     StaticLayout.Builder.obtain(ssb, 0, ssb.length(), paint, Integer.MAX_VALUE).build();
 
-    FontMetricsInt firstMetrics = fm1Captor.getValue();
-    FontMetricsInt secondMetrics = fm2Captor.getValue();
+    FontMetricsInt firstMetrics = firstReplacement.fontMetrics;
+    FontMetricsInt secondMetrics = secondReplacement.fontMetrics;
 
     // The samplefont.ttf has 0.8em ascent and 0.2em descent.
     assertEquals(-100, firstMetrics.ascent);
@@ -1744,6 +1727,33 @@ public class ShadowNativeStaticLayoutTest {
 
     assertEquals(-200, secondMetrics.ascent);
     assertEquals(40, secondMetrics.descent);
+  }
+
+  /**
+   * A zero-width ReplacementSpan that records the FontMetricsInt of its last getSize call. A
+   * Mockito mock would do the same, but mocking self-attaches an agent in each SDK's sandbox, which
+   * takes about 12 seconds on macOS.
+   */
+  private static final class RecordingReplacementSpan extends ReplacementSpan {
+    FontMetricsInt fontMetrics;
+
+    @Override
+    public int getSize(Paint paint, CharSequence text, int start, int end, FontMetricsInt fm) {
+      fontMetrics = fm;
+      return 0;
+    }
+
+    @Override
+    public void draw(
+        Canvas canvas,
+        CharSequence text,
+        int start,
+        int end,
+        float x,
+        int top,
+        int y,
+        int bottom,
+        Paint paint) {}
   }
 
   @Config(minSdk = Q)
