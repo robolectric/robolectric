@@ -1409,37 +1409,49 @@ public class CppAssetManager2 {
         .measure(
             "RebuildFilterList",
             () -> {
+              // Filtering checks every type of every package against the configuration, and tests
+              // create AssetManagers for the same packages and configurations over and over. The
+              // filtered types only depend on the package and the configuration, and aren't
+              // changed after they're created, so each package keeps them by configuration.
+              Object configurationKey = configuration_.valueKey();
               for (PackageGroup group : package_groups_) {
                 for (ConfiguredPackage impl : group.packages_) {
-                  // // Destroy it.
-                  // impl.filtered_configs_.~ByteBucketArray();
-                  //
-                  // // Re-create it.
-                  // new (impl.filtered_configs_) ByteBucketArray<FilteredConfigGroup>();
                   impl.filtered_configs_ =
-                      new ByteBucketArray<FilteredConfigGroup>(new FilteredConfigGroup()) {
-                        @Override
-                        FilteredConfigGroup newInstance() {
-                          return new FilteredConfigGroup();
-                        }
-                      };
-
-                  // Create the filters here.
-                  impl.loaded_package_.ForEachTypeSpec((TypeSpec spec, byte type_index) -> {
-                    FilteredConfigGroup configGroup = impl.filtered_configs_.editItemAt(type_index);
-                    // const auto iter_end = spec->types + spec->type_count;
-                    //   for (auto iter = spec->types; iter != iter_end; ++iter) {
-                    for (ResTable_type iter : spec.types) {
-                      if (iter.config.match(configuration_)) {
-                        ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
-                        configGroup.configurations.add(this_config);
-                        configGroup.types.add(iter);
-                      }
-                    }
-                  });
+                      impl.loaded_package_.filteredConfigs.computeIfAbsent(
+                          configurationKey, key -> filterConfigs(impl.loaded_package_));
                 }
               }
             });
+  }
+
+  private ByteBucketArray<FilteredConfigGroup> filterConfigs(LoadedPackage loadedPackage) {
+    // // Destroy it.
+    // impl.filtered_configs_.~ByteBucketArray();
+    //
+    // // Re-create it.
+    // new (impl.filtered_configs_) ByteBucketArray<FilteredConfigGroup>();
+    ByteBucketArray<FilteredConfigGroup> filteredConfigs =
+        new ByteBucketArray<FilteredConfigGroup>(new FilteredConfigGroup()) {
+          @Override
+          FilteredConfigGroup newInstance() {
+            return new FilteredConfigGroup();
+          }
+        };
+
+    // Create the filters here.
+    loadedPackage.ForEachTypeSpec((TypeSpec spec, byte type_index) -> {
+      FilteredConfigGroup configGroup = filteredConfigs.editItemAt(type_index);
+      // const auto iter_end = spec->types + spec->type_count;
+      //   for (auto iter = spec->types; iter != iter_end; ++iter) {
+      for (ResTable_type iter : spec.types) {
+        if (iter.config.match(configuration_)) {
+          ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
+          configGroup.configurations.add(this_config);
+          configGroup.types.add(iter);
+        }
+      }
+    });
+    return filteredConfigs;
   }
 
   // Purge all resources that are cached and vary by the configuration axis denoted by the

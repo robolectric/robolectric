@@ -779,6 +779,42 @@ public class ResTable_config {
     this.localeVariant = new byte[8];
   }
 
+  /**
+   * Returns a key that equals the key of any configuration with the same field values, and isn't
+   * affected by later changes to this configuration.
+   */
+  Object valueKey() {
+    return Arrays.asList(
+        size,
+        mcc,
+        mnc,
+        Arrays.toString(language),
+        Arrays.toString(country),
+        orientation,
+        touchscreen,
+        density,
+        keyboard,
+        navigation,
+        inputFlags,
+        screenWidth,
+        screenHeight,
+        sdkVersion,
+        minorVersion,
+        screenLayout,
+        uiMode,
+        smallestScreenWidthDp,
+        screenWidthDp,
+        screenHeightDp,
+        Arrays.toString(localeScript),
+        Arrays.toString(localeVariant),
+        screenLayout2,
+        colorMode,
+        screenConfigPad2,
+        Arrays.toString(unknown),
+        localeScriptWasComputed,
+        Arrays.toString(localeNumberingSystem));
+  }
+
   public int minorVersion;
   public int screenLayout;
 
