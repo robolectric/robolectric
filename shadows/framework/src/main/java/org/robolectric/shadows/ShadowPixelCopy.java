@@ -255,28 +255,37 @@ public class ShadowPixelCopy {
     validateBitmap(screenshot);
 
     Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-
-    if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
-      PerfStatsCollector.getInstance()
-          .measure(
-              "ShadowPixelCopy-Hardware",
-              () -> HardwareRenderingScreenshot.takeScreenshot(view, bitmap));
-    } else {
-      PerfStatsCollector.getInstance()
-          .measure(
-              "ShadowPixelCopy-Software",
-              () -> {
-                Canvas screenshotCanvas = new Canvas(bitmap);
-                view.draw(screenshotCanvas);
-              });
+    try {
+      if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
+        PerfStatsCollector.getInstance()
+            .measure(
+                "ShadowPixelCopy-Hardware",
+                () -> HardwareRenderingScreenshot.takeScreenshot(view, bitmap));
+        drawScreenshot(bitmap, srcRect, screenshot);
+      } else {
+        Canvas canvas = new Canvas(bitmap);
+        try {
+          PerfStatsCollector.getInstance().measure("ShadowPixelCopy-Software", () -> view.draw(canvas));
+          drawScreenshot(bitmap, srcRect, screenshot);
+        } finally {
+          // Detach after the copy. The View may have left saved layers on its Canvas.
+          canvas.setBitmap(null);
+        }
+      }
+    } finally {
+      bitmap.recycle();
     }
+  }
 
-    Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
-
-    Canvas resizingCanvas = new Canvas(screenshot);
-    Paint paint = new Paint();
-    resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
-    bitmap.recycle();
+  private static void drawScreenshot(Bitmap bitmap, @Nullable Rect srcRect, Bitmap destination) {
+    Canvas canvas = new Canvas(destination);
+    try {
+      Rect dst = new Rect(0, 0, destination.getWidth(), destination.getHeight());
+      canvas.drawBitmap(bitmap, srcRect, dst, new Paint());
+    } finally {
+      // The caller owns the destination and can recycle it as soon as PixelCopy returns.
+      canvas.setBitmap(null);
+    }
   }
 
   private static void alertFinished(
