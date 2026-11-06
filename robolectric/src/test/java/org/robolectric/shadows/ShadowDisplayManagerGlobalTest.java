@@ -24,6 +24,7 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.media.projection.MediaProjection;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -110,6 +111,14 @@ public class ShadowDisplayManagerGlobalTest {
     assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
     assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
     assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testVirtualDisplay_setsOwnerUid() {
+    VirtualDisplay virtualDisplay = createVirtualDisplay(null);
+
+    assertThat(virtualDisplay.getDisplay().getOwnerUid()).isEqualTo(Process.myUid());
   }
 
   @Test

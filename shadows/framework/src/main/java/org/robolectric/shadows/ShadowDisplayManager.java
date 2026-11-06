@@ -18,6 +18,7 @@ import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
+import android.os.Process;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -156,6 +157,7 @@ public class ShadowDisplayManager {
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
     displayInfo.state = Display.STATE_ON;
+    displayInfo.ownerUid = Process.myUid();
     displayInfo.type = displayType;
     if (displayType == Display.TYPE_EXTERNAL
         || displayType == Display.TYPE_WIFI

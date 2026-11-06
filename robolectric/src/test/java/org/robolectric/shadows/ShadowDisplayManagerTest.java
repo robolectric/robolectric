@@ -18,6 +18,7 @@ import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
+import android.os.Process;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -105,6 +106,14 @@ public class ShadowDisplayManagerTest {
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp", Display.TYPE_EXTERNAL);
 
     assertThat(instance.getDisplay(displayId).getType()).isEqualTo(Display.TYPE_EXTERNAL);
+  }
+
+  @Test
+  public void addDisplay_setsOwnerUid() {
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp", Display.TYPE_EXTERNAL);
+
+    Display display = instance.getDisplay(displayId);
+    assertThat(display.getOwnerUid()).isEqualTo(Process.myUid());
   }
 
   @Test
