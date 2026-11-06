@@ -25,8 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.robolectric.res.android.Chunk.Iterator;
+import org.robolectric.res.android.CppAssetManager2.FilteredConfigGroup;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
 import org.robolectric.res.android.ResourceTypes.IdmapEntry_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
@@ -378,6 +380,11 @@ public class LoadedArsc {
     final Map<Integer, TypeSpec> type_specs_ = new HashMap<>();
     final List<DynamicPackageEntry> dynamic_package_map_ = new ArrayList<>();
     final Map<Integer, Integer> aliasIdMap = new HashMap<>();
+
+    // The types that match each configuration, from CppAssetManager2.RebuildFilterList, by the
+    // configuration's ResTable_config.valueKey().
+    final Map<Object, ByteBucketArray<FilteredConfigGroup>> filteredConfigs =
+        new ConcurrentHashMap<>();
 
     ResTable_entry GetEntry(ResTable_type type_chunk, short entry_index) {
       int entryOffset = getEntryOffset(type_chunk, entry_index);
