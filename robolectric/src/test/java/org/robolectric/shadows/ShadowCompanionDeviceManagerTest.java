@@ -8,6 +8,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Application;
 import android.companion.AssociationInfo;
@@ -645,6 +646,22 @@ public class ShadowCompanionDeviceManagerTest {
   @Test
   public void testGetSystemDataSyncFlags_noAssociation_returnsZero() {
     assertThat(shadowCompanionDeviceManager.getSystemDataSyncFlags(1)).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void testNotifyActionResult_throwsIfConfigured() throws Exception {
+    shadowCompanionDeviceManager.setThrowOnNotifyActionResult(true);
+
+    Class<?> actionResultClass = Class.forName("android.companion.ActionResult");
+
+    ClassParameter<Integer> classParameters = ClassParameter.from(int.class, 1);
+    ClassParameter<?> classParameters2 = ClassParameter.from(actionResultClass, null);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            ReflectionHelpers.callInstanceMethod(
+                companionDeviceManager, "notifyActionResult", classParameters, classParameters2));
   }
 
   private CompanionDeviceManager.Callback createCallback() {

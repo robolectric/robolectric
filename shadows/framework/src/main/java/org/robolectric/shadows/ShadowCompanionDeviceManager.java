@@ -63,11 +63,33 @@ public class ShadowCompanionDeviceManager {
   private final Map<String, ListenerHolder> listeners = new HashMap<>();
   private final Set<RequestedAction> requestedActions = new HashSet<>();
 
+  private int lastNotifyActionResultAssociationId = -1;
+  private int lastNotifyActionResultAction = -1;
+  private int lastNotifyActionResultResultCode = -1;
+
   /**
    * The association info assigned to the current device. This should be accessed indirectly via
    * {@link #getCurrentAssociation()}, which provides a fallback lazily.
    */
   @Nullable private AssociationInfo selfAssociationInfo;
+
+  private boolean throwOnNotifyActionResult = false;
+
+  public void setThrowOnNotifyActionResult(boolean throwOnNotifyActionResult) {
+    this.throwOnNotifyActionResult = throwOnNotifyActionResult;
+  }
+
+  public int getLastNotifyActionResultAssociationId() {
+    return lastNotifyActionResultAssociationId;
+  }
+
+  public int getLastNotifyActionResultAction() {
+    return lastNotifyActionResultAction;
+  }
+
+  public int getLastNotifyActionResultResultCode() {
+    return lastNotifyActionResultResultCode;
+  }
 
   private final Map<Integer, Integer> systemDataSyncFlags = new ConcurrentHashMap<>();
   private int lastRemoveBondAssociationId = -1;
@@ -553,6 +575,14 @@ public class ShadowCompanionDeviceManager {
   @Implementation(minSdk = CINNAMON_BUN)
   protected void notifyActionResult(
       int associationId, @ClassName("android.companion.ActionResult") Object result) {
+    lastNotifyActionResultAssociationId = associationId;
+    lastNotifyActionResultAction = reflector(ActionResultReflector.class, result).getAction();
+    lastNotifyActionResultResultCode =
+        reflector(ActionResultReflector.class, result).getResultCode();
+
+    if (throwOnNotifyActionResult) {
+      throw new IllegalArgumentException("Association does not exist (simulated)");
+    }
     requestedActions.stream()
         .filter(request -> request.isInterested(associationId, result))
         .map(RequestedAction::serviceName)
@@ -766,5 +796,7 @@ public class ShadowCompanionDeviceManager {
   @ForType(className = "android.companion.ActionResult")
   interface ActionResultReflector {
     int getAction();
+
+    int getResultCode();
   }
 }
