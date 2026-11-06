@@ -14,6 +14,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.annotation.IntRange;
 import android.app.ActivityThread;
@@ -97,6 +98,7 @@ public class ShadowBluetoothDevice {
   private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
   private final Set<Integer> connectedTransports = new HashSet<>();
   private BluetoothDevice.BluetoothAddress identityAddressWithType;
+  private int leAppearance = 0;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -580,6 +582,17 @@ public class ShadowBluetoothDevice {
 
   public void setIdentityAddressWithType(BluetoothDevice.BluetoothAddress identityAddressWithType) {
     this.identityAddressWithType = identityAddressWithType;
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected int getLeAppearance() {
+    checkForBluetoothConnectPermission();
+    return leAppearance;
+  }
+
+  /** Sets the LE appearance for this device. */
+  public void setLeAppearance(int leAppearance) {
+    this.leAppearance = leAppearance;
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
