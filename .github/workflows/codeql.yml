@@ -83,6 +83,11 @@ jobs:
       # CodeQL will assemble the project before performing the analysis.
       # We add this extra step to take advantage of GitHub Actions caches.
       - uses: gradle/actions/setup-gradle@v6
+        with:
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
       # If the analyze step fails for one of the languages you are analyzing with
       # "We were unable to automatically build your code", modify the matrix above
