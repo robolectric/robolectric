@@ -24,6 +24,7 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
+import android.os.Process;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
@@ -236,6 +237,7 @@ public class ShadowDisplayManagerGlobal {
       displayInfo.physicalXDpi = config.getDensityDpi();
       displayInfo.physicalYDpi = config.getDensityDpi();
       displayInfo.ownerPackageName = packageName;
+      displayInfo.ownerUid = Process.myUid();
       displayInfo.appWidth = config.getWidth();
       displayInfo.logicalWidth = config.getWidth();
       displayInfo.appHeight = config.getHeight();
@@ -297,6 +299,7 @@ public class ShadowDisplayManagerGlobal {
       displayInfo.physicalXDpi = densityDpi;
       displayInfo.physicalYDpi = densityDpi;
       displayInfo.ownerPackageName = packageName;
+      displayInfo.ownerUid = Process.myUid();
       displayInfo.appWidth = width;
       displayInfo.logicalWidth = width;
       displayInfo.appHeight = height;
