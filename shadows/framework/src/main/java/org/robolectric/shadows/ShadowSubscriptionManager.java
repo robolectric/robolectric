@@ -55,6 +55,7 @@ public class ShadowSubscriptionManager {
   private static int defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
 
   private static final Map<Integer, String> phoneNumberMap = new HashMap<>();
+  private static final Map<Integer, Map<Integer, String>> phoneNumberBySourceMap = new HashMap<>();
 
   private RuntimeException throwException = null;
 
@@ -695,19 +696,35 @@ public class ShadowSubscriptionManager {
   }
 
   /**
-   * Returns the phone number for the given {@code subscriptionId}, or an empty string if not
-   * available. {@code source} is ignored and will return the same as {@link #getPhoneNumber(int)}.
+   * Returns the phone number for the given {@code subscriptionId} and {@code source}, or falls back
+   * to {@link #getPhoneNumber(int)} if a source-specific phone number was not set.
    *
-   * <p>The phone number can be set by {@link #setPhoneNumber(int, String)}
+   * <p>The phone number can be set by {@link #setPhoneNumber(int, int, String)} or {@link
+   * #setPhoneNumber(int, String)}.
    */
   @Implementation(minSdk = TIRAMISU)
   protected String getPhoneNumber(int subscriptionId, int source) {
+    if (throwException != null) {
+      throw throwException;
+    }
+    checkReadPhoneNumbersPermission();
+    Map<Integer, String> sourceMap = phoneNumberBySourceMap.get(subscriptionId);
+    if (sourceMap != null && sourceMap.containsKey(source)) {
+      return sourceMap.get(source);
+    }
     return getPhoneNumber(subscriptionId);
   }
 
   /** Sets the phone number returned by {@link #getPhoneNumber(int)}. */
   public void setPhoneNumber(int subscriptionId, String phoneNumber) {
     phoneNumberMap.put(subscriptionId, phoneNumber);
+  }
+
+  /** Sets the phone number returned by {@link #getPhoneNumber(int, int)} for {@code source}. */
+  public void setPhoneNumber(int subscriptionId, int source, String phoneNumber) {
+    phoneNumberBySourceMap
+        .computeIfAbsent(subscriptionId, k -> new HashMap<>())
+        .put(source, phoneNumber);
   }
 
   /**
@@ -755,6 +772,7 @@ public class ShadowSubscriptionManager {
     allSubscriptionList = ImmutableList.of();
     phoneIds.clear();
     phoneNumberMap.clear();
+    phoneNumberBySourceMap.clear();
     readPhoneStatePermission = true;
     readPhoneNumbersPermission = true;
   }
