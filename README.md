@@ -3,6 +3,7 @@
 
 [![Build Status](https://github.com/robolectric/robolectric/actions/workflows/tests.yml/badge.svg)](https://github.com/robolectric/robolectric/actions?query=workflow%3Atests)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
+[![Agents welcome](https://img.shields.io/badge/agents-welcome-brightgreen)](AGENTS.md)
 
 Robolectric is the industry-standard unit testing framework for Android. With
 Robolectric, your tests run in a simulated Android environment inside a JVM,
@@ -106,3 +107,26 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.19-SNAPSHOT"
 }
 ```
+
+## Coding agents
+
+We encourage using coding agents, both to write contributions and to review
+them.
+
+Robolectric has historically been a difficult project to understand, because it
+relies on many low-level JVM APIs, such as bytecode instrumentation and custom
+class loaders. Agents help contributors work through that complexity and make
+high-quality contributions.
+
+The complexity of the project has also limited what we could take on with the
+time and people available. With agents, we can take on more ambitious projects
+for Robolectric.
+
+One goal is to make Robolectric as useful as possible to coding agents, so that
+iterating on Android projects is quick and efficient.
+
+Before sending a pull request, review the code yourself and make sure it is
+sensible and well-formed.
+
+[AGENTS.md](AGENTS.md) has the instructions for coding agents working in this
+repository.
