@@ -362,7 +362,7 @@ public class AndroidManifestTest {
     AndroidManifest appManifest =
         new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), null);
     assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.default");
-    assertThat(appManifest.getRClass()).isEqualTo(null);
+    assertThat(appManifest.getRClass()).isNull();
   }
 
   @Test

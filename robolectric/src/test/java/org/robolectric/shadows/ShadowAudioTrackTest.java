@@ -627,7 +627,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
     ShadowLooper.idleMainLooper();
 
     assertThat(listenerRouting.get()).isEqualTo(audioTrack);
-    assertThat(listenerRouting.get().getRoutedDevice()).isEqualTo(null);
+    assertThat(listenerRouting.get().getRoutedDevice()).isNull();
   }
 
   @Test
