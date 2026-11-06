@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.Account;
@@ -55,6 +56,7 @@ public class ShadowAccountManager {
   private final Map<Account, String> passwords = new ConcurrentHashMap<>();
   private final Map<Account, Set<String>> accountFeatures = new HashMap<>();
   private final Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
+  private final Set<Account> accountsNotifiedAuthenticated = ConcurrentHashMap.newKeySet();
 
   private final List<Bundle> addAccountOptionsList = new ArrayList<>();
   private static Handler mainHandler;
@@ -903,5 +905,27 @@ public class ShadowAccountManager {
 
     public abstract T doWork()
         throws OperationCanceledException, IOException, AuthenticatorException;
+  }
+
+  /**
+   * Shadows {@link AccountManager#notifyAccountAuthenticated(Account)}.
+   *
+   * @return true if the account is present in the accounts list, or false otherwise.
+   */
+  @Implementation(minSdk = M)
+  protected boolean notifyAccountAuthenticated(Account account) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    accountsNotifiedAuthenticated.add(account);
+    return true;
+  }
+
+  /**
+   * Returns true if {@link AccountManager#notifyAccountAuthenticated(Account)} was called for the
+   * given account.
+   */
+  public boolean wasNotifiedOfAccountAuthentication(Account account) {
+    return accountsNotifiedAuthenticated.contains(account);
   }
 }
