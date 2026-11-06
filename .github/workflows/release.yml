@@ -8,6 +8,8 @@
 # * "Point release": stages the next version of the newest `robolectric-X.Y.x` branch: the next
 #   beta (`X.Y-beta-N`) or `X.Y` until `X.Y` is released, then the next patch release (`X.Y.1`,
 #   `X.Y.2`...). Use the cherry-pick workflow to get fixes into that branch first.
+# * "Point release from a branch": the same for the release branch named in "branch", such as
+#   `robolectric-4.17.x` for `4.17.1` once 4.18 has its own branch.
 # * "New release line": stages the first version of the next release line from master. With
 #   `4.18-SNAPSHOT` in gradle.properties, that's `4.18-beta-1` (or `4.18` if "beta" is unchecked),
 #   for a new `robolectric-4.18.x` branch.
@@ -48,8 +50,13 @@ on:
         type: choice
         options:
           - Point release
+          - Point release from a branch
           - New release line
         default: Point release
+      branch:
+        description: 'For "Point release from a branch": the release branch, such as robolectric-4.17.x.'
+        type: string
+        default: ''
       beta:
         description: 'Release a beta (X.Y-beta-N) instead of X.Y. Ignored for patch releases.'
         type: boolean
@@ -84,69 +91,121 @@ jobs:
         env:
           RELEASE: ${{ inputs.release }}
           BETA: ${{ inputs.beta }}
+          BRANCH: ${{ inputs.branch }}
           REF_NAME: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
+        shell: python
         run: |
-          set -euo pipefail
-          fail() { echo "::error::$*"; exit 1; }
+          import os
+          import re
+          import subprocess
+          import sys
 
-          [[ "$REPOSITORY" == robolectric/robolectric ]] || fail "Releases are only made from robolectric/robolectric."
+          release = os.environ["RELEASE"]
+          beta = os.environ["BETA"] == "true"
 
-          [[ "$REF_NAME" == master ]] ||
-            fail "Run this workflow from master, not $REF_NAME. Choose the kind of release in the form instead."
 
-          if [[ "$RELEASE" == "New release line" ]]; then
-            current=$(sed -n 's/^thisVersion=//p' gradle.properties)
-            [[ "$current" =~ ^([0-9]+)\.([0-9]+)-SNAPSHOT$ ]] ||
-              fail "master's gradle.properties has thisVersion=$current, expected X.Y-SNAPSHOT."
-            series="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-            next_snapshot="${BASH_REMATCH[1]}.$((BASH_REMATCH[2] + 1))-SNAPSHOT"
-            branch="robolectric-$series.x"
-            if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
-              fail "$branch already exists. Choose \"Point release\" to release its next version."
-            fi
-            new_branch=true
-            sha=$(git rev-parse HEAD)
-          else
-            # The newest release branch, as in the cherry-pick workflow.
-            branch=$(git branch -r --list 'origin/robolectric-*.x' | sed 's|^ *origin/||' |
-              grep -E '^robolectric-[0-9]+\.[0-9]+\.x$' | sort -V | tail -1 || true)
-            [[ -n "$branch" ]] || fail "There is no robolectric-X.Y.x release branch."
-            [[ "$branch" =~ ^robolectric-([0-9]+\.[0-9]+)\.x$ ]]
-            series="${BASH_REMATCH[1]}"
-            new_branch=false
-            next_snapshot=""
-            sha=$(git rev-parse "origin/$branch")
-          fi
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
 
-          # The highest N of the tags robolectric-<prefix>N, or 0.
-          last() {
-            git tag --list "robolectric-$1*" | sed "s/^robolectric-$1//" | grep -E '^[0-9]+$' |
-              sort -n | tail -1 || true
-          }
 
-          if git rev-parse --quiet --verify "refs/tags/robolectric-$series" > /dev/null; then
-            [[ "$BETA" != true ]] || echo "::warning::$series is already released, so this is a patch release, not a beta."
-            n=$(last "$series.")
-            version="$series.$(( ${n:-0} + 1 ))"
-          elif [[ "$BETA" == true ]]; then
-            n=$(last "$series-beta-")
-            version="$series-beta-$(( ${n:-0} + 1 ))"
-          else
-            version="$series"
-          fi
+          def git(*args):
+            return subprocess.run(["git", *args], check=True, capture_output=True,
+                                  text=True).stdout.strip()
 
-          ! git rev-parse --quiet --verify "refs/tags/robolectric-$version" > /dev/null ||
-            fail "The tag robolectric-$version already exists."
 
-          {
-            echo "version=$version"
-            echo "branch=$branch"
-            echo "sha=$sha"
-            echo "new-branch=$new_branch"
-            echo "next-snapshot=$next_snapshot"
-          } >> "$GITHUB_OUTPUT"
-          echo "### Releasing Robolectric $version from $branch ($sha)" >> "$GITHUB_STEP_SUMMARY"
+          def tag_exists(tag):
+            return subprocess.run(["git", "rev-parse", "--quiet", "--verify", f"refs/tags/{tag}"],
+                                  capture_output=True).returncode == 0
+
+
+          def last(prefix):
+            """The highest N of the tags robolectric-<prefix>N, or 0."""
+            pattern = re.compile(re.escape(f"robolectric-{prefix}") + r"(\d+)")
+            numbers = [int(m[1]) for tag in git("tag", "--list").splitlines()
+                       if (m := pattern.fullmatch(tag))]
+            return max(numbers, default=0)
+
+
+          def branch_series(branch):
+            """(X, Y) for a robolectric-X.Y.x branch, otherwise None."""
+            match = re.fullmatch(r"robolectric-(\d+)\.(\d+)\.x", branch)
+            return (int(match[1]), int(match[2])) if match else None
+
+
+          if os.environ["REPOSITORY"] != "robolectric/robolectric":
+            fail("Releases are only made from robolectric/robolectric.")
+          if os.environ["REF_NAME"] != "master":
+            fail(f"Run this workflow from master, not {os.environ['REF_NAME']}. "
+                 "Choose the kind of release in the form instead.")
+
+          if release == "New release line":
+            current = re.search(r"^thisVersion=(.*)$", open("gradle.properties").read(), re.M)[1]
+            match = re.fullmatch(r"(\d+)\.(\d+)-SNAPSHOT", current)
+            if not match:
+              fail(f"master's gradle.properties has thisVersion={current}, expected X.Y-SNAPSHOT.")
+            series = f"{match[1]}.{match[2]}"
+            next_snapshot = f"{match[1]}.{int(match[2]) + 1}-SNAPSHOT"
+            branch = f"robolectric-{series}.x"
+            # Exits with 2 if the branch doesn't exist.
+            exists = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", branch],
+                                    capture_output=True).returncode
+            if exists == 0:
+              fail(f'{branch} already exists. Choose "Point release" to release its next version.')
+            if exists != 2:
+              fail(f"Couldn't check whether {branch} exists.")
+            new_branch = True
+            sha = git("rev-parse", "HEAD")
+          else:
+            branches = [line.strip().removeprefix("origin/") for line in
+                        git("branch", "-r", "--list", "origin/robolectric-*.x").splitlines()]
+            branches = sorted(filter(branch_series, branches), key=branch_series)
+            if not branches:
+              fail("There is no robolectric-X.Y.x release branch.")
+            if release == "Point release from a branch":
+              branch = os.environ["BRANCH"]
+              if not branch_series(branch):
+                fail(f'"{branch}" isn\'t a release branch name. '
+                     "Use robolectric-X.Y.x, such as robolectric-4.17.x.")
+              if branch not in branches:
+                fail(f'"{branch}" isn\'t a release branch. '
+                     f"The release branches are: {', '.join(branches)}.")
+            else:
+              # The newest release branch, as in the cherry-pick workflow.
+              branch = branches[-1]
+            series = "{}.{}".format(*branch_series(branch))
+            new_branch = False
+            next_snapshot = ""
+            sha = git("rev-parse", f"origin/{branch}")
+            # Each release pushes its tag to the branch, so the branch must have commits after it.
+            last_tag = subprocess.run(
+                ["git", "describe", "--tags", "--abbrev=0", "--match", f"robolectric-{series}",
+                 "--match", f"robolectric-{series}[.-]*", sha],
+                capture_output=True, text=True).stdout.strip()
+            if last_tag and git("rev-list", "--count", f"{last_tag}..{sha}") == "0":
+              fail(f"{branch} has no commits since {last_tag}. Cherry-pick the fixes into it first.")
+
+          if tag_exists(f"robolectric-{series}"):
+            if beta:
+              print(f"::warning::{series} is already released, so this is a patch release, not a beta.")
+            version = f"{series}.{last(f'{series}.') + 1}"
+          elif beta:
+            version = f"{series}-beta-{last(f'{series}-beta-') + 1}"
+          else:
+            version = series
+
+          if tag_exists(f"robolectric-{version}"):
+            fail(f"The tag robolectric-{version} already exists.")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+            output.write(f"version={version}\n")
+            output.write(f"branch={branch}\n")
+            output.write(f"sha={sha}\n")
+            output.write(f"new-branch={str(new_branch).lower()}\n")
+            output.write(f"next-snapshot={next_snapshot}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            summary.write(f"### Releasing Robolectric {version} from {branch} ({sha})\n")
 
   tests:
     name: Tests
