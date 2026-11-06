@@ -22,6 +22,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.robolectric.internal.ClassTracker;
@@ -52,6 +54,9 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   private final boolean cacheServiceLoaderResources =
       Boolean.parseBoolean(System.getProperty("robolectric.cacheServiceLoaderResources", "true"));
   private final Map<String, List<URL>> serviceLoaderResources = new HashMap<>();
+  // Names that isClassLoaded found loaded. A class stays loaded for the life of its loader, and
+  // Shadows.reset asks about the same classes after every test.
+  private final Set<String> loadedClassNames = ConcurrentHashMap.newKeySet();
   private boolean isClosed;
 
   /** Constructor for use by tests. */
@@ -244,7 +249,14 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
     if (className == null) {
       return false;
     }
-    return findLoadedClass(className) != null;
+    if (loadedClassNames.contains(className)) {
+      return true;
+    }
+    if (findLoadedClass(className) == null) {
+      return false;
+    }
+    loadedClassNames.add(className);
+    return true;
   }
 
   private Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
