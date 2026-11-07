@@ -673,6 +673,30 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumberWithSource_setPhoneNumberWithSource_returnsSourceSpecificPhoneNumber() {
+    shadowOf(subscriptionManager)
+        .setPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, "+52");
+    shadowOf(subscriptionManager)
+        .setPhoneNumber(
+            SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+            SubscriptionManager.PHONE_NUMBER_SOURCE_IMS,
+            "+525512345678");
+    assertThat(subscriptionManager.getPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID))
+        .isEqualTo("+52");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_UICC))
+        .isEqualTo("+52");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_IMS))
+        .isEqualTo("+525512345678");
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void setIsOpportunistic_shouldReturnFalse() {
     assertThat(
