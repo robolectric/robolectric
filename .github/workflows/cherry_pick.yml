@@ -1,7 +1,9 @@
-# Cherry-picks commits from master into a release branch (robolectric-X.Y.x).
+# Cherry-picks commits from master or google into a release branch (robolectric-X.Y.x).
 #
-# * Add the `cherry-pick` label to a PR, before or after it's merged: once it's merged, its
-#   commits are cherry-picked into the newest release branch, and the PR gets a comment.
+# * Add the `cherry-pick` label to a PR into master or google, before or after it's merged: once
+#   it's merged, its commits are cherry-picked into the newest release branch, and the PR gets a
+#   comment. GitHub runs this for a PR from the copy of this file on the PR's base branch, so it
+#   needs to be on both branches.
 # * Or run it from the Actions tab with commit SHAs and/or PR numbers, e.g. `#11619 1a2b3c4`,
 #   oldest first, and optionally the release branch.
 #
@@ -27,7 +29,7 @@ on:
   # Only git commands run on the merged commits; no code from the PR is built or run.
   pull_request_target:
     types: [ closed, labeled ]
-    branches: [ master ]
+    branches: [ master, google ]
 
 concurrency:
   group: cherry-pick
@@ -65,6 +67,10 @@ jobs:
         run: |
           set -euo pipefail
           fail() { echo "::error::$*"; echo "message=$*" >> "$GITHUB_OUTPUT"; exit 1; }
+          on_master_or_google() {
+            git merge-base --is-ancestor "$1" origin/master ||
+              git merge-base --is-ancestor "$1" origin/google
+          }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -85,17 +91,18 @@ jobs:
               pr=$(gh api "repos/$REPOSITORY/pulls/$number")
               merge=$(jq -r 'if .merged then .merge_commit_sha else "" end' <<< "$pr")
               [[ -n "$merge" ]] || fail "PR #$number isn't merged."
-              git merge-base --is-ancestor "$merge" origin/master || fail "PR #$number isn't on master."
+              on_master_or_google "$merge" || fail "PR #$number isn't on master or google."
               if [[ $(git rev-list --parents -n 1 "$merge" | wc -w) -gt 2 ]]; then
                 commits+=("$merge")
               else
-                # Rebase merges put the PR's commits on master, ending with the merge commit SHA.
+                # Rebase merges put the PR's commits on the base branch, ending with the merge
+                # commit SHA.
                 count=$(jq -r .commits <<< "$pr")
                 mapfile -t -O "${#commits[@]}" commits < <(git rev-list --reverse -n "$count" "$merge")
               fi
             else
               sha=$(git rev-parse --quiet --verify "$item^{commit}") || fail "$item isn't a commit."
-              git merge-base --is-ancestor "$sha" origin/master || fail "$item isn't on master."
+              on_master_or_google "$sha" || fail "$item isn't on master or google."
               commits+=("$sha")
             fi
           done
