@@ -22,6 +22,7 @@ public class ShadowInsetsState {
   // These must align with the indexes declared in InsetsState in SDK up to 33
   static final int STATUS_BARS = 0;
   static final int NAVIGATION_BARS = 1;
+  static final int CAPTION_BAR = 2;
 
   @RealObject private InsetsState realInsetsState;
   @ReflectorObject private InsetsStateReflector insetsStateReflector;
@@ -52,6 +53,8 @@ public class ShadowInsetsState {
         return RuntimeEnvironment.getApiLevel() < Q
             ? reflector(WindowInsetsTypeReflector.class).sideBars()
             : WindowInsets.Type.navigationBars();
+      case CAPTION_BAR:
+        return WindowInsets.Type.captionBar();
       default:
         throw new IllegalArgumentException();
     }

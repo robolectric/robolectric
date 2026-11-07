@@ -220,6 +220,16 @@ final class SystemUi {
           .setFrame(bar.inFrame(info.displayFrame, info.frame))
           .setVisible(bar.isVisible());
     }
+    if (info.captionHeight > 0 || info.hasCaptionInsets) {
+      // The caption of a freeform window is drawn over the top of the window.
+      Rect captionFrame = new Rect(info.frame);
+      captionFrame.bottom = captionFrame.top + info.captionHeight;
+      Shadow.<ShadowInsetsSource>extract(
+              outShadowInsetsState.getOrCreateSource(ShadowInsetsState.CAPTION_BAR))
+          .setFrame(captionFrame)
+          .setVisible(info.captionHeight > 0);
+      info.hasCaptionInsets = true;
+    }
   }
 
   private static int dpToPx(int px, int displayId) {

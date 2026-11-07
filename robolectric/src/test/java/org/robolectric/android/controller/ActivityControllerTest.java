@@ -17,11 +17,13 @@ import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManager;
@@ -376,6 +378,37 @@ public class ActivityControllerTest {
   }
 
   @Test
+  public void configurationChange_whenRecreated_showsTheNewActivity() {
+    ActivityController<MyActivity> configController =
+        Robolectric.buildActivity(MyActivity.class).setup();
+    MyActivity activity = configController.get();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    View decorView = configController.get().getWindow().getDecorView();
+    assertThat(configController.get()).isNotSameInstanceAs(activity);
+    assertThat(decorView.isAttachedToWindow()).isTrue();
+    assertThat(decorView.getWidth()).isGreaterThan(decorView.getHeight());
+  }
+
+  @Test
+  @Config(minSdk = P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void noArgsConfigurationChange_keepsTheActivitysWindow() {
+    ActivityController<Activity> windowController =
+        buildActivityInWindow(Activity.class, new Rect(0, 0, 640, 800)).setup();
+
+    RuntimeEnvironment.setQualifiers("+night");
+    windowController.configurationChange();
+
+    Configuration configuration = windowController.get().getResources().getConfiguration();
+    assertThat(configuration.screenWidthDp).isEqualTo(640);
+    assertThat(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+        .isEqualTo(Configuration.UI_MODE_NIGHT_YES);
+    assertThat(windowController.get().isInMultiWindowMode()).isTrue();
+  }
+
+  @Test
   @Config(qualifiers = "land")
   public void configurationChange_restoresTheme() {
     Configuration config =
@@ -574,6 +607,12 @@ public class ActivityControllerTest {
         .isEqualTo(newFontScale);
     assertThat(configController.get().getResources().getConfiguration().orientation)
         .isEqualTo(newOrientation);
+  }
+
+  private static <T extends Activity> ActivityController<T> buildActivityInWindow(
+      Class<T> activityClass, Rect bounds) {
+    return Robolectric.buildActivity(
+        activityClass, null, ActivityOptions.makeBasic().setLaunchBounds(bounds).toBundle());
   }
 
   public static class MyActivity extends Activity {

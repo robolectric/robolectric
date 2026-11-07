@@ -18,6 +18,12 @@
 
   <application>
     <activity
+        android:name="android.server.wm.ActivityWindowTests$PictureInPictureActivity"
+        android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density"
+        android:resizeableActivity="true"
+        android:supportsPictureInPicture="true"
+        android:exported="false" />
+    <activity
         android:name="android.server.wm.multidisplay.MultiDisplayPolicyTests$ResizeableActivity"
         android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|colorMode|density|touchscreen"
         android:exported="false" />

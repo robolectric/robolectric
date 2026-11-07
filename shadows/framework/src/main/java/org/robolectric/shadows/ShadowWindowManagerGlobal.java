@@ -26,6 +26,7 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -37,6 +38,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.util.DisplayMetrics;
 import android.util.MergedConfiguration;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -258,6 +260,9 @@ public class ShadowWindowManagerGlobal {
    * {@link IWindowSession} and track window state.
    */
   protected static class WindowSessionDelegate {
+    /** The height of the caption the system draws on a freeform window. */
+    private static final int FREEFORM_CAPTION_HEIGHT_DP = 42;
+
     private final LinkedHashMap<IWindow, WindowInfo> windows = new LinkedHashMap<>();
 
     // From WindowManagerGlobal (was WindowManagerImpl in JB).
@@ -455,6 +460,28 @@ public class ShadowWindowManagerGlobal {
       windowInfo.displayFrame.set(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
       Rect contentFrame = new Rect(windowInfo.displayFrame);
       systemUi.adjustFrameForInsets(attrs, contentFrame);
+      // The windows of an activity in a window of its own, such as a freeform window, are in it.
+      Activity activity = getApiLevel() >= P ? LiveActivities.get(attrs.token) : null;
+      Rect activityWindowBounds =
+          activity != null
+              ? WindowConfigurations.getWindowBounds(
+                  windowInfo.displayId, activity.getResources().getConfiguration())
+              : null;
+      if (activityWindowBounds != null && !contentFrame.intersect(activityWindowBounds)) {
+        contentFrame.set(activityWindowBounds);
+      }
+      // Since T, the system draws the caption of a freeform window, and reports it as an inset.
+      windowInfo.captionHeight =
+          activity != null
+                  && getApiLevel() >= TIRAMISU
+                  && attrs.type == WindowManager.LayoutParams.TYPE_BASE_APPLICATION
+                  && WindowConfigurations.isInFreeformWindow(
+                      activity.getResources().getConfiguration())
+              ? Math.round(
+                  FREEFORM_CAPTION_HEIGHT_DP
+                      * displayInfo.logicalDensityDpi
+                      / (float) DisplayMetrics.DENSITY_DEFAULT)
+              : 0;
       // TODO: Remove this and respect the requested size as real Android does. For back compat
       //  reasons temporarily ignore requested size.
       boolean useRequestedSize = Boolean.getBoolean("robolectric.windowManager.useRequestedSize");
@@ -479,6 +506,9 @@ public class ShadowWindowManagerGlobal {
         // If we are not respecting the requested size, for backwards compatibility allow the window
         // to offset to the requested position ignoring the gravity and display bounds.
         windowInfo.frame.offsetTo(attrs.x, attrs.y);
+        if (activityWindowBounds != null) {
+          windowInfo.frame.offset(contentFrame.left, contentFrame.top);
+        }
       } else {
         Gravity.applyDisplay(attrs.gravity, contentFrame, windowInfo.frame);
       }
@@ -741,6 +771,8 @@ public class ShadowWindowManagerGlobal {
     int displayId = -1;
     int requestedVisibleTypes = getApiLevel() >= R ? systemBars() : 0;
     boolean hasInsetsControl;
+    int captionHeight;
+    boolean hasCaptionInsets;
 
     WindowInfo() {
       if (getApiLevel() >= S) {
