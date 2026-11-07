@@ -7,8 +7,10 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.database.CharArrayBuffer;
 import android.database.CursorWindow;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.nativeruntime.CursorWindowNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.util.reflector.Direct;
@@ -19,6 +21,20 @@ import org.robolectric.util.reflector.Static;
 /** Shadow for {@link CursorWindow} that is backed by native code */
 @Implements(value = CursorWindow.class, isInAndroidSdk = false, callNativeMethodsByDefault = true)
 public class ShadowNativeCursorWindow extends ShadowCursorWindow {
+
+  @ReflectorObject CursorWindowReflector cursorWindowReflector;
+
+  private final AtomicBoolean disposed = new AtomicBoolean();
+
+  @Implementation
+  protected void dispose() {
+    // On the JVM there may be two concurrent finalizer threads running if 'System.runFinalization'
+    // is called. Because CursorWindow.dispose is not thread safe, we can work around it
+    // by manually making it thread safe.
+    if (disposed.compareAndSet(false, true)) {
+      cursorWindowReflector.dispose();
+    }
+  }
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreate(String name, int cursorWindowSize) {
@@ -133,6 +149,9 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
 
   @ForType(CursorWindow.class)
   interface CursorWindowReflector {
+    @Direct
+    void dispose();
+
     @Static
     @Direct(format = DirectFormat.NATIVE)
     boolean nativePutBlob(long windowPtr, byte[] value, int row, int column);

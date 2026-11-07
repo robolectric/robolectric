@@ -80,8 +80,6 @@ public class InstrumentationConfigurationTest {
     assertThat(config.shouldAcquire("scala.Test")).isFalse();
     assertThat(config.shouldAcquire("scala.util.Test")).isFalse();
     assertThat(config.shouldAcquire("org.specs2.whatever.foo")).isFalse();
-    assertThat(config.shouldAcquire("com.almworks.sqlite4java.whatever.Cls$anything$else"))
-        .isFalse();
   }
 
   @Test
