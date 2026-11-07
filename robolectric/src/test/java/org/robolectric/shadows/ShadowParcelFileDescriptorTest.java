@@ -285,6 +285,10 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testCreatePipe() throws IOException {
+    createPipeAndRead();
+  }
+
+  private void createPipeAndRead() throws IOException {
     ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createPipe();
     ParcelFileDescriptor readSide = pipe[0];
     ParcelFileDescriptor writeSide = pipe[1];
@@ -304,8 +308,8 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testCreatePipeTwice() throws IOException {
-    testCreatePipe();
-    testCreatePipe();
+    createPipeAndRead();
+    createPipeAndRead();
   }
 
   @Test

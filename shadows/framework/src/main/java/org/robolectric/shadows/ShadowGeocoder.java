@@ -32,8 +32,8 @@ public final class ShadowGeocoder {
   /**
    * Returns an empty list by default, or the last value set by {@link #setFromLocation(List)}
    *
-   * <p>{@param latitude} and {@param longitude} are ignored by this implementation, except to check
-   * that they are in appropriate bounds. {@param maxResults} determines the maximum number of
+   * <p>{@code latitude} and {@code longitude} are ignored by this implementation, except to check
+   * that they are in appropriate bounds. {@code maxResults} determines the maximum number of
    * addresses to return.
    */
   @Implementation

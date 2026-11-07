@@ -54,7 +54,7 @@ public abstract class ShadowSystemClock {
    * Sets the value for {@link System#nanoTime()}.
    *
    * <p>May only be used for {@link LooperMode.Mode#LEGACY}. For {@link LooperMode.Mode#PAUSED},
-   * {@param nanoTime} is calculated based on {@link SystemClock#uptimeMillis()} and can't be set
+   * {@code nanoTime} is calculated based on {@link SystemClock#uptimeMillis()} and can't be set
    * explicitly.
    */
   public static void setNanoTime(long nanoTime) {

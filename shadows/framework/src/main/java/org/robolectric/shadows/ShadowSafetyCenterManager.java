@@ -323,7 +323,7 @@ public class ShadowSafetyCenterManager {
   /**
    * Helper method to create a SafetyCenterIssue.Builder that works across SDKs.
    *
-   * @return
+   * @return a builder for a {@link SafetyCenterIssue}
    */
   public static SafetyCenterIssue.Builder newSafetyCenterIssueBuilder(
       String id, CharSequence title, CharSequence summary) {

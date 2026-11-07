@@ -491,6 +491,8 @@ public class ShadowPendingIntent {
 
   @Override
   @Implementation
+  // Preserve the exact-runtime-class check in PendingIntent shadow equality.
+  @SuppressWarnings("EqualsGetClass")
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || realPendingIntent.getClass() != o.getClass()) return false;

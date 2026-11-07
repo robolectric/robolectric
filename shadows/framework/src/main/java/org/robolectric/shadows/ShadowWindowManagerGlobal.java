@@ -573,7 +573,7 @@ public class ShadowWindowManagerGlobal {
           }
         }
       }
-      if ((sdk == R && !hasControlsChanged) || sdk >= S && sdk <= S_V2) {
+      if ((sdk == R && !hasControlsChanged) || (sdk >= S && sdk <= S_V2)) {
         ClassParameterBuilder params = new ClassParameterBuilder();
         params.add(InsetsState.class, windowInfo.insetsState);
         /* willMove */ params.addIf(sdk >= S, boolean.class, false);

@@ -98,7 +98,7 @@ public class ShadowWallpaperManager {
   }
 
   /**
-   * Returns whether the current wallpaper has been set through {@link #setResource(int)} or {@link
+   * Returns whether the current wallpaper has been set through {@code setResource(int)} or {@link
    * #setResource(int, int)} with the same resource id.
    */
   @Implementation

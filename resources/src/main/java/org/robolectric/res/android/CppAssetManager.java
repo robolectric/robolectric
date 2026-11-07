@@ -120,7 +120,7 @@ public class CppAssetManager {
   //
 
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
-  static final Asset kExcludedAsset = Asset.EXCLUDED_ASSET;
+  static final Asset kExcludedAsset = Asset.excludedAsset();
 
   static volatile int gCount = 0;
 

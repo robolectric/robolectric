@@ -1718,9 +1718,7 @@ public class ShadowActivityTest {
     Throwable throwable =
         assertThrows(
             RuntimeException.class,
-            () -> {
-              Robolectric.buildActivity(AbstractTestActivity.class, null);
-            });
+            () -> Robolectric.buildActivity(AbstractTestActivity.class, null));
     assertThat(throwable.getMessage())
         .isEqualTo("buildActivity must be called with non-abstract class");
   }

@@ -308,7 +308,7 @@ public final class FakeMediaProvider extends ContentProvider {
     ContentValues values = new ContentValues(requireNonNull(originalValues));
 
     final int match = uriMatcher.matchUri(uri);
-    checkState(match != UriMatcher.NO_MATCH, "Unrecognized uri " + uri.toString());
+    checkState(match != UriMatcher.NO_MATCH, "Unrecognized uri %s", uri.toString());
 
     if (match == AUDIO_PLAYLISTS_ID || match == AUDIO_PLAYLISTS_ID_MEMBERS) {
       // playlist support is deprecated in android, but there are still tests
@@ -375,7 +375,7 @@ public final class FakeMediaProvider extends ContentProvider {
 
     validateRelativePath(relativePath, values.getAsString(MediaColumns.RELATIVE_PATH));
     values.put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis() / 1000);
-    values.put(MediaColumns.BUCKET_DISPLAY_NAME, relativePath.split("/")[0]);
+    values.put(MediaColumns.BUCKET_DISPLAY_NAME, relativePath.split("/", 0)[0]);
 
     String baseFileName = Files.getNameWithoutExtension(displayName);
     if (TextUtils.isEmpty(values.getAsString(MediaColumns.TITLE))) {
@@ -473,7 +473,7 @@ public final class FakeMediaProvider extends ContentProvider {
 
   private void validateRelativePath(String mimeType, String relativePath) {
     if (mimeType.startsWith("video")) {
-      String primaryDir = relativePath.split("/")[0];
+      String primaryDir = relativePath.split("/", 0)[0];
       ImmutableSet<String> allowedPaths = ImmutableSet.of("DCIM", "Movies", "Pictures");
       if (!allowedPaths.contains(primaryDir)) {
         throw new IllegalArgumentException(
@@ -510,7 +510,7 @@ public final class FakeMediaProvider extends ContentProvider {
             selectionArgs,
             /* groupBy= */ null,
             /* having= */ null,
-            /* orderBy= */ null)) {
+            /* sortOrder= */ null)) {
       while (cursor != null && cursor.moveToNext()) {
         long mediaStoreId = cursor.getLong(/* columnIndex= */ 0);
 

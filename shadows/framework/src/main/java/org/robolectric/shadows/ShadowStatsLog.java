@@ -51,7 +51,8 @@ public class ShadowStatsLog {
 
     public abstract int numBytes();
 
-    @SuppressWarnings("AutoValueImmutableFields")
+    // The accessor intentionally exposes the payload as a mutable byte array.
+    @SuppressWarnings({"AutoValueImmutableFields", "mutable"})
     public abstract byte[] bytes();
 
     public static StatsLogItem create(int atomId, int numBytes, byte[] bytes) {

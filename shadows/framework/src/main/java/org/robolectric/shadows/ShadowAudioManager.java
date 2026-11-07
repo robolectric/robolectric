@@ -462,7 +462,7 @@ public class ShadowAudioManager {
 
   /**
    * Registers callback that will receive changes made to the list of active playback configurations
-   * by {@link #setActivePlaybackConfigurationsFor)}.
+   * by {@link #setActivePlaybackConfigurationsFor(List)}.
    */
   @Implementation(minSdk = O)
   protected void registerAudioPlaybackCallback(

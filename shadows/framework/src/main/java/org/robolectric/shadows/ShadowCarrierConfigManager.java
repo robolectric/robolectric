@@ -128,13 +128,13 @@ public class ShadowCarrierConfigManager {
    *
    * <ul>
    *   <li>Sim slot index: via the {@link SubscriptionInfo} for the provided {@code subId}.
-   *       Configure an active subscription via {@link
-   *       ShadowSubscriptionManager#setActiveSubscriptionInfo(SubscriptionInfo)}. If no logical
+   *       Configure an active subscription via {@code
+   *       ShadowSubscriptionManager.setActiveSubscriptionInfo(SubscriptionInfo)}. If no logical
    *       slot is configured, 0 will be used.
    *   <li>Carrier ID (SDK P+ only): via {@link TelephonyManager#getSimCarrierId()}. {@link
    *       ShadowTelephonyManager} does not currently operate on a per-subscription basis. To
-   *       configure a different carrier ID for different subscriptions, use {@link
-   *       ShadowTelephonyManager#setTelephonyManagerForSubscriptionId(int)} and provide a mock
+   *       configure a different carrier ID for different subscriptions, use {@code
+   *       ShadowTelephonyManager.setTelephonyManagerForSubscriptionId(int)} and provide a mock
    *       instance. Otherwise, {@link TelephonyManager.UNKNOWN_CARRIER_ID} will be set.
    *   <li>Specific carrier ID (SDK Q+ only): via {@link
    *       TelephonyManager#getSimSpecificCarrierId()}. The same limitation as carrier ID applies.

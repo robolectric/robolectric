@@ -208,11 +208,16 @@ public class ShadowImageDecoder {
     //       null, source);
     // }
     // return native_create(stream, source);
+    ByteBuffer buffer = jbyteBuffer.duplicate();
+    buffer.position(initialPosition);
+    buffer.limit(limit);
+    byte[] bytes = new byte[buffer.remaining()];
+    buffer.get(bytes);
     return jniCreateDecoder(
         new ImgStream() {
           @Override
           protected InputStream getInputStream() {
-            return new ByteArrayInputStream(jbyteBuffer.array());
+            return new ByteArrayInputStream(bytes);
           }
         });
   }

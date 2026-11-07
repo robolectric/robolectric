@@ -14,7 +14,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.ActivityThread;
-import android.app.Fragment;
 import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityResult;
@@ -178,7 +177,8 @@ public class ShadowInstrumentation {
   }
 
   /**
-   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, Activity, Intent, int, Bundle).
+   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, Activity, Intent, int,
+   * Bundle)}.
    *
    * <p>Currently ignores the user.
    */
@@ -196,7 +196,7 @@ public class ShadowInstrumentation {
   }
 
   /**
-   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, String, Intent, int, Bundle).
+   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, String, Intent, int, Bundle)}.
    *
    * <p>Currently ignores the user.
    */
@@ -466,7 +466,7 @@ public class ShadowInstrumentation {
    * filters including permissions, and calling {@code onReceive(Application, Intent)} as
    * appropriate. Does not enqueue the {@code Intent} for later inspection.
    *
-   * @param context
+   * @param context the context used to deliver the broadcast
    * @param intent the {@code Intent} to broadcast todo: enqueue the Intent for later inspection
    */
   void sendBroadcastWithPermission(
@@ -577,7 +577,7 @@ public class ShadowInstrumentation {
 
   /**
    * Clears all {@code Intent}s started by {@link #execStartActivity(Context, IBinder, IBinder,
-   * Activity, Intent, int, Bundle)}, {@link #execStartActivity(Context, IBinder, IBinder, Fragment,
+   * Activity, Intent, int, Bundle)}, {@code execStartActivity(Context, IBinder, IBinder, Fragment,
    * Intent, int, Bundle)}, and {@link #execStartActivity(Context, IBinder, IBinder, String, Intent,
    * int, Bundle)}.
    */

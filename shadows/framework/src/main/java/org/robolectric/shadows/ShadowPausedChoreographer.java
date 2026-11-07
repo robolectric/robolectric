@@ -130,11 +130,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     }
   }
 
-  /**
-   * Returns true if choreographer has been initialized properly.
-   *
-   * @return
-   */
+  /** Returns true if choreographer has been initialized properly. */
   @VisibleForTesting
   boolean isInitialized() {
     return activeChoreographers.contains(realChoreographer);

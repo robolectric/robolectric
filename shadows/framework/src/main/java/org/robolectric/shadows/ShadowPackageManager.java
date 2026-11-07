@@ -1412,7 +1412,7 @@ public class ShadowPackageManager {
   /**
    * Internal use only.
    *
-   * @param appPackage
+   * @param appPackage the package to add
    */
   public void addPackageInternal(Package appPackage) {
     int flags =

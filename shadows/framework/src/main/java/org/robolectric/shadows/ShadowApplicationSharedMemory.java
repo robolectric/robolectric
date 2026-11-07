@@ -32,8 +32,8 @@ public class ShadowApplicationSharedMemory {
     return ReflectionHelpers.callConstructor(
         ApplicationSharedMemory.class,
         ClassParameter.from(FileDescriptor.class, new FileDescriptor()),
-        ClassParameter.from(boolean.class, /* isMutable= */ true),
-        ClassParameter.from(long.class, /* mappedAddress= */ nativeMap(0, true)));
+        ClassParameter.from(boolean.class, /* isMutable */ true),
+        ClassParameter.from(long.class, /* mappedAddress */ nativeMap(0, true)));
   }
 
   @Implementation

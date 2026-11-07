@@ -106,8 +106,8 @@ public class ShadowProcess {
         "priority %s out of range [%s, %s]. It is recommended to use a Process.THREAD_PRIORITY_*"
             + " constant.",
         priority,
-        Integer.toString(THREAD_PRIORITY_HIGHEST),
-        Integer.toString(THREAD_PRIORITY_LOWEST));
+        THREAD_PRIORITY_HIGHEST,
+        THREAD_PRIORITY_LOWEST);
 
     if (tid == 0) {
       tid = ShadowProcess.myTid();

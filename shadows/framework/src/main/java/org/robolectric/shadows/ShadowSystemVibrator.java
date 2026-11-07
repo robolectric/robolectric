@@ -27,7 +27,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowSystemVibrator extends ShadowVibrator {
 
   private final Handler handler = new Handler(Looper.getMainLooper());
-  private final Runnable stopVibratingRunnable = () -> vibrating = false;
+  private final Runnable stopVibratingRunnable = this::stopVibrating;
 
   @Implementation
   protected boolean hasVibrator() {
@@ -155,6 +155,10 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     ShadowVibrator.milliseconds = milliseconds;
     handler.removeCallbacks(stopVibratingRunnable);
     handler.postDelayed(stopVibratingRunnable, ShadowVibrator.milliseconds);
+  }
+
+  private void stopVibrating() {
+    vibrating = false;
   }
 
   protected void recordVibratePattern(long[] pattern, int repeat) {
