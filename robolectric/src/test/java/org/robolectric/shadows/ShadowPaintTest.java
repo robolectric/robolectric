@@ -85,29 +85,38 @@ public class ShadowPaintTest {
   }
 
   @Test
+  @SuppressWarnings("UnnecessaryStringBuilder")
   public void measureTextActuallyMeasuresLength() {
     Paint paint = new Paint();
+    // StringBuilder exercises the CharSequence overload.
+    CharSequence text = new StringBuilder("Hello");
     assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2.0f);
-    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3.0f);
+    assertThat(paint.measureText(text, 1, 4)).isEqualTo(3.0f);
   }
 
   @Test
+  @SuppressWarnings("UnnecessaryStringBuilder")
   public void measureTextUsesTextScaleX() {
     Paint paint = new Paint();
+    // StringBuilder exercises the CharSequence overload.
+    CharSequence text = new StringBuilder("Hello");
     paint.setTextScaleX(1.5f);
     assertThat(paint.measureText("Hello")).isEqualTo(7.5f);
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(3.0f);
-    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(4.5f);
+    assertThat(paint.measureText(text, 1, 4)).isEqualTo(4.5f);
   }
 
   @Test
+  @SuppressWarnings("UnnecessaryStringBuilder")
   public void textWidthWithNegativeScaleXIsZero() {
     Paint paint = new Paint();
+    // StringBuilder exercises the CharSequence overload.
+    CharSequence text = new StringBuilder("Hello");
     paint.setTextScaleX(-1.5f);
     assertThat(paint.measureText("Hello")).isEqualTo(0f);
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(0f);
-    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(0f);
+    assertThat(paint.measureText(text, 1, 4)).isEqualTo(0f);
   }
 
   @Test

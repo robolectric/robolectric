@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class ShadowProviders {
     // Return providers sorted by descending priority.
     this.shadowProviders =
         ImmutableList.sortedCopyOf(
-            comparing(ShadowProviders::priority).reversed().thenComparing(ShadowProviders::name),
+            comparingInt(ShadowProviders::priority).reversed().thenComparing(ShadowProviders::name),
             shadowProviders);
 
     this.baseShadowMap = ShadowMap.createFromShadowProviders(this.shadowProviders);

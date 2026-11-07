@@ -29,11 +29,11 @@ public class ReflectionHelpers {
 
   static {
     HashMap<String, Object> map = new HashMap<>();
-    map.put("boolean", Boolean.FALSE);
+    map.put("boolean", false);
     map.put("int", 0);
-    map.put("long", (long) 0);
-    map.put("float", (float) 0);
-    map.put("double", (double) 0);
+    map.put("long", 0L);
+    map.put("float", 0.0f);
+    map.put("double", 0.0);
     map.put("short", (short) 0);
     map.put("byte", (byte) 0);
     PRIMITIVE_RETURN_VALUES = Collections.unmodifiableMap(map);

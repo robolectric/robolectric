@@ -43,38 +43,36 @@ public class ShadowBluetoothA2dp {
   private final int[] bufferLengthMillisArray = new int[6];
   private BluetoothDevice activeBluetoothDevice;
 
-  /* Adds the given bluetoothDevice with connectionState to the list of devices
-   * returned by {@link ShadowBluetoothA2dp#getConnectedDevices} and
-   * {@link ShadowBluetoothA2dp#getDevicesMatchingConnectionStates}
+  /**
+   * Adds the given bluetoothDevice with connectionState to the list of devices returned by {@link
+   * #getConnectedDevices()} and {@link #getDevicesMatchingConnectionStates(int[])}.
    */
   public void addDevice(BluetoothDevice bluetoothDevice, int connectionState) {
     bluetoothDevices.put(bluetoothDevice, connectionState);
   }
 
-  /* Removes the given bluetoothDevice from the list of devices
-   * returned by {@link ShadowBluetoothA2dp#getConnectedDevices} and
-   * {@link ShadowBluetoothA2dp#getDevicesMatchingConnectionStates}
+  /**
+   * Removes the given bluetoothDevice from the list of devices returned by {@link
+   * #getConnectedDevices()} and {@link #getDevicesMatchingConnectionStates(int[])}.
    */
   public void removeDevice(BluetoothDevice bluetoothDevice) {
     bluetoothDevices.remove(bluetoothDevice);
   }
 
-  /*
-   * Overrides behavior of {@link getConnectedDevices}. Returns an immutable list of bluetooth
-   * devices that is set up by call(s) to {@link ShadowBluetoothA2dp#addDevice} and
-   * {@link ShadowBluetoothA2dp#removeDevice} with connectionState equals
-   * {@code BluetoothProfile.STATE_CONNECTED}. Returns an empty list by default.
+  /**
+   * Returns an immutable list of Bluetooth devices configured with {@link
+   * BluetoothProfile#STATE_CONNECTED} via {@link #addDevice(BluetoothDevice, int)}. Returns an
+   * empty list by default.
    */
   @Implementation
   protected List<BluetoothDevice> getConnectedDevices() {
     return getDevicesMatchingConnectionStates(new int[] {BluetoothProfile.STATE_CONNECTED});
   }
 
-  /*
-   * Overrides behavior of {@link getDevicesMatchingConnectionStates}. Returns an immutable list
-   * of bluetooth devices that is set up by call(s) to {@link ShadowBluetoothA2dp#addDevice} and
-   * {@link ShadowBluetoothA2dp#removeDevice} with connectionState matching any of the
-   * {@code states}. Returns an empty list by default.
+  /**
+   * Returns an immutable list of Bluetooth devices configured via {@link
+   * #addDevice(BluetoothDevice, int)} whose connection state matches one of {@code states}. Returns
+   * an empty list by default.
    */
   @Implementation
   protected List<BluetoothDevice> getDevicesMatchingConnectionStates(int[] states) {
@@ -89,11 +87,9 @@ public class ShadowBluetoothA2dp {
     return ImmutableList.copyOf(deviceList);
   }
 
-  /*
-   * Overrides behavior of {@link getConnectionState}. Returns the connection state
-   * of {@code device} if present in the list of devices controlled by
-   * {@link ShadowBluetoothA2dp#addDevice} and {@link ShadowBluetoothA2dp#removeDevice}.
-   * Returns {@code BluetoothProfile.STATE_DISCONNECTED} if device not found.
+  /**
+   * Returns the configured connection state of {@code device}, or {@link
+   * BluetoothProfile#STATE_DISCONNECTED} if the device was not added.
    */
   @Implementation
   protected int getConnectionState(BluetoothDevice device) {
@@ -102,9 +98,7 @@ public class ShadowBluetoothA2dp {
         : BluetoothProfile.STATE_DISCONNECTED;
   }
 
-  /*
-   * Sets {@link @BluetoothA2dp.Type} which will return by {@link getDynamicBufferSupport).
-   */
+  /** Sets the {@link BluetoothA2dp.Type} returned by {@link #getDynamicBufferSupport()}. */
   public void setDynamicBufferSupport(@BluetoothA2dp.Type int type) {
     this.dynamicBufferSupportType = type;
   }

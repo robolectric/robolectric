@@ -47,7 +47,6 @@ import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -1388,7 +1387,7 @@ public class ShadowLocationManager {
   public List<LocationListener> getLocationUpdateListeners(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
     if (providerEntry == null) {
-      return Collections.emptyList();
+      return new ArrayList<>();
     }
 
     HashSet<LocationListener> listeners = new HashSet<>();
@@ -1427,7 +1426,7 @@ public class ShadowLocationManager {
   public List<PendingIntent> getLocationUpdatePendingIntents(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
     if (providerEntry == null) {
-      return Collections.emptyList();
+      return new ArrayList<>();
     }
 
     HashSet<PendingIntent> listeners = new HashSet<>();

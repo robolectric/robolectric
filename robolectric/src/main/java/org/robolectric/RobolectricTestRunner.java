@@ -129,10 +129,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     this(testClass, DEFAULT_INJECTOR);
   }
 
+  @SuppressWarnings("StaticAssignmentInConstructor")
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
     super(testClass, injector);
 
+    // Preserve the deprecated provider's default config for legacy subclasses.
     if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
       DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
     }

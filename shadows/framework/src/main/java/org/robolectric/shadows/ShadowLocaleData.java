@@ -117,11 +117,10 @@ public class ShadowLocaleData {
       localDataReflector.setInternationalCurrencySymbol("USD");
     }
 
-    localDataReflector.setNumberPattern("\u0023,\u0023\u00230.\u0023\u0023\u0023");
-    localDataReflector.setIntegerPattern("\u0023,\u0023\u00230");
-    localDataReflector.setCurrencyPattern(
-        "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)");
-    localDataReflector.setPercentPattern("\u0023,\u0023\u00230%");
+    localDataReflector.setNumberPattern("#,##0.###");
+    localDataReflector.setIntegerPattern("#,##0");
+    localDataReflector.setCurrencyPattern("\u00A4#,##0.00;(\u00A4#,##0.00)");
+    localDataReflector.setPercentPattern("#,##0%");
   }
 
   /** Accessor interface for {@link LocaleData}'s internals. */

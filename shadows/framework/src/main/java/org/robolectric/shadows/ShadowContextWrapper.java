@@ -70,8 +70,9 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Consumes the most recent {@code IntentForResult} started by {@link *
-   * ContextWrapper#startActivity(android.content.Intent, android.os.Bundle)} and returns it.
+   * Consumes the most recent {@code IntentForResult} started by {@link
+   * android.content.ContextWrapper#startActivity(android.content.Intent, android.os.Bundle)} and
+   * returns it.
    *
    * @return the most recently started {@code IntentForResult}
    */

@@ -12,6 +12,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -32,7 +33,7 @@ public class AndroidInterceptorsIntegrationTest {
   public void systemLog_shouldWriteToStderr() throws Throwable {
     PrintStream stderr = System.err;
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    PrintStream printStream = new PrintStream(stream);
+    PrintStream printStream = new PrintStream(stream, false, StandardCharsets.UTF_8);
     System.setErr(printStream);
     try {
       for (String methodName : new String[] {"logE", "logW"}) {
@@ -56,7 +57,7 @@ public class AndroidInterceptorsIntegrationTest {
                 methodName);
         // Due to the possibility of running tests in Parallel, assertions checking stderr contents
         // should not assert equality.
-        assertThat(stream.toString())
+        assertThat(stream.toString(StandardCharsets.UTF_8))
             .matches(Pattern.compile(".*" + expected1 + ".*" + expected2 + ".*", Pattern.DOTALL));
       }
     } finally {

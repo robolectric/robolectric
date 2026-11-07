@@ -47,16 +47,17 @@ class QualifierParser {
     String variant;
 
     void set_language(String language_chars) {
-      language = language_chars.trim().toLowerCase();
+      language = language_chars.trim().toLowerCase(Locale.ROOT);
     }
 
     void set_region(String region_chars) {
-      region = region_chars.trim().toUpperCase();
+      region = region_chars.trim().toUpperCase(Locale.ROOT);
     }
 
     void set_script(String script_chars) {
       script =
-          Character.toUpperCase(script_chars.charAt(0)) + script_chars.substring(1).toLowerCase();
+          Character.toUpperCase(script_chars.charAt(0))
+              + script_chars.substring(1).toLowerCase(Locale.ROOT);
     }
 
     void set_variant(String variant_chars) {
@@ -79,7 +80,7 @@ class QualifierParser {
       if (part.startsWith("b+")) {
         // This is a "modified" BCP 47 language tag. Same semantics as BCP 47 tags,
         // except that the separator is "+" and not "-".
-        String[] subtags = part.substring(2).toLowerCase().split("\\+", 0);
+        String[] subtags = part.substring(2).toLowerCase(Locale.ROOT).split("\\+", 0);
         if (subtags.length == 1) {
           set_language(subtags[0]);
         } else if (subtags.length == 2) {
@@ -183,7 +184,7 @@ class QualifierParser {
     }
     PeekingIterator<String> partIter =
         Iterators.peekingIterator(
-            Arrays.asList(qualifierString.toLowerCase().split("-")).iterator());
+            Arrays.asList(qualifierString.toLowerCase(Locale.ROOT).split("-")).iterator());
 
     Locale locale = null;
 

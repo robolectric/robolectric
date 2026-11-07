@@ -29,6 +29,7 @@ public class MockitoMockFinalsTest {
   }
 
   @Test
+  @SuppressWarnings("DirectInvocationOnMock")
   public void canMockUserId() {
     User user = mock(User.class);
     when(user.getId()).thenReturn(1);

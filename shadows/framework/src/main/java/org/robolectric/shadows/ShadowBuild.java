@@ -220,7 +220,7 @@ public class ShadowBuild {
   /**
    * Override return value from {@link Build#getRadioVersion()}
    *
-   * @param radioVersion
+   * @param radioVersion the value returned by {@link Build#getRadioVersion()}
    */
   public static void setRadioVersion(String radioVersion) {
     radioVersionOverride = radioVersion;
