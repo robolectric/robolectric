@@ -221,7 +221,6 @@ public class ShadowNativeVectorDrawableTest {
     resources = context.getResources();
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testBasicVectorDrawables() throws XmlPullParserException, IOException {
     // Skip this test on Windows because of slight difference in rendering
@@ -229,25 +228,21 @@ public class ShadowNativeVectorDrawableTest {
     verifyVectorDrawables(BASIC_ICON_RES_IDS, BASIC_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testLMVectorDrawables() throws XmlPullParserException, IOException {
     verifyVectorDrawables(L_M_ICON_RES_IDS, L_M_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testNVectorDrawables() throws XmlPullParserException, IOException {
     verifyVectorDrawables(N_ICON_RES_IDS, N_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testVectorDrawableGradient() throws XmlPullParserException, IOException {
     verifyVectorDrawables(GRADIENT_ICON_RES_IDS, GRADIENT_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testColorStateList() throws XmlPullParserException, IOException {
     for (int i = 0; i < STATEFUL_STATE_SETS.length; i++) {
