@@ -64,35 +64,40 @@ public class ShadowUiAutomationTest {
 
   @Test
   public void setAnimationScale_zero() throws Exception {
-    ShadowUiAutomation.setAnimationScaleCompat(0);
+    assertAnimationScale(0);
+  }
+
+  private void assertAnimationScale(float scale) throws Exception {
+    ShadowUiAutomation.setAnimationScaleCompat(scale);
 
     ContentResolver cr = ApplicationProvider.getApplicationContext().getContentResolver();
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE)).isEqualTo(0);
+    assertThat(Settings.Global.getFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE))
+        .isEqualTo(scale);
     assertThat(Settings.Global.getFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE))
-        .isEqualTo(0);
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(0);
+        .isEqualTo(scale);
+    assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE))
+        .isEqualTo(scale);
   }
 
   @Test
   public void setAnimationScale_one() throws Exception {
-    ShadowUiAutomation.setAnimationScaleCompat(1);
-
-    ContentResolver cr = ApplicationProvider.getApplicationContext().getContentResolver();
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE)).isEqualTo(1);
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE))
-        .isEqualTo(1);
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(1);
+    assertAnimationScale(1);
   }
 
   @Test
   public void setRotation_freeze90_rotatesToLandscape() {
+    assertRotation(
+        UiAutomation.ROTATION_FREEZE_90, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  private void assertRotation(
+      int requestedRotation, int expectedRotation, int expectedOrientation) {
     UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
 
-    uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90);
+    uiAutomation.setRotation(requestedRotation);
 
-    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_90);
-    assertThat(Resources.getSystem().getConfiguration().orientation)
-        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(expectedRotation);
+    assertThat(Resources.getSystem().getConfiguration().orientation).isEqualTo(expectedOrientation);
   }
 
   @Test
@@ -120,13 +125,14 @@ public class ShadowUiAutomationTest {
   @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
   @Test
   public void setAnimationScale_zero_instrumentationTestLooperMode() throws Exception {
-    setAnimationScale_zero();
+    assertAnimationScale(0);
   }
 
   @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
   @Test
   public void setRotation_freeze90_rotatesToLandscape_instrumentationTestLooperMode() {
-    setRotation_freeze90_rotatesToLandscape();
+    assertRotation(
+        UiAutomation.ROTATION_FREEZE_90, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
   }
 
   @Test

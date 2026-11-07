@@ -488,6 +488,8 @@ public class ShadowCrossProfileApps {
     }
 
     @Override
+    // Keep subclass instances with additional state from comparing equal.
+    @SuppressWarnings("EqualsGetClass")
     public boolean equals(Object o) {
       if (this == o) {
         return true;

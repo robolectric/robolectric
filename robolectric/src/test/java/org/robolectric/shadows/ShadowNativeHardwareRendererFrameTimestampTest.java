@@ -36,7 +36,7 @@ public class ShadowNativeHardwareRendererFrameTimestampTest {
 
   @Test
   public void pixelCopy_afterContentChange_test1() throws Exception {
-    ShadowPausedSystemClock.advanceBy(Duration.ofMillis(5000));
+    ShadowPausedSystemClock.advanceBy(Duration.ofSeconds(5));
     runContentChangeScenario();
   }
 

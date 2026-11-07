@@ -24,7 +24,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 
-/** Unit tests for {@see ShadowDropboxManager}. */
+/** Unit tests for {@link ShadowDropBoxManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowDropBoxManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();

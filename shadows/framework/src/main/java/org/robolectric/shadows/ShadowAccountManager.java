@@ -129,9 +129,8 @@ public class ShadowAccountManager {
     return null;
   }
 
-  @SuppressWarnings("InconsistentCapitalization")
   @Implementation
-  protected boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
+  protected boolean addAccountExplicitly(Account account, String password, Bundle userData) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -147,9 +146,9 @@ public class ShadowAccountManager {
 
     setPassword(account, password);
 
-    if (userdata != null) {
-      for (String key : userdata.keySet()) {
-        setUserData(account, key, userdata.get(key).toString());
+    if (userData != null) {
+      for (String key : userData.keySet()) {
+        setUserData(account, key, userData.get(key).toString());
       }
     }
 

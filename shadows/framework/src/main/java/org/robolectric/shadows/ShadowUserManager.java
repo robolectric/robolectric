@@ -532,8 +532,8 @@ public class ShadowUserManager {
   }
 
   /**
-   * @deprecated When possible, please use the real Android framework API {@link
-   *     UserManager#setUserRestriction()}.
+   * @deprecated When possible, please use the real Android framework API {@code
+   *     UserManager.setUserRestriction}.
    */
   @Deprecated
   public void setUserRestriction(UserHandle userHandle, String restrictionKey, boolean value) {

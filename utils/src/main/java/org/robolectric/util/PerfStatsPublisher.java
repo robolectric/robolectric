@@ -52,7 +52,7 @@ public class PerfStatsPublisher {
                 try {
                   perfStatsReporter.finalReport();
                 } catch (RuntimeException e) {
-                  e.printStackTrace();
+                  Logger.error("PerfStatsReporter.finalReport() failed", e);
                 }
               }
             }));
@@ -75,7 +75,7 @@ public class PerfStatsPublisher {
       try {
         perfStatsReporter.report(metadata, metrics);
       } catch (RuntimeException e) {
-        e.printStackTrace();
+        Logger.error("PerfStatsReporter.report() failed", e);
       }
     }
   }

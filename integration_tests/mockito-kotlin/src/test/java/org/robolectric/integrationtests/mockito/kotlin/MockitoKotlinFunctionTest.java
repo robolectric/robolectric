@@ -22,6 +22,7 @@ public class MockitoKotlinFunctionTest {
   }
 
   @Test
+  @SuppressWarnings("DirectInvocationOnMock")
   public void testFunction0Mock() {
     Function0 function = Mockito.mock(Function0.class);
     doReturn(null).when(function).invoke();
@@ -30,6 +31,7 @@ public class MockitoKotlinFunctionTest {
   }
 
   @Test
+  @SuppressWarnings("DirectInvocationOnMock")
   public void testFunction1Mock() {
     Function1 function = Mockito.mock(Function1.class);
     doReturn(null).when(function).invoke(any());

@@ -7,6 +7,7 @@ import org.robolectric.annotation.Resetter;
 
 /** Shadow implementation of dalvik.system.Dexfile. */
 @Implements(DexFile.class)
+@SuppressWarnings("StaticAssignmentOfThrowable")
 public class ShadowDexFile {
   private static boolean isDexOptNeeded = false;
   private static Throwable dexOptNeededError = null;

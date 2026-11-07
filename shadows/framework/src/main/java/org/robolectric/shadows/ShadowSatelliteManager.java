@@ -274,7 +274,6 @@ public class ShadowSatelliteManager {
       satelliteCallbacks.clear();
     }
 
-    // @Override - it's an override, but robolectric complains if declared
     public int registerForSatelliteModemStateChanged(
         int unused, ISatelliteModemStateCallback callback) throws RemoteException {
       if (nextRegistrationResult != SATELLITE_RESULT_ERROR) {
@@ -285,17 +284,18 @@ public class ShadowSatelliteManager {
     }
 
     // For Android B
+    @Override
     public int registerForSatelliteModemStateChanged(ISatelliteModemStateCallback callback)
         throws RemoteException {
       return registerForSatelliteModemStateChanged(0, callback);
     }
 
-    // @Override - it's an override, but robolectric complains if declared
     public void unregisterForModemStateChanged(int unused, ISatelliteModemStateCallback callback) {
       satelliteCallbacks.remove(callback);
     }
 
     // For Android B
+    @Override
     public void unregisterForModemStateChanged(ISatelliteModemStateCallback callback) {
       unregisterForModemStateChanged(0, callback);
     }

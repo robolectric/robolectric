@@ -28,7 +28,7 @@ public interface ClassHandler {
    * <p>The returned {@link MethodHandle} will be invoked after the new object has been allocated
    * but before its constructor code is executed.
    *
-   * <p>Note that this is not directly analogous to {@link #initializing(Object)}; the return value
+   * <p>Note that this is not directly analogous to {@code initializing(Object)}; the return value
    * from this method will be cached and used again for other instantiations of instances of the
    * same class.
    *

@@ -968,10 +968,12 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.seekTo(-1);
       shadowMediaPlayer.invokeSeekCompleteListener();
 
-      assertWithMessage("Current position while " + state)
+      assertWithMessage("Current position while %s", state)
           .that(mediaPlayer.getCurrentPosition())
           .isEqualTo(0);
-      assertWithMessage("Final state " + state).that(shadowMediaPlayer.getState()).isEqualTo(state);
+      assertWithMessage("Final state %s", state)
+          .that(shadowMediaPlayer.getState())
+          .isEqualTo(state);
     }
   }
 
@@ -986,10 +988,12 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.seekTo(1001);
       shadowMediaPlayer.invokeSeekCompleteListener();
 
-      assertWithMessage("Current position while " + state)
+      assertWithMessage("Current position while %s", state)
           .that(mediaPlayer.getCurrentPosition())
           .isEqualTo(1000);
-      assertWithMessage("Final state " + state).that(shadowMediaPlayer.getState()).isEqualTo(state);
+      assertWithMessage("Final state %s", state)
+          .that(shadowMediaPlayer.getState())
+          .isEqualTo(state);
     }
   }
 
@@ -1630,7 +1634,7 @@ public class ShadowMediaPlayerTest {
       assertWithMessage("Stack trace should originate in Shadow")
           .that(e.getStackTrace()[0].getClassName())
           .isEqualTo(ShadowMediaPlayer.class.getName());
-      assertWithMessage("State after " + e + " thrown should be unchanged")
+      assertWithMessage("State after %s thrown should be unchanged", e)
           .that(shadowMediaPlayer.getState())
           .isSameInstanceAs(IDLE);
     }

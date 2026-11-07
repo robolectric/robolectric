@@ -6,7 +6,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.Context;
 import android.speech.SpeechRecognizer;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -41,8 +40,6 @@ import org.robolectric.util.reflector.ForType;
     minSdk = VANILLA_ICE_CREAM)
 public class ShadowSpeechRecognizerProxy extends ShadowSpeechRecognizer {
   protected static final String CLASS_NAME = "android.speech.SpeechRecognizerProxy";
-
-  @RealObject SpeechRecognizer realSpeechRecognizer;
 
   /**
    * The proxy and its shadow do not store their own state and this shadow does not intercept any of

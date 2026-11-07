@@ -37,9 +37,87 @@ import org.robolectric.res.Fs;
  */
 @SuppressWarnings("NewApi")
 public abstract class Asset {
-  public static final Asset EXCLUDED_ASSET = new _FileAsset();
+  /**
+   * Sentinel for an excluded asset.
+   *
+   * @deprecated Use {@link #excludedAsset()} instead.
+   */
+  @Deprecated
+  @SuppressWarnings("ClassInitializationDeadlock") // The private sentinel is only created here.
+  public static final Asset EXCLUDED_ASSET = new ExcludedAsset();
 
   public Runnable onClose;
+
+  /** Returns the sentinel for an excluded asset. */
+  public static Asset excludedAsset() {
+    return EXCLUDED_ASSET;
+  }
+
+  private static final class ExcludedAsset extends Asset {
+    private static class DelegateHolder {
+      private static final _FileAsset INSTANCE = new _FileAsset();
+    }
+
+    @Override
+    public int read(byte[] buf, int bufOffset, int count) {
+      return DelegateHolder.INSTANCE.read(buf, bufOffset, count);
+    }
+
+    @Override
+    public long seek(long offset, int whence) {
+      return DelegateHolder.INSTANCE.seek(offset, whence);
+    }
+
+    @Override
+    public void close() {
+      DelegateHolder.INSTANCE.close();
+    }
+
+    @Override
+    public byte[] getBuffer(boolean wordAligned) {
+      return DelegateHolder.INSTANCE.getBuffer(wordAligned);
+    }
+
+    @Override
+    public long getLength() {
+      return DelegateHolder.INSTANCE.getLength();
+    }
+
+    @Override
+    public long getRemainingLength() {
+      return DelegateHolder.INSTANCE.getRemainingLength();
+    }
+
+    @Override
+    public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
+      return DelegateHolder.INSTANCE.openFileDescriptor(outStart, outLength);
+    }
+
+    @Override
+    public File getFile() {
+      return DelegateHolder.INSTANCE.getFile();
+    }
+
+    @Override
+    public String getFileName() {
+      return DelegateHolder.INSTANCE.getFileName();
+    }
+
+    @Override
+    boolean isAllocated() {
+      return DelegateHolder.INSTANCE.isAllocated();
+    }
+
+    @Override
+    public boolean isNinePatch() {
+      return DelegateHolder.INSTANCE.isNinePatch();
+    }
+
+    @Override
+    public String toString() {
+      return DelegateHolder.INSTANCE.toString();
+    }
+  }
 
   public static Asset newFileAsset(FileTypedResource fileTypedResource) throws IOException {
     _FileAsset fileAsset = new _FileAsset();
@@ -614,7 +692,7 @@ public abstract class Asset {
       if (mMap != null) {
         fileName = mMap.getZipEntry().getName();
       }
-      return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+      return fileName != null && fileName.toLowerCase(Locale.ROOT).endsWith(".9.png");
     }
 
     //
@@ -817,7 +895,7 @@ public abstract class Asset {
 
       // compute new position within chunk
       newPosn = handleSeek(offset, whence, mOffset, mLength);
-      if (newPosn == (long) -1) return newPosn;
+      if (newPosn == -1L) return newPosn;
 
       actualOffset = mStart + newPosn;
 
@@ -1127,7 +1205,7 @@ public abstract class Asset {
     @Override
     public boolean isNinePatch() {
       String fileName = getFileName();
-      return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+      return fileName != null && fileName.toLowerCase(Locale.ROOT).endsWith(".9.png");
     }
 
     // private:

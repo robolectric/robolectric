@@ -83,7 +83,7 @@ public class ShadowCursorAdapterTest {
   @Test
   public void testGetItemId() {
     for (int i = 0; i < 5; i++) {
-      assertThat(adapter.getItemId(i)).isEqualTo((long) 1234 + i);
+      assertThat(adapter.getItemId(i)).isEqualTo(1234L + i);
     }
   }
 

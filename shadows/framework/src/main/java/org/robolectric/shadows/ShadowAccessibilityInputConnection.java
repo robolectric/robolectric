@@ -38,7 +38,7 @@ public class ShadowAccessibilityInputConnection {
     SurroundingText get(int beforeLength, int afterLength, int flags);
   }
 
-  /** A class that holds the arguments passed to {@link #getSurroundingText(int, int, int)}. */
+  /** A class that holds the arguments passed to {@code getSurroundingText(int, int, int)}. */
   @AutoValue
   public abstract static class SurroundingTextArgs {
     static SurroundingTextArgs create(int beforeLength, int afterLength, int flags) {
@@ -54,7 +54,7 @@ public class ShadowAccessibilityInputConnection {
   }
 
   /**
-   * A class that holds the arguments passed to {@link #commitText(CharSequence, int,
+   * A class that holds the arguments passed to {@code commitText(CharSequence, int,
    * TextAttribute)}.
    */
   @AutoValue
@@ -73,19 +73,19 @@ public class ShadowAccessibilityInputConnection {
   }
 
   /**
-   * Returns the list of arguments passed to {@link #commitText(CharSequence, int, TextAttribute)}.
+   * Returns the list of arguments passed to {@code commitText(CharSequence, int, TextAttribute)}.
    */
   public List<CommitTextArgs> getCommitTextArguments() {
     return getRemote().getCommitTextArguments();
   }
 
-  /** Sets the surrounding text to be returned by {@link #getSurroundingText(int, int, int)}. */
+  /** Sets the surrounding text to be returned by {@code getSurroundingText(int, int, int)}. */
   public void setSurroundingText(SurroundingText surroundingText) {
     setSurroundingTextCallback((beforeLength, afterLength, flags) -> surroundingText);
   }
 
   /**
-   * Sets a custom callback to define the behavior of {@link #getSurroundingText(int, int, int)}.
+   * Sets a custom callback to define the behavior of {@code getSurroundingText(int, int, int)}.
    * This allows for more complex test scenarios where the returned text needs to change
    * dynamically.
    */
@@ -93,7 +93,7 @@ public class ShadowAccessibilityInputConnection {
     getRemote().setSurroundingTextCallback(callback);
   }
 
-  /** Returns the list of arguments passed to {@link #getSurroundingText(int, int, int)}. */
+  /** Returns the list of arguments passed to {@code getSurroundingText(int, int, int)}. */
   public List<SurroundingTextArgs> getSurroundingTextArguments() {
     return getRemote().getSurroundingTextArguments();
   }

@@ -88,10 +88,10 @@ public class ShadowVibrator {
   }
 
   /**
-   * Returns the last vibration effect ID of a {@link VibrationEffect#Prebaked} (e.g. {@link
+   * Returns the last vibration effect ID of a {@code VibrationEffect.Prebaked} (e.g. {@link
    * VibrationEffect#EFFECT_CLICK}).
    *
-   * <p>This field is non-zero only if a {@link VibrationEffect#Prebaked} was ever requested.
+   * <p>This field is non-zero only if a {@code VibrationEffect.Prebaked} was ever requested.
    */
   public int getEffectId() {
     return effectId;

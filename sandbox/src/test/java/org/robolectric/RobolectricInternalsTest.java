@@ -20,7 +20,7 @@ public class RobolectricInternalsTest {
 
   private static final String PARAM1 = "param1";
   private static final Byte PARAM2 = (byte) 24;
-  private static final Long PARAM3 = (long) 10122345;
+  private static final Long PARAM3 = 10122345L;
 
   @Test
   public void getConstructor_withNoParams() {
