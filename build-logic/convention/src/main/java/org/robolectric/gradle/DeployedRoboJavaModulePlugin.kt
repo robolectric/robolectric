@@ -6,6 +6,7 @@ import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.jvm.tasks.Jar
@@ -94,8 +95,7 @@ internal fun Project.configureDeployedModule(
       project.extensions.configure<SigningExtension> {
         setRequired {
           !isSnapshotVersion &&
-            (project.gradle.taskGraph.hasTask("uploadArchives") ||
-              project.gradle.taskGraph.hasTask("publish"))
+            project.gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
         }
 
         sign(publications)
