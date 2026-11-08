@@ -51,8 +51,13 @@ public class SimulatorIntegrationTest {
     assertThat(c.getGreen()).isEqualTo(0);
   }
 
+  /** The test app to launch, as a test resource. */
+  protected String getApkResource() {
+    return "/simulator-app.apk";
+  }
+
   protected List<File> getSimulatorArgs() {
-    URL resource = getClass().getResource("/simulator-app.apk");
+    URL resource = getClass().getResource(getApkResource());
     assertThat(resource).isNotNull();
     try {
       if (Objects.equals(resource.getProtocol(), "file")) {

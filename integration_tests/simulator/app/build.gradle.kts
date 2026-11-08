@@ -17,6 +17,13 @@ android {
 
   buildTypes { release { isMinifyEnabled = false } }
 
+  // Each flavor launches MainActivity in a different way.
+  flavorDimensions += "launcher"
+  productFlavors {
+    create("plain") { dimension = "launcher" }
+    create("alias") { dimension = "launcher" }
+  }
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
