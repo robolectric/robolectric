@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
-import android.annotation.RequiresApi;
 import android.os.Build;
 import android.telephony.ims.ImsRegistrationAttributes;
 import android.telephony.ims.SipDetails;
+import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.Set;
 import javax.annotation.Nullable;

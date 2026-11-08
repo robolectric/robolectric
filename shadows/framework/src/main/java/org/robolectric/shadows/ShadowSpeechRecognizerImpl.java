@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build.VERSION_CODES;
@@ -12,6 +11,7 @@ import android.os.Message;
 import android.speech.IRecognitionService;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
+import androidx.annotation.RequiresApi;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;

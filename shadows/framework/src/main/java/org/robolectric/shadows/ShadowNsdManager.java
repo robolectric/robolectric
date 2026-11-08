@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import android.annotation.RequiresApi;
 import android.net.Network;
 import android.net.nsd.DiscoveryRequest;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Build.VERSION_CODES;
+import androidx.annotation.RequiresApi;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;

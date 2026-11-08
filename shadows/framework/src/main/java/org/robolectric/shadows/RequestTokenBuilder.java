@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
-import android.annotation.RequiresApi;
 import android.credentials.selection.RequestToken;
 import android.os.Build;
 import android.os.IBinder;
+import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

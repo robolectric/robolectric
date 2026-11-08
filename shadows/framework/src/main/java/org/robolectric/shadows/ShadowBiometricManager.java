@@ -6,9 +6,9 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresPermission;
 import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
+import androidx.annotation.RequiresPermission;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

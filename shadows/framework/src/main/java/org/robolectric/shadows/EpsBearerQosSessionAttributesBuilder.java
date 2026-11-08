@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import android.annotation.RequiresApi;
 import android.os.Build.VERSION_CODES;
 import android.telephony.data.EpsBearerQosSessionAttributes;
+import androidx.annotation.RequiresApi;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;

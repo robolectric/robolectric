@@ -4,9 +4,9 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.database.sqlite.SQLiteDatabase.OpenParams;
 import android.database.sqlite.SQLiteOpenHelper;
+import androidx.annotation.RequiresApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

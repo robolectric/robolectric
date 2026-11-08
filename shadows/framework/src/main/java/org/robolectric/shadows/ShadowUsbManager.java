@@ -9,7 +9,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
 
-import android.annotation.RequiresApi;
 import android.content.Intent;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
@@ -18,6 +17,7 @@ import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
 import android.os.ParcelFileDescriptor;
+import androidx.annotation.RequiresApi;
 import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.FileNotFoundException;

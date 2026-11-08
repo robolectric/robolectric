@@ -15,8 +15,6 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
-import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +25,8 @@ import android.os.PowerManager.LowPowerStandbyPortsLock;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
 import android.os.WorkSource;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 import com.google.common.collect.ImmutableSet;
 import java.time.Duration;
 import java.util.ArrayList;

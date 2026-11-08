@@ -37,7 +37,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
 import android.annotation.DrawableRes;
-import android.annotation.RequiresPermission;
 import android.annotation.StringRes;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
@@ -91,6 +90,7 @@ import android.os.storage.VolumeInfo;
 import android.telecom.TelecomManager;
 import android.util.Log;
 import android.util.Pair;
+import androidx.annotation.RequiresPermission;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;

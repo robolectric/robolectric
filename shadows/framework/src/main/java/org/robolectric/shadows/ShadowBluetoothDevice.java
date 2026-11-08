@@ -16,7 +16,6 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.IntRange;
-import android.annotation.RequiresApi;
 import android.app.ActivityThread;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -29,6 +28,7 @@ import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import androidx.annotation.RequiresApi;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -12,8 +12,6 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
-import android.annotation.RequiresPermission;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
@@ -28,6 +26,8 @@ import android.media.audiopolicy.AudioPolicy;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.view.KeyEvent;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;

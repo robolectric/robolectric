@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.camera2.params.MultiResolutionStreamConfigurationMap;
@@ -10,6 +9,7 @@ import android.hardware.camera2.params.MultiResolutionStreamInfo;
 import android.hardware.camera2.params.StreamConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build.VERSION_CODES;
+import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

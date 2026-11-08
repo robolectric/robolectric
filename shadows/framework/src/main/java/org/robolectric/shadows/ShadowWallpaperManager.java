@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.Manifest.permission;
 import android.annotation.FloatRange;
-import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
@@ -24,6 +23,7 @@ import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.util.MathUtils;
 import android.util.SparseArray;
+import androidx.annotation.RequiresPermission;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

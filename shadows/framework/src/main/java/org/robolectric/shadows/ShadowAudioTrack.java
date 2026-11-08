@@ -17,7 +17,6 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
@@ -28,6 +27,7 @@ import android.media.PlaybackParams;
 import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.Parcel;
+import androidx.annotation.RequiresApi;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;

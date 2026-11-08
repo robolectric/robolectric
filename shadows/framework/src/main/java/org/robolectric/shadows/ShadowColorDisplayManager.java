@@ -4,9 +4,9 @@ import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
-import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.hardware.display.ColorDisplayManager.AutoMode;
+import androidx.annotation.RequiresPermission;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;

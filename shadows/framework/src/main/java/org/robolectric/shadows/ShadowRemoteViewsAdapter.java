@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.app.ActivityThread;
 import android.app.AppComponentFactory;
 import android.app.LoadedApk;
@@ -19,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
+import androidx.annotation.RequiresApi;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ServiceController;

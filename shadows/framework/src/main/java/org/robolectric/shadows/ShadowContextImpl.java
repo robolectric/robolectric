@@ -8,7 +8,6 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
@@ -29,6 +28,7 @@ import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
+import androidx.annotation.RequiresPermission;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.io.File;

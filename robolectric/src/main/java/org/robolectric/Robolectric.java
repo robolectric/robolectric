@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.IdRes;
-import android.annotation.RequiresApi;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.AppComponentFactory;
@@ -23,6 +22,7 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.View;
+import androidx.annotation.RequiresApi;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import javax.annotation.Nullable;

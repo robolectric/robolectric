@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.os.Build;
 import android.telephony.CellSignalStrength;
 import android.telephony.CellSignalStrengthCdma;
@@ -12,6 +11,7 @@ import android.telephony.CellSignalStrengthNr;
 import android.telephony.CellSignalStrengthTdscdma;
 import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.SignalStrength;
+import androidx.annotation.RequiresApi;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;

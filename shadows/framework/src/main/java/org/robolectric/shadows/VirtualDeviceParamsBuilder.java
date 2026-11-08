@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
-import android.annotation.RequiresApi;
 import android.companion.virtual.VirtualDeviceParams;
+import androidx.annotation.RequiresApi;
 
 /**
  * Builder class to create instance of {@link VirtualDeviceParams}.

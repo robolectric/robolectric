@@ -12,7 +12,6 @@ import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static android.provider.Settings.Secure.LOCATION_PROVIDERS_ALLOWED;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import android.annotation.RequiresApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
@@ -41,6 +40,7 @@ import android.os.WorkSource;
 import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.RequiresApi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.errorprone.annotations.concurrent.GuardedBy;

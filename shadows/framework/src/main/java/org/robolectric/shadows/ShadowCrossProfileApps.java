@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
-import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.Activity;
 import android.app.AppOpsManager;
@@ -28,6 +27,7 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import androidx.annotation.RequiresPermission;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;

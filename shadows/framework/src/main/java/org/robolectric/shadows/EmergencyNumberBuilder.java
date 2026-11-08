@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 
-import android.annotation.RequiresApi;
 import android.telephony.emergency.EmergencyNumber;
 import android.telephony.emergency.EmergencyNumber.EmergencyCallRouting;
 import android.telephony.emergency.EmergencyNumber.EmergencyNumberSources;
 import android.telephony.emergency.EmergencyNumber.EmergencyServiceCategories;
+import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.util.ReflectionHelpers;

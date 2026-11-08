@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
-import android.annotation.RequiresApi;
 import android.content.ComponentName;
 import android.os.ParcelFileDescriptor;
 import android.view.contentcapture.ContentCaptureCondition;
@@ -12,6 +11,7 @@ import android.view.contentcapture.ContentCaptureManager.DataShareError;
 import android.view.contentcapture.DataRemovalRequest;
 import android.view.contentcapture.DataShareRequest;
 import android.view.contentcapture.DataShareWriteAdapter;
+import androidx.annotation.RequiresApi;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;

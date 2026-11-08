@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.RequiresApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.BroadcastResponseStats;
@@ -20,6 +19,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.util.ArraySet;
+import androidx.annotation.RequiresApi;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;

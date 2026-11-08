@@ -11,13 +11,13 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 
-import android.annotation.RequiresApi;
 import android.content.Intent;
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
 import android.telephony.TelephonyManager;
+import androidx.annotation.RequiresApi;
 import com.android.internal.telephony.PhoneConstants;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;

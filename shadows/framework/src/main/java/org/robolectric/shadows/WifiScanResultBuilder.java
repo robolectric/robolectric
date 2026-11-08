@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import android.annotation.RequiresApi;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiSsid;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.time.Duration;
 import java.util.ArrayList;

@@ -9,8 +9,6 @@ import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
-import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
 import android.app.ApplicationStartInfo;
@@ -31,6 +29,8 @@ import android.util.ArrayMap;
 import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.DisplayInfo;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;

@@ -51,6 +51,7 @@ dependencies {
   api(project(":utils"))
   api(project(":utils:reflector"))
 
+  api(libs.androidx.annotation)
   api(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
   compileOnly(libs.findbugs.jsr305)
   api(libs.sqlite4java)

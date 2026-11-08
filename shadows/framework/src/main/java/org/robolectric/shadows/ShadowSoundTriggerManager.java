@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import android.annotation.RequiresPermission;
 import android.hardware.soundtrigger.SoundTrigger;
 import android.os.Build.VERSION_CODES;
+import androidx.annotation.RequiresPermission;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;

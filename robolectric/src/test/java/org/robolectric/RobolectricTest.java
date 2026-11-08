@@ -34,12 +34,17 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.ShadowedObject;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowPowerManager;
+import org.robolectric.shadows.ShadowUsbManager;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -47,6 +52,26 @@ import org.robolectric.util.ReflectionHelpers;
 public class RobolectricTest {
 
   private final Application context = ApplicationProvider.getApplicationContext();
+
+  @Test
+  public void classFiles_haveNoHiddenRequirementAnnotations() throws Exception {
+    for (Class<?> type :
+        asList(Robolectric.class, ShadowUsbManager.class, ShadowPowerManager.class)) {
+      ClassNode classNode = new ClassNode();
+      try (InputStream stream = type.getResourceAsStream(type.getSimpleName() + ".class")) {
+        new ClassReader(stream).accept(classNode, ClassReader.SKIP_CODE);
+      }
+      for (MethodNode method : classNode.methods) {
+        if (method.invisibleAnnotations == null) {
+          continue;
+        }
+        for (AnnotationNode annotation : method.invisibleAnnotations) {
+          assertThat(annotation.desc).isNotEqualTo("Landroid/annotation/RequiresApi;");
+          assertThat(annotation.desc).isNotEqualTo("Landroid/annotation/RequiresPermission;");
+        }
+      }
+    }
+  }
 
   @Test
   public void clickOn_shouldThrowIfViewIsDisabled() {
