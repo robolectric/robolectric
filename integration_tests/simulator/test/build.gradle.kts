@@ -40,6 +40,7 @@ val bundleJars =
   listOf(
     registerBundleJar("plain", "simulator-app.apk"),
     registerBundleJar("alias", "simulator-app-alias.apk"),
+    registerBundleJar("library", "simulator-app-library.apk"),
   )
 
 sourceSets { test { resources { srcDir(layout.buildDirectory.dir("generated/resources/apk")) } } }
