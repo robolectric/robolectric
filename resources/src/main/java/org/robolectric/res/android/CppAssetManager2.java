@@ -1486,7 +1486,7 @@ public class CppAssetManager2 {
     //  final AssetManager2* GetAssetManager() { return asset_manager_; }
     //
     public CppAssetManager2 GetAssetManager() {
-      return asset_manager_;
+      return assetManager;
     }
 
     //
@@ -1502,13 +1502,13 @@ public class CppAssetManager2 {
     // Called by AssetManager2.
     //  private explicit Theme(AssetManager2* asset_manager) : asset_manager_(asset_manager) {}
 
-    private CppAssetManager2 asset_manager_;
+    private CppAssetManager2 assetManager;
     private int type_spec_flags_ = 0;
     //  std.array<std.unique_ptr<Package>, kPackageCount> packages_;
     private final ThemePackage[] packages_ = new ThemePackage[kPackageCount];
 
     public Theme(CppAssetManager2 cppAssetManager2) {
-      asset_manager_ = cppAssetManager2;
+      assetManager = cppAssetManager2;
     }
 
     private static class ThemeEntry {
@@ -1544,7 +1544,7 @@ public class CppAssetManager2 {
     public boolean ApplyStyle(int resid, boolean force) {
       // ATRACE_NAME("Theme::ApplyStyle");
 
-      final ResolvedBag bag = asset_manager_.GetBag(resid);
+      final ResolvedBag bag = assetManager.GetBag(resid);
       if (bag == null) {
         return false;
       }
@@ -1726,7 +1726,7 @@ public class CppAssetManager2 {
           //          *in_out_type_spec_flags |= new_flags;
           in_out_type_spec_flags.set(in_out_type_spec_flags.get() | new_flags.get());
         }
-        return asset_manager_.resolveReference(
+        return assetManager.resolveReference(
             cookie,
             in_out_value,
             in_out_selected_config,
@@ -1734,7 +1734,7 @@ public class CppAssetManager2 {
             out_last_ref,
             true /* cacheValue */);
       }
-      return asset_manager_.ResolveReference(
+      return assetManager.ResolveReference(
           cookie, in_out_value, in_out_selected_config, in_out_type_spec_flags, out_last_ref);
     }
 
@@ -1751,11 +1751,11 @@ public class CppAssetManager2 {
     // predecessor.
     //  void Rebase(AssetManager2* am, const uint32_t* style_ids, const uint8_t* force,
     //              size_t style_count);
-    public void Rebase(CppAssetManager2 am, int[] style_ids, boolean[] force, int style_count) {
+    public void rebase(CppAssetManager2 am, int[] styleIds, boolean[] force, int styleCount) {
       Clear();
-      asset_manager_ = am;
-      for (int i = 0; i < style_count; i++) {
-        ApplyStyle(style_ids[i], force[i]);
+      assetManager = am;
+      for (int i = 0; i < styleCount; i++) {
+        ApplyStyle(styleIds[i], force[i]);
       }
     }
 
@@ -1764,7 +1764,7 @@ public class CppAssetManager2 {
     //  boolean SetTo(final Theme& o);
     @SuppressWarnings("ReferenceEquality")
     public boolean SetTo(final Theme o) {
-      return setTo(o, asset_manager_ != o.asset_manager_);
+      return setTo(o, assetManager != o.assetManager);
     }
 
     // Sets this Theme to be a copy of `o`.
