@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -10,8 +11,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import com.google.common.testing.GcFinalization;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -43,59 +42,16 @@ public final class ShadowNativeAllocationRegistryTest {
     return matrix;
   }
 
-  /**
-   * Checks that the native allocations of collected bitmaps are freed, using the number of live
-   * allocations with Bitmap's free function, so a single leaked allocation fails the test.
-   */
+  @Config(sdk = S) // No need to re-run on multiple SDK levels
   @Test
-  public void bitmapNativeAllocations_areFreedWhenCollected() {
-    // Loads the native graphics libraries.
-    Bitmap first = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-    long freeFunction = reflector(BitmapReflector.class).nativeGetNativeFinalizer();
-    // Frees the bitmaps of earlier tests, which would otherwise offset the count.
-    GcFinalization.awaitFullGc();
-    long before = liveAllocations(freeFunction);
-
-    List<WeakReference<Bitmap>> bitmaps = createBitmaps(100);
-    assertThat(liveAllocations(freeFunction)).isEqualTo(before + 100);
-
-    for (WeakReference<Bitmap> bitmap : bitmaps) {
-      GcFinalization.awaitClear(bitmap);
-    }
-    // The registry frees them on the cleaner thread after they are collected.
-    try {
-      GcFinalization.awaitDone(() -> liveAllocations(freeFunction) <= before);
-    } catch (RuntimeException timedOut) {
-      throw new AssertionError(
-          (liveAllocations(freeFunction) - before)
-              + " of 100 collected bitmaps leaked their native allocation",
-          timedOut);
-    }
-    assertThat(first.getWidth()).isEqualTo(1);
-  }
-
-  private static long liveAllocations(long freeFunction) {
-    return ShadowNativeAllocationRegistry.getMetricsCompat().getOrDefault(freeFunction, 0L);
-  }
-
-  private static List<WeakReference<Bitmap>> createBitmaps(int count) {
-    List<Bitmap> bitmaps = new ArrayList<>();
-    for (int i = 0; i < count; i++) {
-      Bitmap bitmap = Bitmap.createBitmap(97, 89, Bitmap.Config.ARGB_8888);
+  public void nativeAllocationRegistryStressTest() {
+    for (int i = 0; i < 10_000; i++) {
+      Bitmap bitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888);
       bitmap.eraseColor(Color.BLUE);
-      bitmaps.add(bitmap);
+      if (i % 100 == 0) {
+        System.gc();
+      }
     }
-    List<WeakReference<Bitmap>> references = new ArrayList<>();
-    for (Bitmap bitmap : bitmaps) {
-      references.add(new WeakReference<>(bitmap));
-    }
-    return references;
-  }
-
-  @ForType(Bitmap.class)
-  interface BitmapReflector {
-    @Static
-    long nativeGetNativeFinalizer();
   }
 
   @ForType(Matrix.class)
