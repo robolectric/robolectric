@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.PendingIntent;
 import android.net.ConnectivityManager;
@@ -15,6 +16,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.ProxyInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +28,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
@@ -42,8 +46,8 @@ public class ShadowConnectivityManager {
   private static int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private static final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
-  private static final Set<ConnectivityManager.NetworkCallback> networkCallbacks =
-      ConcurrentHashMap.newKeySet();
+  private static final Map<ConnectivityManager.NetworkCallback, CallbackRegistration>
+      networkCallbacks = new ConcurrentHashMap<>();
   private static final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
 
   // Tracks callbacks that were registered at least once, to distinguish "never registered" from
@@ -130,8 +134,9 @@ public class ShadowConnectivityManager {
   }
 
   /**
-   * Sets whether {@link #setDefaultNetworkActive(boolean)} triggers registered any {@link
-   * ConnectivityManager.NetworkCallback}.
+   * Sets whether {@link #setDefaultNetworkActive(boolean)} and {@link
+   * #setNetworkCapabilities(Network, NetworkCapabilities)} notify registered {@link
+   * ConnectivityManager.NetworkCallback}s.
    */
   public void setNetworkCallbacksEnabled(boolean enabled) {
     networkCallbacksEnabled = enabled;
@@ -142,7 +147,7 @@ public class ShadowConnectivityManager {
   }
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
-    return networkCallbacks;
+    return networkCallbacks.keySet();
   }
 
   public Set<PendingIntent> getNetworkCallbackPendingIntents() {
@@ -168,7 +173,7 @@ public class ShadowConnectivityManager {
       NetworkRequest request,
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler) {
-    networkCallbacks.add(networkCallback);
+    networkCallbacks.put(networkCallback, new CallbackRegistration(request, handler));
     historicallyRegisteredCallbacks.add(networkCallback);
   }
 
@@ -184,7 +189,7 @@ public class ShadowConnectivityManager {
     registerNetworkCallback(request, networkCallback);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = N)
   protected void requestNetwork(
       NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback, int timeoutMs) {
     registerNetworkCallback(request, networkCallback);
@@ -195,7 +200,7 @@ public class ShadowConnectivityManager {
       NetworkRequest request,
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler) {
-    registerNetworkCallback(request, networkCallback);
+    registerNetworkCallback(request, networkCallback, handler);
   }
 
   @Implementation(minSdk = O)
@@ -204,20 +209,19 @@ public class ShadowConnectivityManager {
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler,
       int timeoutMs) {
-    registerNetworkCallback(request, networkCallback);
+    registerNetworkCallback(request, networkCallback, handler);
   }
 
   @Implementation(minSdk = N)
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback) {
-    networkCallbacks.add(networkCallback);
-    historicallyRegisteredCallbacks.add(networkCallback);
+    registerDefaultNetworkCallback(networkCallback, null);
   }
 
   @Implementation(minSdk = O)
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback, Handler handler) {
-    networkCallbacks.add(networkCallback);
+    networkCallbacks.put(networkCallback, new CallbackRegistration(null, handler));
     historicallyRegisteredCallbacks.add(networkCallback);
   }
 
@@ -226,8 +230,7 @@ public class ShadowConnectivityManager {
       NetworkRequest request,
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler) {
-    networkCallbacks.add(networkCallback);
-    historicallyRegisteredCallbacks.add(networkCallback);
+    registerNetworkCallback(request, networkCallback, handler);
   }
 
   @Implementation
@@ -235,7 +238,7 @@ public class ShadowConnectivityManager {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
-    if (networkCallbacks.contains(networkCallback)) {
+    if (networkCallbacks.containsKey(networkCallback)) {
       networkCallbacks.remove(networkCallback);
     } else if (strictUnregistration) {
       if (historicallyRegisteredCallbacks.contains(networkCallback)) {
@@ -467,12 +470,15 @@ public class ShadowConnectivityManager {
     }
 
     HashSet<ConnectivityManager.NetworkCallback> stableNetworkCallbacks =
-        new HashSet<>(networkCallbacks);
+        new HashSet<>(networkCallbacks.keySet());
     for (ConnectivityManager.NetworkCallback c : stableNetworkCallbacks) {
-      if (c != null) {
+      CallbackRegistration registration = networkCallbacks.get(c);
+      if (registration != null) {
         if (defaultNetworkActive) {
+          registration.availableNetworks.add(defaultNetwork);
           c.onAvailable(defaultNetwork);
         } else {
+          registration.availableNetworks.remove(defaultNetwork);
           c.onLost(defaultNetwork);
         }
       }
@@ -523,11 +529,78 @@ public class ShadowConnectivityManager {
    * Sets network capability and affects the result of {@link
    * ConnectivityManager#getNetworkCapabilities(Network)}
    *
+   * <p>Posts changes for matching callbacks to their registered Handler, or the main looper if none
+   * was specified. Delivers {@code onAvailable} before the first capability notification. Set
+   * {@code robolectric.notifyCapabilityChanges=false} or use {@link
+   * #setNetworkCallbacksEnabled(boolean)} to disable these notifications.
+   *
    * @param network The {@link Network} object identifying the network in question.
    * @param networkCapabilities The {@link android.net.NetworkCapabilities} for the network.
    */
   public void setNetworkCapabilities(Network network, NetworkCapabilities networkCapabilities) {
     networkCapabilitiesMap.put(network, networkCapabilities);
+    if (!networkCallbacksEnabled
+        || !Boolean.parseBoolean(System.getProperty("robolectric.notifyCapabilityChanges", "true"))
+        || network == null
+        || networkCapabilities == null) {
+      return;
+    }
+    NetworkCapabilities capabilities = new NetworkCapabilities(networkCapabilities);
+    for (Map.Entry<ConnectivityManager.NetworkCallback, CallbackRegistration> entry :
+        new HashMap<>(networkCallbacks).entrySet()) {
+      ConnectivityManager.NetworkCallback callback = entry.getKey();
+      CallbackRegistration registration = entry.getValue();
+      boolean matches = registration.matches(network, capabilities, getActiveNetwork());
+      registration.handler.post(() -> {
+        if (networkCallbacks.get(callback) != registration) {
+          return;
+        }
+        if (!matches) {
+          if (registration.availableNetworks.remove(network)) {
+            callback.onLost(network);
+          }
+          return;
+        }
+        if (registration.availableNetworks.add(network)) {
+          callback.onAvailable(network);
+        }
+        if (networkCallbacks.get(callback) == registration) {
+          callback.onCapabilitiesChanged(network, capabilities);
+        }
+      });
+    }
+  }
+
+  private static final class CallbackRegistration {
+    final NetworkRequest request;
+    final Handler handler;
+    final Set<Network> availableNetworks = ConcurrentHashMap.newKeySet();
+
+    CallbackRegistration(NetworkRequest request, Handler handler) {
+      this.request = request;
+      this.handler = handler != null ? handler : new Handler(Looper.getMainLooper());
+    }
+
+    boolean matches(Network network, NetworkCapabilities capabilities, Network activeNetwork) {
+      if (request == null) {
+        return network.equals(activeNetwork);
+      }
+      NetworkCapabilities required =
+          reflector(NetworkRequestReflector.class, request).getNetworkCapabilities();
+      return reflector(NetworkCapabilitiesReflector.class, required)
+          .satisfiedByNetworkCapabilities(capabilities);
+    }
+  }
+
+  @ForType(NetworkRequest.class)
+  private interface NetworkRequestReflector {
+    @Accessor("networkCapabilities")
+    NetworkCapabilities getNetworkCapabilities();
+  }
+
+  @ForType(NetworkCapabilities.class)
+  private interface NetworkCapabilitiesReflector {
+    boolean satisfiedByNetworkCapabilities(NetworkCapabilities capabilities);
   }
 
   /**
