@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,17 +20,19 @@ import org.robolectric.RuntimeEnvironment;
 
 @RunWith(ParameterizedRobolectricTestRunner.class)
 public class RoboMenuItemTest {
+  private final Supplier<RoboMenuItem> itemFactory;
   private Context context;
   @Nonnull private MenuItem item;
   private TestOnActionExpandListener listener;
 
-  public RoboMenuItemTest(@Nonnull RoboMenuItem roboMenuItem) {
-    item = roboMenuItem;
+  public RoboMenuItemTest(@Nonnull Supplier<RoboMenuItem> itemFactory) {
+    this.itemFactory = itemFactory;
   }
 
   @Before
   public void setUp() throws Exception {
     context = ApplicationProvider.getApplicationContext();
+    item = itemFactory.get();
     listener = new TestOnActionExpandListener();
     item.setOnActionExpandListener(listener);
   }
@@ -209,10 +212,10 @@ public class RoboMenuItemTest {
   }
 
   @ParameterizedRobolectricTestRunner.Parameters
-  public static Iterable<?> data() {
+  public static Iterable<Supplier<RoboMenuItem>> data() {
     return Arrays.asList(
-        new RoboMenuItem(),
-        new RoboMenuItem(R.id.text1),
-        new RoboMenuItem(RuntimeEnvironment.getApplication()));
+        RoboMenuItem::new,
+        () -> new RoboMenuItem(R.id.text1),
+        () -> new RoboMenuItem(RuntimeEnvironment.getApplication()));
   }
 }
