@@ -98,7 +98,7 @@ class SimulatorPlugin : Plugin<Project> {
           listOf(resourceApkFile.absolutePath)
         },
       )
-      dependsOn(packageTask, "assemble$variantName")
+      dependsOn(packageTask)
       standardOutput = System.out
       errorOutput = System.err
     }

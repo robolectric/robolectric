@@ -35,6 +35,19 @@ class SimulatorPluginTest {
   }
 
   @Test
+  fun simulate_buildsTheClassesButNotTheApk() {
+    val project = AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS)
+
+    val result = project.build("simulateDemoDebug", "--dry-run")
+
+    // The simulator runs the app from the test classpath and the resources in the .ap_ file.
+    assertThat(result.output).contains(":app:compileDemoDebugJavaWithJavac SKIPPED")
+    assertThat(result.output).contains(":app:compileDemoDebugUnitTestJavaWithJavac SKIPPED")
+    assertThat(result.output).doesNotContain(":app:packageDemoDebug SKIPPED")
+    assertThat(result.output).doesNotContain(":app:assembleDemoDebug SKIPPED")
+  }
+
+  @Test
   fun simulate_variantWithoutUnitTests_explainsWhy() {
     val project = AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS)
 
