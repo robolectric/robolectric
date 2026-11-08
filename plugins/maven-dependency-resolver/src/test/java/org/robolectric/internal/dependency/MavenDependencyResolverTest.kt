@@ -11,7 +11,11 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -21,6 +25,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class MavenDependencyResolverTest {
   private lateinit var localRepositoryDir: File
+  private lateinit var lockFile: File
   private lateinit var executorService: ExecutorService
   private lateinit var mavenDependencyResolver: MavenDependencyResolver
   private lateinit var mavenArtifactFetcher: TestMavenArtifactFetcher
@@ -31,6 +36,8 @@ class MavenDependencyResolverTest {
     executorService = MoreExecutors.newDirectExecutorService()
     localRepositoryDir = Files.createTempDir()
     localRepositoryDir.deleteOnExit()
+    lockFile = File(localRepositoryDir, ".robolectric-download-lock")
+    lockFile.deleteOnExit()
     mavenArtifactFetcher =
       TestMavenArtifactFetcher(
         REPOSITORY_URL,
@@ -62,6 +69,50 @@ class MavenDependencyResolverTest {
     for (dependencyJar in successCases) {
       val artifact = MavenJarArtifact(dependencyJar)
       checkJarArtifact(artifact)
+    }
+  }
+
+  @Test
+  fun localArtifactUrl_serializesConcurrentCallsOnSameResolver() {
+    checkConcurrentResolution(mavenDependencyResolver)
+  }
+
+  @Test
+  fun localArtifactUrl_serializesConcurrentCallsOnDifferentResolvers() {
+    checkConcurrentResolution(TestMavenDependencyResolver())
+  }
+
+  private fun checkConcurrentResolution(secondResolver: MavenDependencyResolver) {
+    val fetching = CountDownLatch(1)
+    val releaseFetch = CountDownLatch(1)
+    val secondStarted = CountDownLatch(1)
+    val callers = Executors.newFixedThreadPool(2)
+    mavenArtifactFetcher.beforeFetch = {
+      fetching.countDown()
+      check(releaseFetch.await(10, TimeUnit.SECONDS))
+    }
+    try {
+      val first =
+        callers.submit<URL> {
+          mavenDependencyResolver.getLocalArtifactUrl(successCases[0])
+        }
+      assertThat(fetching.await(10, TimeUnit.SECONDS)).isTrue()
+      val second =
+        callers.submit<URL> {
+          secondStarted.countDown()
+          secondResolver.getLocalArtifactUrl(successCases[0])
+        }
+      assertThat(secondStarted.await(10, TimeUnit.SECONDS)).isTrue()
+      Assert.assertThrows(TimeoutException::class.java) { second.get(100, TimeUnit.MILLISECONDS) }
+      releaseFetch.countDown()
+      assertThat(second.get(10, TimeUnit.SECONDS)).isEqualTo(first.get(10, TimeUnit.SECONDS))
+      assertThat(mavenArtifactFetcher.numRequests).isEqualTo(4)
+      checkJarArtifact(MavenJarArtifact(successCases[0]))
+      assertThat(lockFile.exists()).isTrue()
+    } finally {
+      releaseFetch.countDown()
+      callers.shutdownNow()
+      assertThat(callers.awaitTermination(10, TimeUnit.SECONDS)).isTrue()
     }
   }
 
@@ -161,11 +212,7 @@ class MavenDependencyResolverTest {
     }
 
     override fun createLockFile(): File {
-      return try {
-        File.createTempFile("MavenDependencyResolverTest", null)
-      } catch (e: IOException) {
-        throw AssertionError(e)
-      }
+      return lockFile
     }
   }
 
@@ -190,6 +237,13 @@ class MavenDependencyResolverTest {
     ) {
     var numRequests = 0
       private set
+
+    var beforeFetch: () -> Unit = {}
+
+    override fun fetchArtifact(artifact: MavenJarArtifact) {
+      beforeFetch()
+      super.fetchArtifact(artifact)
+    }
 
     override fun createFetchToFileTask(remoteUrl: URL, tempFile: File): ListenableFuture<Void> {
       return Futures.submitAsync(
