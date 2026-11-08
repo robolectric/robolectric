@@ -19,10 +19,12 @@ import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.awt.GraphicsEnvironment;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -61,14 +63,24 @@ public final class Simulator {
 
   public Simulator(Class<? extends Activity> activityClassToLaunch) {
     this.activityClassToLaunch = activityClassToLaunch;
-    this.headless = GraphicsEnvironment.isHeadless();
+    // RobolectricTestRunner sets java.awt.headless to true for every test, so decide from whether
+    // there is a display to show the window on. Without one, such as on CI, the simulator stays
+    // headless, and can still record the screen.
+    this.headless = !hasDisplay(System.getProperty("os.name", ""), System.getenv());
+    System.setProperty("java.awt.headless", Boolean.toString(headless));
+    if (!headless && GraphicsEnvironment.isHeadless()) {
+      // AWT reads the property once, so this happens if something used AWT before.
+      System.err.println(
+          "The simulator can't show a window, because AWT was already initialized in headless"
+              + " mode. Create the Simulator before anything else uses AWT.");
+      this.headless = true;
+    }
     this.injector = new Injector.Builder(Looper.class.getClassLoader()).build();
   }
 
   public void start() {
     Preconditions.checkState(ShadowView.useRealGraphics());
     Preconditions.checkState(ShadowLooper.looperMode() != Mode.LEGACY);
-    System.setProperty("java.awt.headless", headless ? "true" : "false");
     ShadowView.setUseRealViewAnimations(true);
     ShadowView.setUseRealDrawTraversals(true);
     ShadowChoreographer.setPaused(true);
@@ -104,6 +116,15 @@ public final class Simulator {
 
     connectRemoteControl();
     loop();
+  }
+
+  /** Returns whether there is a display that a window can be shown on, like AWT decides it. */
+  static boolean hasDisplay(String osName, Map<String, String> environment) {
+    if (osName.startsWith("Mac") || osName.startsWith("Windows")) {
+      return true;
+    }
+    // AWT draws with X11, through XWayland on Wayland, so it needs DISPLAY.
+    return !Strings.nullToEmpty(environment.get("DISPLAY")).trim().isEmpty();
   }
 
   private void loop() {
