@@ -22,6 +22,7 @@ android {
   productFlavors {
     create("plain") { dimension = "launcher" }
     create("alias") { dimension = "launcher" }
+    create("library") { dimension = "launcher" }
   }
 
   compileOptions {
