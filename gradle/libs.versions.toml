@@ -139,6 +139,7 @@ jspecify = "1.0.1"
 
 [libraries]
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 
 android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
 
