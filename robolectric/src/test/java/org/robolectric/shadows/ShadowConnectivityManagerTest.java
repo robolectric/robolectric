@@ -29,10 +29,14 @@ import android.net.ProxyInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.Before;
@@ -366,7 +370,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = O)
+  @Config(minSdk = N)
   public void requestNetwork_withTimeout_shouldAddCallback() {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
@@ -658,6 +662,357 @@ public class ShadowConnectivityManagerTest {
                 .getNetworkCapabilities(shadowOf(connectivityManager).getActiveNetwork())
                 .hasCapability(NetworkCapabilities.NET_CAPABILITY_MMS))
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_notifiesRegisteredCallbacks() {
+    RecordingNetworkCallback defaultCallback = new RecordingNetworkCallback();
+    RecordingNetworkCallback requestCallback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(defaultCallback);
+    connectivityManager.registerNetworkCallback(
+        new NetworkRequest.Builder().clearCapabilities().build(), requestCallback);
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(capabilities).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+
+    assertThat(defaultCallback.events).isEmpty();
+    assertThat(requestCallback.events).isEmpty();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    for (RecordingNetworkCallback callback : Arrays.asList(defaultCallback, requestCallback)) {
+      assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+      assertThat(callback.network).isEqualTo(network);
+      assertThat(callback.capabilities).isEqualTo(capabilities);
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_callbacksDisabled_stillUpdatesCapabilities() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+    ShadowConnectivityManager shadow = shadowOf(connectivityManager);
+    shadow.setNetworkCallbacksEnabled(false);
+
+    shadow.setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).isEmpty();
+    assertThat(connectivityManager.getNetworkCapabilities(network)).isEqualTo(capabilities);
+
+    shadow.setNetworkCallbacksEnabled(true);
+    shadow.setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_callbackUnregistersItself() {
+    RecordingNetworkCallback callback =
+        new RecordingNetworkCallback() {
+          @Override
+          public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
+            super.onCapabilitiesChanged(network, capabilities);
+            connectivityManager.unregisterNetworkCallback(this);
+          }
+        };
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_nullCapabilities_doesNotNotifyCallbacks() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    Network network = connectivityManager.getActiveNetwork();
+
+    shadowOf(connectivityManager).setNetworkCapabilities(network, null);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).isEmpty();
+    assertThat(connectivityManager.getNetworkCapabilities(network)).isNull();
+  }
+
+  @Test
+  public void setNetworkCapabilities_onlyNotifiesMatchingRequests() {
+    RecordingNetworkCallback wifiCallback = new RecordingNetworkCallback();
+    RecordingNetworkCallback internetCallback = new RecordingNetworkCallback();
+    NetworkRequest wifiRequest =
+        new NetworkRequest.Builder()
+            .clearCapabilities()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build();
+    connectivityManager.registerNetworkCallback(wifiRequest, wifiCallback);
+    connectivityManager.requestNetwork(
+        new NetworkRequest.Builder()
+            .clearCapabilities()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build(),
+        internetCallback);
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(capabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(wifiCallback.events).isEmpty();
+    assertThat(internetCallback.events).isEmpty();
+
+    shadowOf(capabilities).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(wifiCallback.events).isEmpty();
+    assertThat(internetCallback.events).containsExactly("available", "capabilities").inOrder();
+
+    shadowOf(capabilities).removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(internetCallback.events)
+        .containsExactly("available", "capabilities", "lost")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_defaultCallbackIgnoresOtherNetworks() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    Network otherNetwork = ShadowNetwork.newInstance(123);
+
+    shadowOf(connectivityManager)
+        .setNetworkCapabilities(otherNetwork, ShadowNetworkCapabilities.newInstance());
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).isEmpty();
+
+    Network network = connectivityManager.getActiveNetwork();
+    shadowOf(connectivityManager)
+        .setNetworkCapabilities(network, ShadowNetworkCapabilities.newInstance());
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+    assertThat(callback.network).isEqualTo(network);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_onlyAnnouncesAvailabilityOnce() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events)
+        .containsExactly("available", "capabilities", "capabilities")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_afterOnAvailableDoesNotRepeatAvailability() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    ShadowConnectivityManager shadow = shadowOf(connectivityManager);
+    Network network = connectivityManager.getActiveNetwork();
+
+    shadow.setDefaultNetworkActive(true);
+    shadow.setNetworkCapabilities(network, ShadowNetworkCapabilities.newInstance());
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+
+    shadow.setDefaultNetworkActive(false);
+    shadow.setDefaultNetworkActive(true);
+    shadow.setNetworkCapabilities(network, ShadowNetworkCapabilities.newInstance());
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events)
+        .containsExactly("available", "capabilities", "lost", "available", "capabilities")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_propertyDisabledStillUpdatesState() {
+    setSystemPropertyRule.set("robolectric.notifyCapabilityChanges", "false");
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).isEmpty();
+    assertThat(connectivityManager.getNetworkCapabilities(network)).isEqualTo(capabilities);
+
+    setSystemPropertyRule.set("robolectric.notifyCapabilityChanges", "true");
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setNetworkCapabilities_usesRegisteredHandlers() throws InterruptedException {
+    HandlerThread thread = new HandlerThread("network-callback");
+    thread.start();
+    try {
+      shadowOf(thread.getLooper()).pause();
+      List<Looper> callbackLoopers = new ArrayList<>();
+      RecordingNetworkCallback callback =
+          new RecordingNetworkCallback() {
+            @Override
+            public void onAvailable(Network network) {
+              assertThat(Looper.myLooper()).isEqualTo(thread.getLooper());
+              super.onAvailable(network);
+            }
+
+            @Override
+            public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
+              super.onCapabilitiesChanged(network, capabilities);
+              callbackLoopers.add(Looper.myLooper());
+            }
+          };
+      Handler handler = new Handler(thread.getLooper());
+      NetworkRequest request = new NetworkRequest.Builder().clearCapabilities().build();
+      Network network = connectivityManager.getActiveNetwork();
+      NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+      for (int registration = 0; registration < 4; registration++) {
+        if (registration == 0) {
+          connectivityManager.registerNetworkCallback(request, callback, handler);
+        } else if (registration == 1) {
+          connectivityManager.registerDefaultNetworkCallback(callback, handler);
+        } else if (registration == 2) {
+          connectivityManager.requestNetwork(request, callback, handler);
+        } else {
+          connectivityManager.requestNetwork(request, callback, handler, 0);
+        }
+
+        shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+        shadowOf(Looper.getMainLooper()).idle();
+        assertThat(callback.events).isEmpty();
+        shadowOf(thread.getLooper()).idle();
+
+        assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+        connectivityManager.unregisterNetworkCallback(callback);
+        callback.events.clear();
+      }
+      assertThat(callbackLoopers)
+          .containsExactly(
+              thread.getLooper(), thread.getLooper(), thread.getLooper(), thread.getLooper());
+    } finally {
+      thread.quit();
+      thread.join();
+    }
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setNetworkCapabilities_bestMatchingCallbackUsesRequestAndHandler() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    NetworkRequest request =
+        new NetworkRequest.Builder()
+            .clearCapabilities()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build();
+    connectivityManager.registerBestMatchingNetworkCallback(
+        request, callback, new Handler(Looper.getMainLooper()));
+    Network network = connectivityManager.getActiveNetwork();
+    NetworkCapabilities capabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(capabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.events).isEmpty();
+
+    shadowOf(capabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, capabilities);
+    assertThat(callback.events).isEmpty();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available", "capabilities").inOrder();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_unregisteredBeforeDeliveryDoesNotNotify() {
+    RecordingNetworkCallback callback = new RecordingNetworkCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    shadowOf(connectivityManager)
+        .setNetworkCapabilities(
+            connectivityManager.getActiveNetwork(), ShadowNetworkCapabilities.newInstance());
+    connectivityManager.unregisterNetworkCallback(callback);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setNetworkCapabilities_unregisteringInOnAvailableStopsCapabilityNotification() {
+    RecordingNetworkCallback callback =
+        new RecordingNetworkCallback() {
+          @Override
+          public void onAvailable(Network network) {
+            super.onAvailable(network);
+            connectivityManager.unregisterNetworkCallback(this);
+          }
+        };
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    shadowOf(connectivityManager)
+        .setNetworkCapabilities(
+            connectivityManager.getActiveNetwork(), ShadowNetworkCapabilities.newInstance());
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(callback.events).containsExactly("available");
+  }
+
+  private class RecordingNetworkCallback extends ConnectivityManager.NetworkCallback {
+    final List<String> events = new ArrayList<>();
+    Network network;
+    NetworkCapabilities capabilities;
+
+    @Override
+    public void onAvailable(Network network) {
+      events.add("available");
+    }
+
+    @Override
+    public void onLost(Network network) {
+      events.add("lost");
+    }
+
+    @Override
+    public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
+      assertThat(connectivityManager.getNetworkCapabilities(network)).isEqualTo(capabilities);
+      this.network = network;
+      this.capabilities = capabilities;
+      events.add("capabilities");
+    }
   }
 
   @Test
