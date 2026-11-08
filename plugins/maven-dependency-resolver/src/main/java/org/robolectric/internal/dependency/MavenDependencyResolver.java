@@ -1,6 +1,8 @@
 package org.robolectric.internal.dependency;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -8,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -39,7 +42,7 @@ import org.xml.sax.SAXException;
  */
 public class MavenDependencyResolver implements DependencyResolver {
 
-  private static final Object DOWNLOAD_LOCK = new Object();
+  private static final Interner<String> DOWNLOAD_LOCKS = Interners.newWeakInterner();
 
   private final MavenArtifactFetcher mavenArtifactFetcher;
   private final File localRepositoryDir;
@@ -81,13 +84,10 @@ public class MavenDependencyResolver implements DependencyResolver {
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     List<MavenJarArtifact> artifacts = new ArrayList<>(dependencies.length);
-    whileLocked(() -> {
-      for (DependencyJar dependencyJar : dependencies) {
-        MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
-        artifacts.add(artifact);
-        mavenArtifactFetcher.fetchArtifact(artifact);
-      }
-    });
+    for (DependencyJar dependencyJar : dependencies) {
+      artifacts.add(new MavenJarArtifact(dependencyJar));
+    }
+    fetchArtifacts(artifacts);
     URL[] urls = new URL[dependencies.length];
     try {
       for (int i = 0; i < artifacts.size(); i++) {
@@ -100,25 +100,40 @@ public class MavenDependencyResolver implements DependencyResolver {
     return urls;
   }
 
-  private void whileLocked(Runnable runnable) {
+  private void fetchArtifacts(List<MavenJarArtifact> artifacts) {
+    File lockFile = createLockFile();
+    boolean canWriteLock = lockFile.exists() ? lockFile.canWrite() : localRepositoryDir.canWrite();
+    // Populated caches still work when their lock file cannot be written.
+    if (!canWriteLock
+        && artifacts.stream()
+            .allMatch(artifact -> new File(localRepositoryDir, artifact.jarPath()).exists())) {
+      return;
+    }
     // File locks coordinate processes, but overlapping locks in the same JVM throw instead of wait.
-    synchronized (DOWNLOAD_LOCK) {
-      File lockFile = createLockFile();
-      try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
-        try (FileChannel channel = raf.getChannel()) {
-          try (FileLock ignored = channel.lock()) {
-            runnable.run();
+    try {
+      synchronized (DOWNLOAD_LOCKS.intern(lockFile.getCanonicalPath())) {
+        try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+            FileChannel channel = raf.getChannel();
+            FileLock ignored = channel.lock()) {
+          for (MavenJarArtifact artifact : artifacts) {
+            mavenArtifactFetcher.fetchArtifact(artifact);
           }
         }
-      } catch (IOException e) {
-        throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
       }
-      // Keep the lock file: deleting it lets another process lock a different inode.
+    } catch (IOException e) {
+      throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
     }
+    // Keep the lock file: deleting it lets another process lock a different inode.
   }
 
   protected File createLockFile() {
-    return new File(System.getProperty("user.home"), ".robolectric-download-lock");
+    try {
+      Files.createDirectories(localRepositoryDir.toPath());
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Couldn't create repository directory " + localRepositoryDir, e);
+    }
+    return new File(localRepositoryDir, ".robolectric-download-lock");
   }
 
   @Override
