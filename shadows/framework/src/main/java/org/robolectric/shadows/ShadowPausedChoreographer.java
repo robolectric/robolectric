@@ -69,8 +69,14 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     activeChoreographers.add(realChoreographer);
   }
 
+  /** Disposes the receiver, if present, and removes the choreographer from reset tracking. */
   @Implementation(minSdk = VERSION_CODES.N)
   protected void dispose() {
+    DisplayEventReceiver receiver =
+        reflector(ChoreographerReflector.class, realChoreographer).getReceiver();
+    if (receiver != null) {
+      receiver.dispose();
+    }
     activeChoreographers.remove(realChoreographer);
   }
 

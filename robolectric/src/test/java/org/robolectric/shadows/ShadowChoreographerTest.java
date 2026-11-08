@@ -5,6 +5,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.animation.ObjectAnimator;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.Choreographer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -29,6 +31,29 @@ public class ShadowChoreographerTest {
     ShadowPausedChoreographer shadowPausedChoreographer =
         Shadow.extract(Choreographer.getInstance());
     assertThat(shadowPausedChoreographer.isInitialized()).isTrue();
+  }
+
+  @Test
+  public void releaseInstance_closesDisplayEventReceiver() throws InterruptedException {
+    HandlerThread thread = new HandlerThread("ChoreographerTest");
+    thread.start();
+    try {
+      AtomicBoolean stillInitialized = new AtomicBoolean(true);
+      new Handler(thread.getLooper())
+          .post(() -> {
+            Choreographer choreographer = Choreographer.getInstance();
+            Choreographer.releaseInstance();
+            ShadowPausedChoreographer shadowChoreographer = Shadow.extract(choreographer);
+            stillInitialized.set(shadowChoreographer.isInitialized());
+          });
+      shadowOf(thread.getLooper()).idle();
+
+      assertThat(stillInitialized.get()).isFalse();
+      assertThat(ShadowCloseGuard.getErrors()).isEmpty();
+    } finally {
+      thread.quit();
+      thread.join();
+    }
   }
 
   @Test
