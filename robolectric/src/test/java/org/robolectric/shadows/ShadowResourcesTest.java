@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
@@ -69,6 +70,31 @@ public class ShadowResourcesTest {
   @Config(qualifiers = "fr")
   public void testGetValuesResFromSpecificQualifiers() {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Bonjour");
+  }
+
+  @Test
+  public void getString_mobileCountryCode_usesTheQualifiedValueOnlyWhenTheCodeMatches() {
+    assertThat(resources.getString(R.string.mobile_country)).isEqualTo("any");
+
+    RuntimeEnvironment.setQualifiers("mcc310");
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getString(R.string.mobile_country))
+        .isEqualTo("310");
+
+    RuntimeEnvironment.setQualifiers("mcc311");
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getString(R.string.mobile_country))
+        .isEqualTo("any");
+  }
+
+  @Test
+  @Config(qualifiers = "mcc310")
+  public void getString_mobileCountryCodeQualifier_usesTheQualifiedValue() {
+    assertThat(resources.getString(R.string.mobile_country)).isEqualTo("310");
   }
 
   /**
