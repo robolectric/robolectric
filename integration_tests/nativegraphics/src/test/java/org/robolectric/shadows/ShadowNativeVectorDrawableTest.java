@@ -43,6 +43,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Drawable.ConstantState;
 import android.graphics.drawable.VectorDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Xml;
 import androidx.test.core.app.ApplicationProvider;
@@ -303,10 +304,18 @@ public class ShadowNativeVectorDrawableTest {
             bitmap,
             golden,
             DrawableTestUtils.PIXEL_ERROR_THRESHOLD,
-            pixelCountThreshold,
+            pixelCountThreshold(resIds[i], pixelCountThreshold),
             DrawableTestUtils.PIXEL_ERROR_TOLERANCE);
       }
     }
+  }
+
+  private static float pixelCountThreshold(int resId, float pixelCountThreshold) {
+    // Older Skia doesn't snap arc endpoints, so glibc 2.41's rounding changes affect this icon.
+    if (resId == R.drawable.vector_icon_repeated_a_1 && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+      return Math.max(pixelCountThreshold, 0.03f);
+    }
+    return pixelCountThreshold;
   }
 
   private static boolean isArm() {
