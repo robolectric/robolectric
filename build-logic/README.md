@@ -8,10 +8,10 @@ Modules apply them by id, for example
 
 ## Error Prone issue report
 
-Error Prone reports its findings as compilation errors, so a build stops at the
-first module that has any and never says what the remaining modules hold. That is
-why `SKIP_ERRORPRONE=true` is the usual way to work locally — but it hides the
-issues rather than counting them.
+Error Prone reports its findings as compilation errors, so a build stops at
+the first module that has any and never says what the remaining modules hold.
+That is why `SKIP_ERRORPRONE=true` is the usual way to work locally — but it
+hides the issues rather than counting them.
 
 `ErrorProneReportPlugin` collects them instead. It is applied automatically
 wherever Error Prone itself is (from `RoboJavaModulePlugin`) and does nothing
