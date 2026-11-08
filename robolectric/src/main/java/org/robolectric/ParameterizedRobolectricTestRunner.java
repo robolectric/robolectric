@@ -13,11 +13,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.runner.Runner;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkField;
@@ -38,6 +41,9 @@ import org.robolectric.util.ReflectionHelpers;
  * <p>This class takes care of the fact that the test runner and the test class are actually loaded
  * from different class loaders and therefore parameter objects created by one cannot be assigned to
  * instances of the other.
+ *
+ * <p>Parameters are computed once for discovery and once per sandbox class loader. Tests in the
+ * same sandbox share the parameter objects.
  *
  * <p>See also {@link RobolectricTestParameterInjector} for a more modern alternative.
  */
@@ -93,12 +99,18 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
 
     private final int parametersIndex;
     private final String name;
+    private final Map<ClassLoader, List<Object>> parametersByClassLoader;
 
-    TestClassRunnerForParameters(Class<?> type, int parametersIndex, String name)
+    TestClassRunnerForParameters(
+        Class<?> type,
+        int parametersIndex,
+        String name,
+        Map<ClassLoader, List<Object>> parametersByClassLoader)
         throws InitializationError {
       super(type);
       this.parametersIndex = parametersIndex;
       this.name = name;
+      this.parametersByClassLoader = parametersByClassLoader;
     }
 
     private Object createTestInstance(Class<?> bootstrappedClass) throws Exception {
@@ -118,7 +130,14 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       // created by the test runner are not compatible with the parameters required by the test.
       // Instead, we compute the parameters within the test's class loader.
       try {
-        List<Object> parametersList = getParametersList(getTestClass(), classLoader);
+        List<Object> parametersList;
+        synchronized (parametersByClassLoader) {
+          parametersList = parametersByClassLoader.get(classLoader);
+          if (parametersList == null) {
+            parametersList = getParametersList(getTestClass(), classLoader);
+            parametersByClassLoader.put(classLoader, parametersList);
+          }
+        }
 
         if (parametersIndex >= parametersList.size()) {
           throw new Exception(
@@ -281,6 +300,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
   }
 
   private final ArrayList<Runner> runners = new ArrayList<>();
+  private final Map<ClassLoader, List<Object>> parametersByClassLoader = new HashMap<>();
 
   /*
    * Only called reflectively. Do not use programmatically.
@@ -300,7 +320,21 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
               : new Object[] {parametersObj};
       runners.add(
           new TestClassRunnerForParameters(
-              testClass.getJavaClass(), i, nameFor(parameters.name(), i, parameterArray)));
+              testClass.getJavaClass(),
+              i,
+              nameFor(parameters.name(), i, parameterArray),
+              parametersByClassLoader));
+    }
+  }
+
+  @Override
+  public void run(RunNotifier notifier) {
+    try {
+      super.run(notifier);
+    } finally {
+      synchronized (parametersByClassLoader) {
+        parametersByClassLoader.clear();
+      }
     }
   }
 
