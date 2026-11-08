@@ -9,6 +9,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -342,5 +343,24 @@ public class ShadowResourcesTest {
     long elapsedNs = endTime - startTime;
     System.err.println(
         "updateConfiguration benchmark took " + TimeUnit.NANOSECONDS.toMillis(elapsedNs) + " ms");
+  }
+
+  @Ignore("Re-enable when performing benchmarks")
+  @Test
+  @Config(sdk = BAKLAVA)
+  public void benchmarkCreateResources() {
+    long startTime = System.nanoTime();
+    for (int i = 0; i < 10_000; i++) {
+      // Creating an AssetManager and setting its configuration trigger RebuildFilterList in
+      // CppAssetManager2, as setting up each test's contexts does.
+      AssetManager assetManager = new AssetManager();
+      Object unused =
+          new Resources(assetManager, resources.getDisplayMetrics(), resources.getConfiguration());
+      assetManager.close();
+    }
+    long endTime = System.nanoTime();
+    long elapsedNs = endTime - startTime;
+    System.err.println(
+        "createResources benchmark took " + TimeUnit.NANOSECONDS.toMillis(elapsedNs) + " ms");
   }
 }
