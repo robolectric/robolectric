@@ -57,4 +57,6 @@ dependencies {
   testImplementation(libs.androidx.compose.material3.adaptive.navigation.suite)
   testImplementation(libs.androidx.window.testing)
   testImplementation(libs.truth)
+  testImplementation(libs.androidx.fragment)
+  testImplementation(libs.molecule.runtime)
 }
