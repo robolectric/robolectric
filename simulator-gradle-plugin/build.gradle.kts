@@ -41,13 +41,35 @@ afterEvaluate {
   publishing { signing { setRequired { !isSnapshotVersion } } }
 }
 
+// The Android Gradle plugin, for the projects that the Gradle TestKit tests build. The plugin only
+// compiles against AGP's API, so TestKit has to put AGP itself on the plugin classpath it injects.
+val testKitAndroidGradlePlugin by configurations.creating
+
 dependencies {
   compileOnly(libs.android.gradle.api)
   implementation(libs.kotlin.stdlib)
 
+  testImplementation(gradleTestKit())
   testImplementation(libs.junit4)
   testImplementation(libs.test.parameter.injector)
   testImplementation(libs.truth)
+
+  testKitAndroidGradlePlugin(libs.android.gradle)
+}
+
+tasks.pluginUnderTestMetadata { pluginClasspath.from(testKitAndroidGradlePlugin) }
+
+tasks.test {
+  // The TestKit builds need an Android SDK, from ANDROID_HOME or the root local.properties.
+  val localProperties = rootProject.file("local.properties")
+  if (localProperties.exists()) {
+    val sdkDir =
+      localProperties
+        .readLines()
+        .firstOrNull { it.startsWith("sdk.dir=") }
+        ?.removePrefix("sdk.dir=")
+    if (sdkDir != null) systemProperty("android.sdk.dir", sdkDir)
+  }
 }
 
 tasks.validatePlugins {
