@@ -28,6 +28,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -47,24 +48,31 @@ import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.IntBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @org.robolectric.annotation.Config(minSdk = O)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeBitmapTest {
+  @Rule public SetSystemPropertyRule properties = new SetSystemPropertyRule();
+
   // small alpha values cause color values to be pre-multiplied down, losing accuracy
   private static final int PREMUL_COLOR = Color.argb(2, 255, 254, 253);
   private static final int PREMUL_ROUNDED_COLOR = Color.argb(2, 255, 255, 255);
@@ -179,6 +187,209 @@ public class ShadowNativeBitmapTest {
 
     assertThrows(
         RuntimeException.class, () -> bitmap.copyPixelsToBuffer(ByteBuffer.allocate(tooSmall)));
+  }
+
+  @Test
+  public void testCopyPixelsToBuffer_redPixelChannels() {
+    Bitmap redBitmap = Bitmap.createBitmap(10, 10, Config.ARGB_8888, true);
+    Paint paint = new Paint();
+    paint.setStyle(Paint.Style.FILL_AND_STROKE);
+    paint.setColor(Color.RED);
+    new Canvas(redBitmap).drawRect(0, 0, 10, 10, paint);
+
+    ByteBuffer bytes = ByteBuffer.allocate(redBitmap.getByteCount());
+    redBitmap.copyPixelsToBuffer(bytes);
+    assertThat(bytes.get(0) & 0xff).isEqualTo(255);
+
+    IntBuffer pixels = IntBuffer.wrap(new int[100]);
+    redBitmap.copyPixelsToBuffer(pixels);
+
+    assertThat(pixels.get(0)).isEqualTo(0xff0000ff);
+  }
+
+  @Test
+  public void testCopyPixelsToBuffer_directBuffersPreserveLayoutAndPosition() {
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+    bitmap.eraseColor(Color.argb(128, 64, 32, 16));
+    for (ByteOrder order : new ByteOrder[] {ByteOrder.BIG_ENDIAN, ByteOrder.LITTLE_ENDIAN}) {
+      ByteBuffer bytes = ByteBuffer.allocateDirect(12).order(order);
+      for (Buffer buffer : new Buffer[] {bytes, bytes.asShortBuffer(), bytes.asIntBuffer()}) {
+        bytes.putInt(0, 0x12345678);
+        bytes.putInt(8, 0x12345678);
+        int elementsPerPixel =
+            buffer instanceof ByteBuffer ? 4 : buffer instanceof ShortBuffer ? 2 : 1;
+        buffer.position(elementsPerPixel);
+
+        bitmap.copyPixelsToBuffer(buffer);
+
+        assertThat(buffer.position()).isEqualTo(2 * elementsPerPixel);
+        assertThat(bytes.getInt(0)).isEqualTo(0x12345678);
+        assertThat(bytes.getInt(4))
+            .isEqualTo(order == ByteOrder.LITTLE_ENDIAN ? 0x80081020 : 0x20100880);
+        assertThat(bytes.getInt(8)).isEqualTo(0x12345678);
+      }
+    }
+  }
+
+  @Test
+  public void testCopyPixelsToBuffer_slicedIntBufferPreservesBounds() {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] {Color.RED, Color.BLUE}, 2, 1, Config.ARGB_8888);
+    int[] pixels = {0x12345678, 0x12345678, 0, 0, 0x12345678};
+    IntBuffer buffer = IntBuffer.wrap(pixels, 1, 4).slice();
+    buffer.position(1);
+    buffer.limit(3);
+
+    bitmap.copyPixelsToBuffer(buffer);
+
+    assertThat(buffer.position()).isEqualTo(3);
+    assertThat(pixels)
+        .isEqualTo(new int[] {0x12345678, 0x12345678, 0xff0000ff, 0xffff0000, 0x12345678});
+  }
+
+  @Test
+  public void testCopyPixels_rgbaPixelOrderDisabledPreservesNativeBuffers() {
+    properties.set("robolectric.useRgbaPixelOrder", "false");
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+    bitmap.eraseColor(Color.RED);
+    IntBuffer nativePixels = IntBuffer.allocate(1);
+    reflector(ShadowNativeBitmap.BitmapBufferReflector.class, bitmap)
+        .copyPixelsToBuffer(nativePixels);
+    IntBuffer pixels = IntBuffer.allocate(1);
+
+    bitmap.copyPixelsToBuffer(pixels);
+
+    assertThat(pixels.position()).isEqualTo(1);
+    assertThat(pixels.get(0)).isEqualTo(nativePixels.get(0));
+    IntBuffer source = pixels.asReadOnlyBuffer();
+    source.rewind();
+    Bitmap copy = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+
+    copy.copyPixelsFromBuffer(source);
+
+    assertThat(copy.getPixel(0, 0)).isEqualTo(Color.RED);
+    assertThat(source.position()).isEqualTo(1);
+    assertThat(source.get(0)).isEqualTo(nativePixels.get(0));
+  }
+
+  @Test
+  public void testCopyPixelsFromBuffer_rgbaPixelsPreserveSourceAndPosition() {
+    Bitmap bitmap = Bitmap.createBitmap(2, 1, Config.ARGB_8888);
+    int[] pixels = {0x12345678, 0x80081020, 0xffff0000, 0x12345678};
+    IntBuffer source = IntBuffer.wrap(pixels).asReadOnlyBuffer();
+    source.position(1);
+    source.limit(3);
+
+    bitmap.copyPixelsFromBuffer(source);
+
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.argb(128, 64, 32, 16));
+    assertThat(bitmap.getPixel(1, 0)).isEqualTo(Color.BLUE);
+    assertThat(source.position()).isEqualTo(3);
+    assertThat(pixels).isEqualTo(new int[] {0x12345678, 0x80081020, 0xffff0000, 0x12345678});
+  }
+
+  @Test
+  @org.robolectric.annotation.Config(sdk = O)
+  public void testCopyPixelsFromBuffer_readOnlyHeapBufferWithoutChannelConversion() {
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+    bitmap.eraseColor(Color.RED);
+    IntBuffer nativePixels = IntBuffer.allocate(1);
+    reflector(ShadowNativeBitmap.BitmapBufferReflector.class, bitmap)
+        .copyPixelsToBuffer(nativePixels);
+    int nativePixel = nativePixels.get(0);
+    IntBuffer source = nativePixels.asReadOnlyBuffer();
+    source.rewind();
+    bitmap.eraseColor(Color.BLUE);
+
+    // Use native bytes to exercise the legacy macOS path on every host.
+    properties.set("os.name", "Mac OS X");
+    bitmap.copyPixelsFromBuffer(source);
+
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
+    assertThat(source.position()).isEqualTo(1);
+    assertThat(source.get(0)).isEqualTo(nativePixel);
+  }
+
+  @Test
+  public void testCopyPixelsFromBuffer_directBuffersUseRgbaOrder() {
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+    for (ByteOrder order : new ByteOrder[] {ByteOrder.BIG_ENDIAN, ByteOrder.LITTLE_ENDIAN}) {
+      ByteBuffer bytes = ByteBuffer.allocateDirect(12).order(order);
+      bytes.putInt(4, order == ByteOrder.LITTLE_ENDIAN ? 0x80081020 : 0x20100880);
+      for (Buffer buffer : new Buffer[] {bytes, bytes.asShortBuffer(), bytes.asIntBuffer()}) {
+        int elementsPerPixel =
+            buffer instanceof ByteBuffer ? 4 : buffer instanceof ShortBuffer ? 2 : 1;
+        buffer.position(elementsPerPixel);
+
+        bitmap.copyPixelsFromBuffer(buffer);
+
+        assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.argb(128, 64, 32, 16));
+        assertThat(buffer.position()).isEqualTo(2 * elementsPerPixel);
+        assertThat(bytes.getInt(4))
+            .isEqualTo(order == ByteOrder.LITTLE_ENDIAN ? 0x80081020 : 0x20100880);
+      }
+    }
+  }
+
+  @Test
+  public void testCopyPixels_unalignedByteBuffersPreserveBoundsAndSource() {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] {Color.RED, Color.BLUE}, 2, 1, Config.ARGB_8888);
+    for (ByteBuffer bytes :
+        new ByteBuffer[] {ByteBuffer.allocate(10), ByteBuffer.allocateDirect(10)}) {
+      bytes.put(0, (byte) 0x55);
+      bytes.put(9, (byte) 0x55);
+      bytes.position(1);
+      bytes.limit(9);
+
+      bitmap.copyPixelsToBuffer(bytes);
+
+      assertThat(bytes.position()).isEqualTo(9);
+      assertThat(bytes.get(0)).isEqualTo((byte) 0x55);
+      assertThat(bytes.get(1)).isEqualTo((byte) 0xff);
+      assertThat(bytes.get(3)).isEqualTo((byte) 0);
+      assertThat(bytes.get(5)).isEqualTo((byte) 0);
+      assertThat(bytes.get(7)).isEqualTo((byte) 0xff);
+      bytes.limit(10);
+      assertThat(bytes.get(9)).isEqualTo((byte) 0x55);
+
+      ByteBuffer source = bytes.asReadOnlyBuffer();
+      source.position(1);
+      source.limit(9);
+      Bitmap copy = Bitmap.createBitmap(2, 1, Config.ARGB_8888);
+      copy.copyPixelsFromBuffer(source);
+
+      assertThat(source.position()).isEqualTo(9);
+      assertThat(copy.getPixel(0, 0)).isEqualTo(Color.RED);
+      assertThat(copy.getPixel(1, 0)).isEqualTo(Color.BLUE);
+      assertThat(bytes.get(1)).isEqualTo((byte) 0xff);
+      assertThat(bytes.get(7)).isEqualTo((byte) 0xff);
+    }
+  }
+
+  @Test
+  public void testCopyPixels_rgb565KeepsPackedFormat() {
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.RGB_565);
+    bitmap.eraseColor(Color.RED);
+    ByteBuffer pixels = ByteBuffer.allocate(bitmap.getByteCount()).order(ByteOrder.nativeOrder());
+
+    bitmap.copyPixelsToBuffer(pixels);
+
+    assertThat(pixels.getShort(0) & 0xffff).isEqualTo(0xf800);
+    pixels.rewind();
+    bitmap.eraseColor(Color.BLUE);
+    bitmap.copyPixelsFromBuffer(pixels);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
+  }
+
+  @Test
+  public void testCopyPixelsToBuffer_readOnlyBufferIsNotModified() {
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+    bitmap.eraseColor(Color.RED);
+    ByteBuffer bytes = ByteBuffer.allocateDirect(4);
+
+    assertThrows(
+        ReadOnlyBufferException.class, () -> bitmap.copyPixelsToBuffer(bytes.asReadOnlyBuffer()));
+
+    assertThat(bytes.getInt(0)).isEqualTo(0);
   }
 
   @Test

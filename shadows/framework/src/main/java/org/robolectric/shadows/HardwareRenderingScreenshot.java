@@ -12,7 +12,6 @@ import android.graphics.HardwareRenderer;
 import android.graphics.PixelFormat;
 import android.graphics.RenderNode;
 import android.media.Image;
-import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.util.DisplayMetrics;
 import android.view.Surface;
@@ -105,8 +104,7 @@ public final class HardwareRenderingScreenshot {
         surface.unlockCanvasAndPost(canvas);
       }
       Image nativeImage = imageReader.acquireNextImage();
-      Plane[] planes = nativeImage.getPlanes();
-      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(nativeImage, destBitmap);
       surface.release();
     }
   }

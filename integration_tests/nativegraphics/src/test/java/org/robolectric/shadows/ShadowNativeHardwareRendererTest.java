@@ -25,9 +25,7 @@ import java.nio.IntBuffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.OsUtil;
 import org.robolectric.util.reflector.ForType;
 
 @Config(minSdk = Q)
@@ -89,11 +87,6 @@ public class ShadowNativeHardwareRendererTest {
     int ph = 470;
 
     try (ImageReader imageReader = ImageReader.newInstance(pw, ph, PixelFormat.RGBA_8888, 1)) {
-      // Note on pixel format:
-      // - ImageReader is configured as RGBA_8888 above.
-      // - However the native libs/hwui/pipeline/skia/SkiaHostPipeline.cpp always treats
-      //   the buffer as BGRA_8888 on Linux and Windows, or RGBA_8888 n Mac.
-
       HardwareRenderer renderer = new HardwareRenderer();
       RenderNode displayList = createDisplayList(pw, ph);
 
@@ -113,15 +106,9 @@ public class ShadowNativeHardwareRendererTest {
 
       // Check that the pixel at (0, 0) is white.
       assertThat(Integer.toHexString(dstImageData[0])).isEqualTo("ffffffff");
-      if (OsUtil.isMac() && RuntimeEnvironment.getApiLevel() < VANILLA_ICE_CREAM) {
-        // Check for red pixels in ABGR format on Mac for U and below.
-        assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ff0000ff");
-        assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ff0000ff");
-      } else {
-        // Check for red pixels in ARGB format on Linux/Windows, and for Mac for V and above.
-        assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ffff0000");
-        assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ffff0000");
-      }
+      // RGBA bytes read through a little-endian IntBuffer are ABGR.
+      assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ff0000ff");
+      assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ff0000ff");
       surface.release();
     }
   }
