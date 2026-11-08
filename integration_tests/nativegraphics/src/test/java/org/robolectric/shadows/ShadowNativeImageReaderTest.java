@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,11 +17,14 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Surface;
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /**
  * Test for {@link org.robolectric.shadows.ShadowNativeImageReader} and {@link
@@ -29,6 +33,7 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = P)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeImageReaderTest {
+  @Rule public SetSystemPropertyRule properties = new SetSystemPropertyRule();
 
   private static final int SX = 320;
   private static final int SY = 320;
@@ -105,10 +110,78 @@ public class ShadowNativeImageReaderTest {
       assertThat(image).isNotNull();
       Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
       Plane[] planes = image.getPlanes();
+      assertThat(planes[0].getBuffer().get(0) & 0xff).isEqualTo(255);
+      assertThat(planes[0].getBuffer().get(2) & 0xff).isEqualTo(0);
+      assertThat(image.getPlanes()[0].getBuffer()).isSameInstanceAs(planes[0].getBuffer());
       bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
       surface.release();
       assertThat(Integer.toHexString(bitmap.getPixel(50, 50)))
           .isEqualTo(Integer.toHexString(Color.RED));
+    }
+  }
+
+  @Test
+  public void imageReader_rawCopyPreservesPixelsAndPublicPlanes() {
+    try (ImageReader reader = ImageReader.newInstance(2, 2, PixelFormat.RGBA_8888, 1)) {
+      Surface surface = reader.getSurface();
+      try {
+        Canvas canvas = surface.lockHardwareCanvas();
+        canvas.drawColor(Color.RED);
+        surface.unlockCanvasAndPost(canvas);
+        try (Image image = reader.acquireNextImage()) {
+          ByteBuffer raw =
+              reflector(ShadowNativeImageReaderSurfaceImage.SurfaceImageReflector.class, image)
+                  .getPlanes()[0]
+                  .getBuffer();
+          int position = raw.position();
+          Bitmap bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+
+          ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(image, bitmap);
+
+          assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
+          assertThat(raw.position()).isEqualTo(position);
+          ByteBuffer rgba = image.getPlanes()[0].getBuffer();
+          assertThat(rgba.get(0) & 0xff).isEqualTo(255);
+          assertThat(rgba.get(2) & 0xff).isEqualTo(0);
+        }
+      } finally {
+        surface.release();
+      }
+    }
+  }
+
+  @Test
+  public void imageReader_rgbaPixelOrderDisabledUsesNativePlanes() {
+    properties.set("robolectric.useRgbaPixelOrder", "false");
+    try (ImageReader reader = ImageReader.newInstance(2, 2, PixelFormat.RGBA_8888, 1)) {
+      Surface surface = reader.getSurface();
+      try {
+        Canvas canvas = surface.lockHardwareCanvas();
+        canvas.drawColor(Color.RED);
+        surface.unlockCanvasAndPost(canvas);
+        try (Image image = reader.acquireNextImage()) {
+          ByteBuffer raw =
+              reflector(ShadowNativeImageReaderSurfaceImage.SurfaceImageReflector.class, image)
+                  .getPlanes()[0]
+                  .getBuffer();
+          ByteBuffer pixels = image.getPlanes()[0].getBuffer();
+          assertThat(pixels).isSameInstanceAs(raw);
+          Bitmap bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+
+          bitmap.copyPixelsFromBuffer(pixels.duplicate());
+
+          assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
+          ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(image, bitmap);
+          assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
+
+          properties.set("robolectric.useRgbaPixelOrder", "true");
+          ByteBuffer rgba = image.getPlanes()[0].getBuffer();
+          assertThat(rgba.get(0) & 0xff).isEqualTo(255);
+          assertThat(rgba.get(2) & 0xff).isEqualTo(0);
+        }
+      } finally {
+        surface.release();
+      }
     }
   }
 

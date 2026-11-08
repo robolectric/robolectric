@@ -11,7 +11,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.Image;
-import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
@@ -246,8 +245,7 @@ public class ShadowPixelCopy {
 
   private static void copyFromImageReader(ImageReader imageReader, Bitmap bitmap) {
     try (Image nativeImage = imageReader.acquireNextImage()) {
-      Plane[] planes = nativeImage.getPlanes();
-      bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(nativeImage, bitmap);
     }
   }
 
