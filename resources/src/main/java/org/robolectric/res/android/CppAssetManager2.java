@@ -1429,7 +1429,11 @@ public class CppAssetManager2 {
                     FilteredConfigGroup configGroup = impl.filtered_configs_.editItemAt(type_index);
                     // const auto iter_end = spec->types + spec->type_count;
                     //   for (auto iter = spec->types; iter != iter_end; ++iter) {
-                    for (ResTable_type iter : spec.types) {
+                    // A type with a mobile country code can't match a configuration without one,
+                    // so skip them all up front.
+                    ResTable_type[] types =
+                        configuration_.mcc == 0 ? spec.typesWithoutMcc : spec.types;
+                    for (ResTable_type iter : types) {
                       if (iter.config.match(configuration_)) {
                         ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
                         configGroup.configurations.add(this_config);

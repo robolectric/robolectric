@@ -108,6 +108,11 @@ public class LoadedArsc {
     // ResTable_type* types[0];
     ResTable_type[] types;
 
+    // The types whose configuration has no mobile country code, in the same order as types.
+    // Most of the framework's configurations are for specific mobile country codes, and they can't
+    // match a configuration without one.
+    ResTable_type[] typesWithoutMcc;
+
     int GetFlagsForEntryIndex(int entry_index) {
       if (entry_index >= dtohl(type_spec.entryCount)) {
         return 0;
@@ -214,6 +219,8 @@ public class LoadedArsc {
       for (int i = 0; i < type_spec.types.length; i++) {
         type_spec.types[i] = types_.get(i);
       }
+      type_spec.typesWithoutMcc =
+          types_.stream().filter(type -> type.config.mcc == 0).toArray(ResTable_type[]::new);
       return type_spec;
     }
 
