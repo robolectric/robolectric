@@ -119,6 +119,9 @@ public class ShadowTextToSpeech {
   @Implementation
   protected int speak(
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
+    if (shutdown) {
+      return TextToSpeech.ERROR;
+    }
     stopped = false;
     lastSpokenText = text.toString();
     spokenTextList.add(text.toString());
