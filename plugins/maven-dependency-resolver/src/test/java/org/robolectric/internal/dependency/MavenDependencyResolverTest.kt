@@ -17,6 +17,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import org.junit.Assert
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,16 +40,7 @@ class MavenDependencyResolverTest {
     localRepositoryDir.deleteOnExit()
     lockFile = File(localRepositoryDir, ".robolectric-download-lock")
     lockFile.deleteOnExit()
-    mavenArtifactFetcher =
-      TestMavenArtifactFetcher(
-        REPOSITORY_URL,
-        REPOSITORY_USERNAME,
-        REPOSITORY_PASSWORD,
-        PROXY_HOST,
-        PROXY_PORT,
-        localRepositoryDir,
-        executorService,
-      )
+    mavenArtifactFetcher = createFetcher(localRepositoryDir)
     mavenDependencyResolver = TestMavenDependencyResolver()
   }
 
@@ -82,6 +75,130 @@ class MavenDependencyResolverTest {
     checkConcurrentResolution(TestMavenDependencyResolver())
   }
 
+  @Test
+  fun localArtifactUrl_serializesConcurrentCallsForRepositoryAliases() {
+    val resolver =
+      object : TestMavenDependencyResolver() {
+        override fun getLocalRepositoryDir(): File =
+          File(this@MavenDependencyResolverTest.localRepositoryDir, ".")
+      }
+    checkConcurrentResolution(resolver)
+  }
+
+  @Test
+  fun localArtifactUrl_serializesConcurrentCallsForRepositorySymlinks() {
+    assumeFalse(System.getProperty("os.name").startsWith("Windows"))
+    val alias = File(localRepositoryDir.parentFile, "${localRepositoryDir.name}-alias")
+    java.nio.file.Files.createSymbolicLink(alias.toPath(), localRepositoryDir.toPath())
+    try {
+      val resolver =
+        object : TestMavenDependencyResolver() {
+          override fun getLocalRepositoryDir(): File = alias
+        }
+      checkConcurrentResolution(resolver)
+    } finally {
+      assertThat(alias.delete()).isTrue()
+    }
+  }
+
+  @Test
+  fun localArtifactUrl_differentRepositoriesCanDownloadConcurrently() {
+    val otherRepository = Files.createTempDir()
+    otherRepository.deleteOnExit()
+    val otherFetcher = createFetcher(otherRepository)
+    val otherResolver =
+      object : TestMavenDependencyResolver() {
+        override fun getLocalRepositoryDir(): File = otherRepository
+
+        override fun createMavenFetcher(
+          repositoryUrl: String?,
+          repositoryUserName: String?,
+          repositoryPassword: String?,
+          proxyHost: String?,
+          proxyPort: Int,
+          localRepositoryDir: File,
+          executorService: ExecutorService,
+        ): MavenArtifactFetcher = otherFetcher
+      }
+    val fetching = CountDownLatch(1)
+    val releaseFetch = CountDownLatch(1)
+    val callers = Executors.newFixedThreadPool(2)
+    mavenArtifactFetcher.beforeFetch = {
+      fetching.countDown()
+      check(releaseFetch.await(30, TimeUnit.SECONDS))
+    }
+    try {
+      val first =
+        callers.submit<URL> {
+          mavenDependencyResolver.getLocalArtifactUrl(successCases[0])
+        }
+      assertThat(fetching.await(10, TimeUnit.SECONDS)).isTrue()
+      val second =
+        callers.submit<URL> {
+          otherResolver.getLocalArtifactUrl(successCases[0])
+        }
+      val artifact = MavenJarArtifact(successCases[0])
+      assertThat(second.get(10, TimeUnit.SECONDS))
+        .isEqualTo(File(otherRepository, artifact.jarPath()).toURI().toURL())
+      assertThat(otherFetcher.numRequests).isEqualTo(4)
+      releaseFetch.countDown()
+      first.get(10, TimeUnit.SECONDS)
+      checkJarArtifact(artifact)
+    } finally {
+      releaseFetch.countDown()
+      callers.shutdownNow()
+      assertThat(callers.awaitTermination(10, TimeUnit.SECONDS)).isTrue()
+    }
+  }
+
+  @Test
+  fun localArtifactUrl_handlesPopulatedReadOnlyRepository() {
+    val artifact = MavenJarArtifact(successCases[0])
+    val jarFile = File(localRepositoryDir, artifact.jarPath())
+    Files.createParentDirs(jarFile)
+    Files.write("$artifact jar contents".toByteArray(StandardCharsets.UTF_8), jarFile)
+    try {
+      assumeTrue(localRepositoryDir.setWritable(false, false))
+      assumeFalse(localRepositoryDir.canWrite())
+
+      assertThat(mavenDependencyResolver.getLocalArtifactUrl(successCases[0]))
+        .isEqualTo(jarFile.toURI().toURL())
+      assertThat(mavenArtifactFetcher.numRequests).isEqualTo(0)
+      assertThat(lockFile.exists()).isFalse()
+      Assert.assertThrows(IllegalStateException::class.java) {
+        mavenDependencyResolver.getLocalArtifactUrls(successCases[0], successCases[1])
+      }
+    } finally {
+      assertThat(localRepositoryDir.setWritable(true, false)).isTrue()
+    }
+  }
+
+  @Test
+  fun localArtifactUrl_handlesPopulatedRepositoryWithReadOnlyLockFile() {
+    val url = mavenDependencyResolver.getLocalArtifactUrl(successCases[0])
+    try {
+      assertThat(localRepositoryDir.canWrite()).isTrue()
+      assumeTrue(lockFile.setWritable(false, false))
+      assumeFalse(lockFile.canWrite())
+
+      assertThat(mavenDependencyResolver.getLocalArtifactUrl(successCases[0])).isEqualTo(url)
+      assertThat(mavenArtifactFetcher.numRequests).isEqualTo(4)
+      Assert.assertThrows(IllegalStateException::class.java) {
+        mavenDependencyResolver.getLocalArtifactUrls(successCases[0], successCases[1])
+      }
+    } finally {
+      assertThat(lockFile.setWritable(true, false)).isTrue()
+    }
+  }
+
+  @Test
+  fun localArtifactUrl_createsMissingRepositoryDirectory() {
+    assertThat(localRepositoryDir.delete()).isTrue()
+    mavenDependencyResolver.getLocalArtifactUrl(successCases[0])
+    assertThat(lockFile.exists()).isTrue()
+    checkJarArtifact(MavenJarArtifact(successCases[0]))
+  }
+
   private fun checkConcurrentResolution(secondResolver: MavenDependencyResolver) {
     val fetching = CountDownLatch(1)
     val releaseFetch = CountDownLatch(1)
@@ -105,7 +222,8 @@ class MavenDependencyResolverTest {
       assertThat(secondStarted.await(10, TimeUnit.SECONDS)).isTrue()
       Assert.assertThrows(TimeoutException::class.java) { second.get(100, TimeUnit.MILLISECONDS) }
       releaseFetch.countDown()
-      assertThat(second.get(10, TimeUnit.SECONDS)).isEqualTo(first.get(10, TimeUnit.SECONDS))
+      assertThat(File(second.get(10, TimeUnit.SECONDS).toURI()).canonicalFile)
+        .isEqualTo(File(first.get(10, TimeUnit.SECONDS).toURI()).canonicalFile)
       assertThat(mavenArtifactFetcher.numRequests).isEqualTo(4)
       checkJarArtifact(MavenJarArtifact(successCases[0]))
       assertThat(lockFile.exists()).isTrue()
@@ -194,7 +312,20 @@ class MavenDependencyResolverTest {
     }
   }
 
-  internal inner class TestMavenDependencyResolver : MavenDependencyResolver() {
+  private fun createFetcher(repositoryDir: File) =
+    TestMavenArtifactFetcher(
+      REPOSITORY_URL,
+      REPOSITORY_USERNAME,
+      REPOSITORY_PASSWORD,
+      PROXY_HOST,
+      PROXY_PORT,
+      repositoryDir,
+      executorService,
+    )
+
+  internal open inner class TestMavenDependencyResolver : MavenDependencyResolver() {
+    override fun getLocalRepositoryDir(): File = this@MavenDependencyResolverTest.localRepositoryDir
+
     override fun createMavenFetcher(
       repositoryUrl: String?,
       repositoryUserName: String?,
@@ -209,10 +340,6 @@ class MavenDependencyResolverTest {
 
     override fun createExecutorService(): ExecutorService {
       return executorService
-    }
-
-    override fun createLockFile(): File {
-      return lockFile
     }
   }
 
