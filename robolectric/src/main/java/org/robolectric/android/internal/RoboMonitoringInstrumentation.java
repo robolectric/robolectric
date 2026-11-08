@@ -30,6 +30,7 @@ import androidx.test.runner.lifecycle.ApplicationLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.ApplicationStage;
 import androidx.test.runner.lifecycle.Stage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
+import org.robolectric.shadows.ShadowResources;
 
 /**
  * A Robolectric instrumentation that acts like a slimmed down {@link
@@ -62,6 +64,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       new ApplicationLifecycleMonitorImpl();
   private final IntentMonitorImpl intentMonitor = new IntentMonitorImpl();
   private final List<ActivityController<?>> createdActivities = new ArrayList<>();
+  private final Set<ShadowResources> configurationChangeResources = new HashSet<>();
+  private final ShadowResources.OnConfigurationChangeListener configurationChangeListener =
+      this::updateConfiguration;
 
   private final AtomicBoolean attachedConfigListener = new AtomicBoolean();
 
@@ -122,7 +127,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       // To avoid infinite recursion listen to the system resources, this will be updated before
       // the application resources but because activities use the application resources they will
       // get updated by the first activity (via updateConfiguration).
-      shadowOf(Resources.getSystem()).addConfigurationChangeListener(this::updateConfiguration);
+      addConfigurationChangeListener(Resources.getSystem());
     }
 
     AtomicReference<ActivityController<? extends Activity>> activityControllerReference =
@@ -155,7 +160,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   @Override
   public void callApplicationOnCreate(Application app) {
     if (willCreateActivityContexts()) {
-      shadowOf(app.getResources()).addConfigurationChangeListener(this::updateConfiguration);
+      addConfigurationChangeListener(app.getResources());
     }
     applicationMonitor.signalLifecycleChange(app, ApplicationStage.PRE_ON_CREATE);
     super.callApplicationOnCreate(app);
@@ -406,7 +411,14 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   }
 
   @Override
-  public void finish(int resultCode, Bundle bundle) {}
+  public void finish(int resultCode, Bundle bundle) {
+    for (ShadowResources resources : configurationChangeResources) {
+      resources.removeConfigurationChangeListener(configurationChangeListener);
+    }
+    configurationChangeResources.clear();
+    createdActivities.clear();
+    attachedConfigListener.set(false);
+  }
 
   @Override
   public Context getTargetContext() {
@@ -416,6 +428,12 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   @Override
   public Context getContext() {
     return RuntimeEnvironment.getApplication();
+  }
+
+  private void addConfigurationChangeListener(Resources resources) {
+    ShadowResources shadowResources = shadowOf(resources);
+    shadowResources.addConfigurationChangeListener(configurationChangeListener);
+    configurationChangeResources.add(shadowResources);
   }
 
   private void updateConfiguration(

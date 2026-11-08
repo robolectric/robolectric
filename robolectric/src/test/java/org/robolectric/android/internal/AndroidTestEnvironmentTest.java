@@ -6,13 +6,17 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.ConscryptMode.Mode.OFF;
 import static org.robolectric.annotation.ConscryptMode.Mode.ON;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -49,6 +53,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.LooperMode;
@@ -62,6 +67,7 @@ import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationIm
 import org.robolectric.plugins.StubSdk;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
@@ -238,6 +244,54 @@ public class AndroidTestEnvironmentTest {
         };
     bootstrapWrapper.tearDownApplication();
     assertThat(events).containsExactly("terminated");
+  }
+
+  @Test
+  public void tearDownApplication_detachesSystemResourceListener() {
+    checkConfigurationListenerRemovedAfterFailedRecreation();
+  }
+
+  @Test
+  public void tearDownApplication_detachesSystemResourceListener_legacyConfigurationChanges() {
+    setSystemPropertyRule.set("robolectric.configurationChangeFix", "false");
+    checkConfigurationListenerRemovedAfterFailedRecreation();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void tearDownApplication_detachesActivityResourceListener() {
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+    checkConfigurationListenerRemovedAfterFailedRecreation();
+  }
+
+  private void checkConfigurationListenerRemovedAfterFailedRecreation() {
+    bootstrapWrapper.callSetUpApplicationState();
+    RoboMonitoringInstrumentation instrumentation =
+        (RoboMonitoringInstrumentation) ShadowInstrumentation.getInstrumentation();
+    shadowOf(RuntimeEnvironment.getApplication().getPackageManager())
+        .addActivityIfNotPresent(
+            new ComponentName(RuntimeEnvironment.getApplication(), FailingAttachActivity.class));
+    ActivityController<?> controller =
+        instrumentation.startActivitySyncInternal(
+            new Intent(RuntimeEnvironment.getApplication(), FailingAttachActivity.class));
+    Resources retainedResources =
+        Boolean.getBoolean("robolectric.createActivityContexts")
+            ? RuntimeEnvironment.getApplication().getResources()
+            : Resources.getSystem();
+    FailingAttachActivity.failAttach = true;
+    try {
+      assertThrows(IllegalStateException.class, controller::recreate);
+      bootstrapWrapper.tearDownApplication();
+      bootstrapWrapper.resetState();
+      bootstrapWrapper.callSetUpApplicationState();
+      // Retained resources must not notify the previous instrumentation.
+      retainedResources.updateConfiguration(
+          Resources.getSystem().getConfiguration(), Resources.getSystem().getDisplayMetrics());
+
+      assertThat(RuntimeEnvironment.getApplication().getBaseContext()).isNotNull();
+    } finally {
+      FailingAttachActivity.failAttach = false;
+    }
   }
 
   @Test
@@ -425,6 +479,18 @@ public class AndroidTestEnvironmentTest {
         return -1;
       }
       return cursor.getCount();
+    }
+  }
+
+  public static class FailingAttachActivity extends Activity {
+    static boolean failAttach;
+
+    @Override
+    protected void attachBaseContext(Context base) {
+      if (failAttach) {
+        throw new IllegalStateException("Activity attachment failed");
+      }
+      super.attachBaseContext(base);
     }
   }
 
