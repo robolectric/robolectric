@@ -87,10 +87,13 @@ public class AppLoader implements Runnable {
 
     Objects.requireNonNull(activityInfo);
     Objects.requireNonNull(activityInfo.name);
+    // An activity alias names the alias, not a class; launch the activity it targets.
+    String activityClassName =
+        activityInfo.targetActivity != null ? activityInfo.targetActivity : activityInfo.name;
     // Start the main Activity
     try {
       Class<? extends Activity> activityClass =
-          Class.forName(activityInfo.name).asSubclass(Activity.class);
+          Class.forName(activityClassName).asSubclass(Activity.class);
       new Simulator(activityClass).start();
     } catch (Exception e) {
       throw new RuntimeException(e);
