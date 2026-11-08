@@ -8,6 +8,8 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -16,11 +18,15 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
@@ -39,6 +45,29 @@ public final class FakeMediaProviderTest {
 
     assertThat(savedImageUri).isNotNull();
     assertThat(queryImages(null)).containsExactly(savedImageUri);
+  }
+
+  @Test
+  public void getType_closesCursor() throws Exception {
+    FakeMediaProvider provider =
+        Robolectric.setupContentProvider(FakeMediaProvider.class, MediaStore.AUTHORITY);
+    Uri imageUri = saveImageToMediaStore();
+    Supplier<SQLiteDatabase> dbSupplier = ReflectionHelpers.getField(provider, "dbSupplier");
+    AtomicReference<Cursor> queryCursor = new AtomicReference<>();
+    ReflectionHelpers.setField(
+        dbSupplier.get(),
+        "mCursorFactory",
+        (SQLiteDatabase.CursorFactory)
+            (database, driver, editTable, query) -> {
+              Cursor cursor = new SQLiteCursor(driver, editTable, query);
+              queryCursor.set(cursor);
+              return cursor;
+            });
+
+    ContentResolver resolver = ApplicationProvider.getApplicationContext().getContentResolver();
+    assertThat(resolver.getType(imageUri)).isEqualTo("image/jpeg");
+    assertThat(queryCursor.get()).isNotNull();
+    assertThat(queryCursor.get().isClosed()).isTrue();
   }
 
   @Test

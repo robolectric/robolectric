@@ -286,8 +286,10 @@ public final class FakeMediaProvider extends ContentProvider {
   }
 
   private String queryForType(Uri url) {
-    Cursor cursor = queryForSingleItem(url, new String[] {MediaColumns.MIME_TYPE}, null, null);
-    return cursor.getString(0);
+    try (Cursor cursor =
+        queryForSingleItem(url, new String[] {MediaColumns.MIME_TYPE}, null, null)) {
+      return cursor.getString(0);
+    }
   }
 
   private Cursor queryForSingleItem(
