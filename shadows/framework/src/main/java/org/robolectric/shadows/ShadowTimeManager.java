@@ -50,6 +50,9 @@ public class ShadowTimeManager {
       "configure_notifications_enabled_capability";
   public static final String CONFIGURE_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_CAPABILITY =
       "configure_time_zone_offset_change_notifications_enabled_capability";
+  public static final String
+      CONFIGURE_HOME_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_CAPABILITY =
+          "configure_home_time_zone_offset_change_notifications_enabled_capability";
 
   // Time capability constants
   public static final String CONFIGURE_TIME_AUTO_DETECTION_ENABLED_CAPABILITY =
@@ -117,6 +120,9 @@ public class ShadowTimeManager {
         break;
       case CONFIGURE_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_CAPABILITY:
         builder.setConfigureTimeZoneOffsetChangeNotificationsEnabledCapability(value);
+        break;
+      case CONFIGURE_HOME_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_CAPABILITY:
+        builder.setConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability(value);
         break;
       default:
         throw new IllegalArgumentException("Unrecognized time zone capability=" + capability);
@@ -364,6 +370,8 @@ public class ShadowTimeManager {
         .setConfigureGeoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
         .setConfigureNotificationsEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
         .setConfigureTimeZoneOffsetChangeNotificationsEnabledCapability(
+            Capabilities.CAPABILITY_POSSESSED)
+        .setConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability(
             Capabilities.CAPABILITY_POSSESSED)
         .setUseLocationEnabled(true)
         .setSetManualTimeZoneCapability(Capabilities.CAPABILITY_POSSESSED)
