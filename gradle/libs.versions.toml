@@ -4,7 +4,7 @@ robolectric-nativeruntime-dist-compat = "1.0.20"
 # https://developer.android.com/studio/releases
 android-gradle = "9.5.1"
 
-android-tools-common = "32.5.0"
+android-tools-common = "32.5.1"
 
 # The runtime dependency for Android classes when Robolectric tests are run
 androidstubs = "36"
