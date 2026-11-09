@@ -11,6 +11,17 @@ dependencyResolutionManagement {
   repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
 
   repositories {
+    // The android-all jars are hundreds of MB each, and CI downloads them on every run. Maven
+    // Central rate limits them with 429 responses when many jobs run at once, so get them from
+    // Google's mirror of Maven Central first. The mirror syncs about once a day, so a jar it
+    // doesn't have yet is still found on Maven Central after the mirror returns a 404.
+    maven("https://maven-central.storage-download.googleapis.com/maven2/") {
+      name = "MavenCentralGoogleMirror"
+      content {
+        includeModule("org.robolectric", "android-all")
+        includeModule("org.robolectric", "android-all-instrumented")
+      }
+    }
     google()
     mavenCentral()
   }
