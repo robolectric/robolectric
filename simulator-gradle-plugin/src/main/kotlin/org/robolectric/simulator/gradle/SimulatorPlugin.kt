@@ -89,6 +89,7 @@ class SimulatorPlugin : Plugin<Project> {
         "-Drobolectric.logging=stdout",
         "-Drobolectric.createActivityContexts=true",
         "-Drobolectric.useEmbeddedViewRoot=true",
+        "-Drobolectric.windowManager.useRequestedSize=true",
       )
 
     task.apply {
