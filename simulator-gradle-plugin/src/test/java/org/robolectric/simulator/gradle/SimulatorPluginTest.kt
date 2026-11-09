@@ -129,6 +129,17 @@ class SimulatorPluginTest {
     assertThat(simulateJvmArgs(result)).containsAtLeast("-Xms512m", "-Xmx3g")
   }
 
+  @Test
+  fun simulate_respectsTheRequestedWindowSize() {
+    val project = AndroidTestProject(tempFolder.root, extraBuildScript = PRINT_SIMULATE_JVM_ARGS)
+
+    val result = project.build("printSimulateJvmArgs")
+
+    // Without it, dialogs and other windows that don't fill the screen are drawn at the top left.
+    assertThat(simulateJvmArgs(result))
+      .contains("-Drobolectric.windowManager.useRequestedSize=true")
+  }
+
   private fun simulateJvmArgs(result: BuildResult): List<String> =
     result.output
       .lines()
