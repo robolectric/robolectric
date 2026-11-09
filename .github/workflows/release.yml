@@ -320,8 +320,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-26-intel, windows-latest]
-    runs-on: ${{ matrix.os }}
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-latest-x64, windows-latest]
+        include:
+          # An x64 JDK on an arm64 Mac runs under Rosetta 2 and loads the x86_64 native libraries.
+          - os: macos-latest-x64
+            runs-on: macos-latest
+            java-architecture: x64
+    runs-on: ${{ matrix.runs-on || matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -331,8 +336,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version-file: .github/.java-version
-          # The Intel macOS image ships an older JDK.
-          check-latest: true
+          # Empty, so the runner's architecture, except for the Rosetta 2 job.
+          architecture: ${{ matrix.java-architecture }}
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
