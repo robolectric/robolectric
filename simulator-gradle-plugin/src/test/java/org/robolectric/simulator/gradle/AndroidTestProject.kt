@@ -7,12 +7,13 @@ import org.gradle.testkit.runner.GradleRunner
 /**
  * A minimal Android app project in [dir] that applies the simulator plugin, for Gradle TestKit
  * tests. [appBuildScript] holds extra configuration for the app module's `android` block, such as
- * product flavors.
+ * product flavors, and [extraBuildScript] extra top-level code for the app module's build script.
  */
 internal class AndroidTestProject(
   private val dir: File,
   appBuildScript: String = "",
   includeAndroidResources: Boolean = true,
+  extraBuildScript: String = "",
 ) {
   init {
     dir
@@ -46,6 +47,7 @@ internal class AndroidTestProject(
       }
 
       dependencies { testImplementation("org.robolectric:robolectric:4.17") }
+      $extraBuildScript
       """
           .trimIndent(),
       )

@@ -1,6 +1,7 @@
 package org.robolectric.simulator.gradle
 
 import com.google.common.truth.Truth.assertThat
+import org.gradle.testkit.runner.BuildResult
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -98,7 +99,46 @@ class SimulatorPluginTest {
     assertThat(result.output).contains("isIncludeAndroidResources")
   }
 
+  @Test
+  fun simulate_usesTheHeapSizeOfTheUnitTests() {
+    val project =
+      AndroidTestProject(
+        tempFolder.root,
+        appBuildScript =
+          """
+          testOptions.unitTests.all {
+            it.minHeapSize = "512m"
+            it.maxHeapSize = "3g"
+          }
+          """,
+        extraBuildScript = PRINT_SIMULATE_JVM_ARGS,
+      )
+
+    val result = project.build("printSimulateJvmArgs")
+
+    assertThat(simulateJvmArgs(result)).containsAtLeast("-Xms512m", "-Xmx3g")
+  }
+
+  private fun simulateJvmArgs(result: BuildResult): List<String> =
+    result.output
+      .lines()
+      .filter { it.startsWith(SIMULATE_JVM_ARG_PREFIX) }
+      .map { it.removePrefix(SIMULATE_JVM_ARG_PREFIX) }
+
   private companion object {
+    const val SIMULATE_JVM_ARG_PREFIX = "simulateDebug JVM arg: "
+
+    // Prints the JVM arguments of the simulate task, which --dry-run does not show.
+    const val PRINT_SIMULATE_JVM_ARGS =
+      """
+      tasks.register("printSimulateJvmArgs") {
+        doLast {
+          val jvmArgs = tasks.named<JavaExec>("simulateDebug").get().allJvmArgs
+          jvmArgs.forEach { println("$SIMULATE_JVM_ARG_PREFIX" + it) }
+        }
+      }
+      """
+
     const val FLAVORS =
       """
       flavorDimensions += "env"
