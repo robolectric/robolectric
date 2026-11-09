@@ -32,13 +32,17 @@ jobs:
       fail-fast: false
       matrix:
         device: [
-          macos-26-intel, # Tests Mac x86_64
           macos-latest, # Tests Mac arm64
+          macos-latest-x64, # Tests Mac x86_64, on Apple Silicon under Rosetta 2
           ubuntu-latest, # Tests Linux x86_64
           ubuntu-24.04-arm, # Tests Linux arm64
           windows-latest, # Tests Windows x86_64
         ]
         include:
+          # An x64 JDK on an arm64 Mac runs under Rosetta 2 and loads the x86_64 native libraries.
+          - device: macos-latest-x64
+            runs-on: macos-latest
+            java-architecture: x64
           # Linux arm64 runs the native graphics tests on every SDK from O.
           - device: ubuntu-24.04-arm
             setup-android-sdk: true
@@ -48,7 +52,7 @@ jobs:
             gradle-tasks: ':integration_tests:nativegraphics:testDebugUnitTest'
 
     name: Native Tests
-    runs-on: ${{ matrix.device }}
+    runs-on: ${{ matrix.runs-on || matrix.device }}
 
     steps:
       - name: Checkout
@@ -62,6 +66,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version-file: .github/.java-version
+          # Empty, so the runner's architecture, except for the Rosetta 2 job.
+          architecture: ${{ matrix.java-architecture }}
+
+      - name: Check that Java runs under Rosetta 2
+        if: matrix.java-architecture == 'x64'
+        run: |
+          test "$(uname -m)" = arm64
+          java -XshowSettings:properties -version 2>&1 | grep 'os.arch = x86_64'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
