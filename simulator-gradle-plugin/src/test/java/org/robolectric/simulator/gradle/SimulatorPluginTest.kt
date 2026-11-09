@@ -48,6 +48,30 @@ class SimulatorPluginTest {
   }
 
   @Test
+  fun simulate_usesTheSimulatorOfTheRobolectricVersionInTestImplementation() {
+    val project = AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS)
+    // The plugin adds the simulator dependency when the simulate task is configured, so print the
+    // classpath that task runs with rather than a dependency report that doesn't configure it.
+    tempFolder.root
+      .resolve("app/build.gradle.kts")
+      .appendText(
+        """
+
+        tasks.register("printSimulateClasspath") {
+          val classpath = tasks.named<JavaExec>("simulateDemoDebug").map { it.classpath }
+          doLast { classpath.get().forEach { println("Simulate classpath: " + it.name) } }
+        }
+        """
+          .trimIndent(),
+      )
+
+    val result = project.build("printSimulateClasspath")
+
+    assertThat(result.output).contains("Simulate classpath: simulator-4.17.jar")
+    assertThat(result.output).doesNotContain("No compatible Robolectric version found")
+  }
+
+  @Test
   fun simulate_variantWithoutUnitTests_explainsWhy() {
     val project = AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS)
 
