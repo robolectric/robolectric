@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.RuntimeShader;
+import java.util.Arrays;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -26,6 +27,21 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowNativeRuntimeShader {
 
   @RealObject RuntimeShader runtimeShader;
+
+  /**
+   * Returns whether the scalar and int[] uniform setters on SDK 33 and 34 forward their values to
+   * native code. They used to be no-ops, which left those uniforms uninitialized.
+   *
+   * <p>This is a temporary opt-out to allow teams to migrate slowly: forwarding the uniforms
+   * changes how Material ripples are drawn, which affects screenshot tests whose goldens were
+   * recorded with the uniforms unset. Turn it off with {@code
+   * -Drobolectric.runtimeShaderScalarUniform=false}. This property will be removed in a future
+   * release.
+   */
+  private static boolean forwardScalarUniforms() {
+    return Boolean.parseBoolean(
+        System.getProperty("robolectric.runtimeShaderScalarUniform", "true"));
+  }
 
   private static final String RIPPLE_SHADER_UNIFORMS_31 =
       "uniform vec2 in_origin;\n"
@@ -191,13 +207,26 @@ public class ShadowNativeRuntimeShader {
       float value3,
       float value4,
       int count) {
-    // no-op
+    if (!forwardScalarUniforms()) {
+      return;
+    }
+    float[] values = {value1, value2, value3, value4};
+    nativeUpdateUniforms(shaderBuilder, uniformName, Arrays.copyOf(values, count));
   }
 
   @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder, String uniformName, int[] uniforms) {
-    // no-op
+    if (!forwardScalarUniforms()) {
+      return;
+    }
+    // The native code from S only has a float[] setter, which copies the values into the uniform
+    // as raw bytes. Passing the bits of each int as a float sets an int uniform the same way.
+    float[] values = new float[uniforms.length];
+    for (int i = 0; i < uniforms.length; i++) {
+      values[i] = Float.intBitsToFloat(uniforms[i]);
+    }
+    nativeUpdateUniforms(shaderBuilder, uniformName, values);
   }
 
   @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
@@ -209,7 +238,11 @@ public class ShadowNativeRuntimeShader {
       int value3,
       int value4,
       int count) {
-    // no-op
+    if (!forwardScalarUniforms()) {
+      return;
+    }
+    int[] values = {value1, value2, value3, value4};
+    nativeUpdateUniforms(shaderBuilder, uniformName, Arrays.copyOf(values, count));
   }
 
   @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
