@@ -56,6 +56,10 @@ public class AppLoader implements Runnable {
   @Override
   public void run() {
     Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+    // Android always has a default handler, and apps' crash reporters wrap it. Install it before
+    // the Application is created. A crash on another thread ends the simulator, like a crash on
+    // the main thread does.
+    SimulatorUncaughtExceptionHandler.installIfNone(() -> System.exit(1));
 
     AndroidManifest manifest = new AndroidManifest(null, null, null, null, "", this.apkPath);
 
