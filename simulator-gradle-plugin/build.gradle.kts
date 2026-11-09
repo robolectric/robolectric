@@ -47,7 +47,6 @@ val testKitAndroidGradlePlugin by configurations.creating
 
 dependencies {
   compileOnly(libs.android.gradle.api)
-  implementation(libs.kotlin.stdlib)
 
   testImplementation(gradleTestKit())
   testImplementation(libs.junit4)
@@ -60,6 +59,17 @@ dependencies {
 tasks.pluginUnderTestMetadata { pluginClasspath.from(testKitAndroidGradlePlugin) }
 
 tasks.test {
+  // PublicationTest checks the Gradle module metadata that gets published for the plugin.
+  val moduleMetadata =
+    tasks.named<GenerateModuleMetadata>("generateMetadataFileForPluginMavenPublication")
+  val moduleMetadataFile = moduleMetadata.flatMap { it.outputFile }
+  inputs.file(moduleMetadataFile).withPropertyName("moduleMetadata")
+  jvmArgumentProviders.add(
+    CommandLineArgumentProvider {
+      listOf("-Dsimulator.plugin.moduleMetadata=${moduleMetadataFile.get().asFile.path}")
+    },
+  )
+
   // The TestKit builds need an Android SDK, from ANDROID_HOME or the root local.properties.
   val localProperties = rootProject.file("local.properties")
   if (localProperties.exists()) {
