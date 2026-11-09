@@ -146,6 +146,33 @@ public class ShadowNativeRuntimeShaderTest {
     assertThat(Integer.toHexString(drawPixel(shader))).isEqualTo(Integer.toHexString(Color.WHITE));
   }
 
+  @Config(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
+  @Test
+  public void scalarUniforms_optedOut_areNotUsedByShader() {
+    RuntimeShader shader =
+        new RuntimeShader(
+            "uniform float in_red;\n"
+                + "uniform int in_alpha;\n"
+                + "half4 main(float2 p) {\n"
+                + "  return half4(in_red, in_red, in_red, half(in_alpha));\n"
+                + "}");
+    shader.setFloatUniform("in_red", new float[] {0});
+    shader.setIntUniform("in_alpha", new int[] {0});
+
+    System.setProperty("robolectric.runtimeShaderScalarUniform", "false");
+    try {
+      shader.setFloatUniform("in_red", 1);
+      shader.setIntUniform("in_alpha", 1);
+      shader.setIntUniform("in_alpha", new int[] {1});
+    } finally {
+      System.clearProperty("robolectric.runtimeShaderScalarUniform");
+    }
+
+    // The setters did nothing, so the uniforms keep the values from the float[] setter.
+    assertThat(Integer.toHexString(drawPixel(shader)))
+        .isEqualTo(Integer.toHexString(Color.TRANSPARENT));
+  }
+
   /** Draws {@code shader} with hardware rendering, which RuntimeShader requires from T. */
   private static int drawPixel(RuntimeShader shader) {
     try (ImageReader imageReader = ImageReader.newInstance(1, 1, PixelFormat.RGBA_8888, 1)) {
