@@ -22,14 +22,17 @@ class SimulatorPlugin : Plugin<Project> {
   }
 
   override fun apply(project: Project) {
-    project.extensions.configure<ApplicationAndroidComponentsExtension> {
-      onVariants { variant ->
-        val variantName = variant.name.replaceFirstChar { it.uppercase() }
+    // The Android plugin may be applied after this one, so wait for it to add its extension.
+    project.pluginManager.withPlugin("com.android.application") {
+      project.extensions.configure<ApplicationAndroidComponentsExtension> {
+        onVariants { variant ->
+          val variantName = variant.name.replaceFirstChar { it.uppercase() }
 
-        project.tasks.register<JavaExec>("simulate$variantName") {
-          group = "simulation"
-          description = "Runs the Robolectric simulator for the $variantName variant"
-          configureTask(project, this, variantName)
+          project.tasks.register<JavaExec>("simulate$variantName") {
+            group = "simulation"
+            description = "Runs the Robolectric simulator for the $variantName variant"
+            configureTask(project, this, variantName)
+          }
         }
       }
     }
