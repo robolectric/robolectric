@@ -1,8 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.os.Parcel;
 import android.view.Surface;
@@ -12,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = O)
@@ -42,6 +48,21 @@ public class ShadowNativeSurfaceTest {
     surface.release();
   }
 
+  /** This test simulates what occurs in View#startDragAndDrop. */
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void copyFrom_surfaceControl_lockHardwareCanvas() {
+    SurfaceControl control =
+        new SurfaceControl.Builder().setName("test").setBufferSize(100, 100).build();
+    Surface surface = Shadow.newInstanceOf(Surface.class);
+    reflector(SurfaceReflector.class, surface).copyFrom(control);
+    assertThat(surface.isValid()).isTrue();
+    Canvas canvas = surface.lockHardwareCanvas();
+    canvas.drawColor(Color.RED);
+    surface.unlockCanvasAndPost(canvas);
+    surface.release();
+  }
+
   @Test
   public void surface_toFromParcel_doesNotThrow() {
     Surface surface = Shadow.newInstanceOf(Surface.class);
@@ -50,5 +71,10 @@ public class ShadowNativeSurfaceTest {
     surface.writeToParcel(parcel, /* flags= */ 0);
     parcel.setDataPosition(0);
     surface.readFromParcel(parcel);
+  }
+
+  @ForType(Surface.class)
+  interface SurfaceReflector {
+    void copyFrom(SurfaceControl other);
   }
 }

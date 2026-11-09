@@ -49,6 +49,7 @@ import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.View;
+import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
@@ -73,6 +74,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowInsetsState.InsetsStateReflector;
+import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -230,6 +232,9 @@ public class ShadowWindowManagerGlobal {
 
     @Accessor("mViews")
     List<View> getWindowViews();
+
+    @Accessor("mRoots")
+    List<ViewRootImpl> getRoots();
   }
 
   @ForType(className = "android.view.AddWindowResult")
@@ -379,6 +384,16 @@ public class ShadowWindowManagerGlobal {
         } else {
           surfaceControl = findFirstOpt(SurfaceControl.class, args).orElse(null);
         }
+        if (surfaceControl == null && sdk >= CINNAMON_BUN) {
+          // On CINNAMON_BUN+ ViewRootImpl only passes its SurfaceControl when the window is
+          // visible, and destroys its Surface after relayout if the SurfaceControl is invalid.
+          // Initialize it anyway so windows that aren't marked visible keep a valid Surface, as
+          // on earlier SDKs.
+          SurfaceControl rootSurfaceControl = findViewRootSurfaceControl((IWindow) args[0]);
+          if (rootSurfaceControl != null && !rootSurfaceControl.isValid()) {
+            surfaceControl = rootSurfaceControl;
+          }
+        }
         if (surfaceControl != null) {
           Shadow.<ShadowSurfaceControl>extract(surfaceControl).initializeNativeObject();
         }
@@ -434,6 +449,21 @@ public class ShadowWindowManagerGlobal {
       }
 
       return inTouchMode ? RELAYOUT_RES_IN_TOUCH_MODE : 0;
+    }
+
+    /** Returns the SurfaceControl of the ViewRootImpl that owns {@code window}, if any. */
+    @Nullable
+    private static SurfaceControl findViewRootSurfaceControl(IWindow window) {
+      List<ViewRootImpl> roots =
+          reflector(WindowManagerGlobalReflector.class, WindowManagerGlobal.getInstance())
+              .getRoots();
+      for (ViewRootImpl root : roots) {
+        ViewRootImplReflector rootReflector = reflector(ViewRootImplReflector.class, root);
+        if (window.equals(rootReflector.getWindow())) {
+          return rootReflector.getSurfaceControl();
+        }
+      }
+      return null;
     }
 
     private void configureWindowFrames(
