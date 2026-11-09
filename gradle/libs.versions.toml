@@ -43,7 +43,7 @@ kotlinx-coroutines = '1.11.0'
 molecule = "2.1.0"
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-spotless-gradle = "8.10.4"
+spotless-gradle = "8.11.0"
 
 # https://detekt.dev/changelog
 detekt-gradle = "2.0.0-alpha.6"
