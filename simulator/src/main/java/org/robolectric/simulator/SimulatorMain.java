@@ -29,13 +29,13 @@ public final class SimulatorMain {
       extraClasspathEntries.add(Path.of(args[i]));
     }
 
-    final AndroidSandbox androidSandbox =
-        SandboxBuilder.newBuilder()
-            .addClasspathEntries(extraClasspathEntries)
-            .setSdkVersion(getSdkVersion())
-            .build();
-
     try {
+      final AndroidSandbox androidSandbox =
+          SandboxBuilder.newBuilder()
+              .addClasspathEntries(extraClasspathEntries)
+              .setSdkVersion(getSdkVersion())
+              .build();
+
       androidSandbox.runOnMainThread(() -> {
         try {
           Class<?> appLoaderClass = androidSandbox.bootstrappedClass(AppLoader.class);
