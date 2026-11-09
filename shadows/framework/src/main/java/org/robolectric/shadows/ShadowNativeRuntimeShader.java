@@ -28,6 +28,21 @@ public class ShadowNativeRuntimeShader {
 
   @RealObject RuntimeShader runtimeShader;
 
+  /**
+   * Returns whether the scalar and int[] uniform setters on SDK 33 and 34 forward their values to
+   * native code. They used to be no-ops, which left those uniforms uninitialized.
+   *
+   * <p>This is a temporary opt-out to allow teams to migrate slowly: forwarding the uniforms
+   * changes how Material ripples are drawn, which affects screenshot tests whose goldens were
+   * recorded with the uniforms unset. Turn it off with {@code
+   * -Drobolectric.runtimeShaderScalarUniform=false}. This property will be removed in a future
+   * release.
+   */
+  private static boolean forwardScalarUniforms() {
+    return Boolean.parseBoolean(
+        System.getProperty("robolectric.runtimeShaderScalarUniform", "true"));
+  }
+
   private static final String RIPPLE_SHADER_UNIFORMS_31 =
       "uniform vec2 in_origin;\n"
           + "uniform vec2 in_touch;\n"
@@ -192,6 +207,9 @@ public class ShadowNativeRuntimeShader {
       float value3,
       float value4,
       int count) {
+    if (!forwardScalarUniforms()) {
+      return;
+    }
     float[] values = {value1, value2, value3, value4};
     nativeUpdateUniforms(shaderBuilder, uniformName, Arrays.copyOf(values, count));
   }
@@ -199,6 +217,9 @@ public class ShadowNativeRuntimeShader {
   @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder, String uniformName, int[] uniforms) {
+    if (!forwardScalarUniforms()) {
+      return;
+    }
     // The native code from S only has a float[] setter, which copies the values into the uniform
     // as raw bytes. Passing the bits of each int as a float sets an int uniform the same way.
     float[] values = new float[uniforms.length];
@@ -217,6 +238,9 @@ public class ShadowNativeRuntimeShader {
       int value3,
       int value4,
       int count) {
+    if (!forwardScalarUniforms()) {
+      return;
+    }
     int[] values = {value1, value2, value3, value4};
     nativeUpdateUniforms(shaderBuilder, uniformName, Arrays.copyOf(values, count));
   }
