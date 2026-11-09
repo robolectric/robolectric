@@ -84,7 +84,13 @@ class SimulatorPlugin : Plugin<Project> {
       // The test task's classpath carries the tasks that build it, but not the test task itself.
       classpath = project.files(Callable { testTask.get().classpath })
       jvmArgumentProviders.add(
-        CommandLineArgumentProvider { testTask.get().jvmArgs + robolectricJvmArgs },
+        CommandLineArgumentProvider {
+          val test = testTask.get()
+          // Gradle keeps the heap sizes apart from the other JVM arguments.
+          val heapSizeArgs =
+            listOfNotNull(test.minHeapSize?.let { "-Xms$it" }, test.maxHeapSize?.let { "-Xmx$it" })
+          test.jvmArgs + heapSizeArgs + robolectricJvmArgs
+        },
       )
       mainClass.set(MAIN_CLASS)
       // The 'apk-for-local-test.ap_' file.
