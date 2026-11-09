@@ -24,6 +24,16 @@ class SimulatorPluginTest {
   }
 
   @Test
+  fun tasks_simulatorPluginAppliedBeforeTheAndroidPlugin_listsSimulateTasks() {
+    val project =
+      AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS, simulatorPluginFirst = true)
+
+    val result = project.build("tasks", "--all")
+
+    assertThat(result.output).contains("simulateDemoDebug")
+  }
+
+  @Test
   fun simulate_buildsTheTestResourcesButDoesNotRunTheTests() {
     val project = AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS)
 
