@@ -5,9 +5,12 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.HardwareBuffer;
@@ -15,6 +18,7 @@ import android.media.ImageReader;
 import android.os.Parcel;
 import android.view.Surface;
 import android.view.Surface.OutOfResourcesException;
+import android.view.SurfaceControl;
 import android.view.animation.AnimationUtils;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,6 +26,7 @@ import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.nativeruntime.RecordingCanvasNatives;
@@ -30,6 +35,7 @@ import org.robolectric.nativeruntime.SurfaceNatives;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeSurface.Picker;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link Surface} that is backed by native code */
@@ -44,6 +50,8 @@ public class ShadowNativeSurface {
   // This field is populated when a Surface is created by an ImageReader. It is used to support
   // the ImageReader.OnImageAvailableListener callback and drawing.
   private final AtomicReference<ImageReader> containerImageReader = new AtomicReference<>(null);
+
+  @RealObject private Surface realSurface;
 
   @Implementation
   protected static long nativeCreateFromSurfaceTexture(SurfaceTexture surfaceTexture)
@@ -164,6 +172,35 @@ public class ShadowNativeSurface {
         nativeObject, frameRate, compatibility, changeFrameRateStrategy);
   }
 
+  /**
+   * Robolectric has no native SurfaceControl, so a Surface copied from one is invalid (see {@link
+   * #nativeGetFromSurfaceControl(long, long)}). This breaks e.g. the drag shadow surface in {@link
+   * android.view.View#startDragAndDrop}. Under real draw, back the Surface with an ImageReader
+   * instead, like {@link ShadowBlastBufferQueue#createSurfaceWithHandle()}.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected void copyFrom(SurfaceControl other) {
+    if (other != null
+        && other.isValid()
+        && other.getWidth() > 0
+        && other.getHeight() > 0
+        && ShadowView.areRealDrawTraversalsEnabled()) {
+      ImageReader oldImageReader = containerImageReader.get();
+      ImageReader imageReader =
+          ImageReader.newInstance(other.getWidth(), other.getHeight(), PixelFormat.RGBA_8888, 1);
+      Surface imageReaderSurface = imageReader.getSurface();
+      ShadowNativeSurface shadowImageReaderSurface = Shadow.extract(imageReaderSurface);
+      shadowImageReaderSurface.setContainerImageReader(imageReader);
+      // Also moves the container ImageReader, see transferFrom below.
+      realSurface.transferFrom(imageReaderSurface);
+      if (oldImageReader != null) {
+        oldImageReader.close();
+      }
+      return;
+    }
+    reflector(SurfaceReflector.class, realSurface).copyFrom(other);
+  }
+
   @Filter(order = Order.AFTER)
   protected void transferFrom(Surface other) {
     ShadowNativeSurface shadowNativeSurface = Shadow.extract(other);
@@ -258,6 +295,9 @@ public class ShadowNativeSurface {
 
     @Accessor("mNativeObject")
     long getNativeObject();
+
+    @Direct
+    void copyFrom(SurfaceControl other);
   }
 
   /** Shadow picker for {@link Surface}. */
