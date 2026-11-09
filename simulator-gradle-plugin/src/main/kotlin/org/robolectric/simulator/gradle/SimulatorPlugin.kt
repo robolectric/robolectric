@@ -50,11 +50,19 @@ class SimulatorPlugin : Plugin<Project> {
     }
     val testTask = project.provider { project.tasks.getByName<Test>("test${variantName}UnitTest") }
 
-    // Variants without unit tests don't have this configuration.
+    // Variants without unit tests don't have these configurations. Apps usually declare
+    // Robolectric in 'testImplementation', which 'test<Variant>Implementation' doesn't extend, so
+    // look for it in the unit test runtime classpath, which extends all the variant's test
+    // configurations.
+    val unitTestRuntimeClasspath =
+      "${variantName.replaceFirstChar { it.lowercase() }}UnitTestRuntimeClasspath"
     project.configurations
       .matching { it.name == "test${variantName}Implementation" }
       .configureEach {
-        val robolectricDependencies = allDependencies.filter { it.group == "org.robolectric" }
+        val robolectricDependencies =
+          project.configurations.getByName(unitTestRuntimeClasspath).allDependencies.filter {
+            it.group == "org.robolectric"
+          }
 
         if (robolectricDependencies.none { it.name == "simulator" }) {
           val robolectricVersion =
