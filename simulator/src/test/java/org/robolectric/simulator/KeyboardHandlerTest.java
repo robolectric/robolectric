@@ -17,11 +17,12 @@ import org.robolectric.Robolectric;
 @RunWith(AndroidJUnit4.class)
 public class KeyboardHandlerTest {
   private KeyboardHandler keyboardHandler;
+  private Activity activity;
   private EditText editText;
 
   @Before
   public void setUp() {
-    Activity activity = Robolectric.setupActivity(Activity.class);
+    activity = Robolectric.setupActivity(Activity.class);
     editText = new EditText(activity);
     activity.setContentView(editText);
     editText.requestFocus();
@@ -92,6 +93,30 @@ public class KeyboardHandlerTest {
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(editText.getText().toString()).isEqualTo("A");
+  }
+
+  @Test
+  public void escapeKey_injectsBackEvent() {
+    keyboardHandler.keyPressed(
+        new KeyEvent(
+            new DummyComponent(),
+            KeyEvent.KEY_PRESSED,
+            System.currentTimeMillis(),
+            0,
+            KeyEvent.VK_ESCAPE,
+            KeyEvent.CHAR_UNDEFINED));
+    shadowOf(Looper.getMainLooper()).idle();
+    keyboardHandler.keyReleased(
+        new KeyEvent(
+            new DummyComponent(),
+            KeyEvent.KEY_RELEASED,
+            System.currentTimeMillis(),
+            0,
+            KeyEvent.VK_ESCAPE,
+            KeyEvent.CHAR_UNDEFINED));
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(activity.isFinishing()).isTrue();
   }
 
   private static class DummyComponent extends Component {}

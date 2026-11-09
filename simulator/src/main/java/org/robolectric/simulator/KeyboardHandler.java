@@ -86,7 +86,7 @@ public final class KeyboardHandler implements KeyListener {
             .put(KeyEvent.VK_F10, android.view.KeyEvent.KEYCODE_F10)
             .put(KeyEvent.VK_F11, android.view.KeyEvent.KEYCODE_F11)
             .put(KeyEvent.VK_F12, android.view.KeyEvent.KEYCODE_F12)
-            .put(KeyEvent.VK_ESCAPE, android.view.KeyEvent.KEYCODE_ESCAPE)
+            .put(KeyEvent.VK_ESCAPE, android.view.KeyEvent.KEYCODE_BACK)
             .put(KeyEvent.VK_BACK_QUOTE, android.view.KeyEvent.KEYCODE_GRAVE)
             .put(KeyEvent.VK_MINUS, android.view.KeyEvent.KEYCODE_MINUS)
             .put(KeyEvent.VK_EQUALS, android.view.KeyEvent.KEYCODE_EQUALS)
