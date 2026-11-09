@@ -85,6 +85,20 @@ public class ShadowWindowManagerGlobalTest {
   }
 
   @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void getLastDragClipData_withoutAreWindowsMarkedVisible() {
+    setSystemPropertyRule.set("robolectric.areWindowsMarkedVisible", "false");
+    MotionEvent downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
+    Robolectric.buildActivity(DragActivity.class)
+        .setup()
+        .get()
+        .findViewById(android.R.id.content)
+        .dispatchTouchEvent(downEvent);
+
+    assertThat(ShadowWindowManagerGlobal.getLastDragClipData()).isNotNull();
+  }
+
+  @Test
   public void windowIsVisible() {
     View decorView =
         Robolectric.buildActivity(DragActivity.class).setup().get().getWindow().getDecorView();
@@ -104,6 +118,15 @@ public class ShadowWindowManagerGlobalTest {
         .dispatchTouchEvent(downEvent);
 
     assertThat(ShadowWindowManagerGlobal.getLastDragClipData()).isNotNull();
+  }
+
+  @Test
+  public void windowIsNotVisible_withoutAreWindowsMarkedVisible() {
+    setSystemPropertyRule.set("robolectric.areWindowsMarkedVisible", "false");
+    View decorView =
+        Robolectric.buildActivity(DragActivity.class).setup().get().getWindow().getDecorView();
+
+    assertThat(decorView.getWindowVisibility()).isEqualTo(View.GONE);
   }
 
   static final class DragActivity extends Activity {
