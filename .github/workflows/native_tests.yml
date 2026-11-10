@@ -39,7 +39,7 @@ jobs:
           windows-latest, # Tests Windows x86_64
         ]
         include:
-          # An x64 JDK on an arm64 Mac runs under Rosetta 2 and loads the x86_64 native libraries.
+          # An x64 JDK on an arm64 Mac runs the tests under Rosetta 2, loading the x86_64 native libraries.
           - device: macos-latest-x64
             runs-on: macos-latest
             java-architecture: x64
@@ -61,19 +61,29 @@ jobs:
           # Empty, so the default, except when called by the release workflow.
           ref: ${{ inputs.ref }}
 
+      # Only the test JVMs need this JDK. Gradle and the compilers run several times slower under
+      # Rosetta 2, so they use the runner's own JDK, set up next.
+      - name: Set up the JDK for the tests
+        if: matrix.java-architecture
+        id: test-jdk
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+          architecture: ${{ matrix.java-architecture }}
+
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version-file: .github/.java-version
-          # Empty, so the runner's architecture, except for the Rosetta 2 job.
-          architecture: ${{ matrix.java-architecture }}
 
-      - name: Check that Java runs under Rosetta 2
+      - name: Check that the tests run under Rosetta 2
         if: matrix.java-architecture == 'x64'
         run: |
           test "$(uname -m)" = arm64
-          java -XshowSettings:properties -version 2>&1 | grep 'os.arch = x86_64'
+          "${{ steps.test-jdk.outputs.path }}/bin/java" -XshowSettings:properties -version 2>&1 \
+            | grep 'os.arch = x86_64'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -102,6 +112,8 @@ jobs:
         env:
           SKIP_ERRORPRONE: true
           SKIP_JAVADOC: true
+          # Empty, so the tests use Gradle's JDK, except for the Rosetta 2 job.
+          TEST_JAVA_HOME: ${{ steps.test-jdk.outputs.path }}
         run: >
           ./gradlew
           ${{ matrix.gradle-tasks || ':integration_tests:nativegraphics:testDebugUnitTest :integration_tests:roborazzi:verifyRoborazziDebug :integration_tests:ctesque:testDebugUnitTestNativeResources' }}
