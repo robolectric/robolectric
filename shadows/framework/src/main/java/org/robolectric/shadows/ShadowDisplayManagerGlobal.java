@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowDisplayManager.createDefaultDisplay;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -244,6 +245,23 @@ public class ShadowDisplayManagerGlobal {
       }
       if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION) != 0) {
         flags |= Display.FLAG_PRESENTATION;
+      }
+      if (getApiLevel() >= S
+          && (virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED) != 0) {
+        flags |= Display.FLAG_TRUSTED;
+      }
+      if (getApiLevel() >= UPSIDE_DOWN_CAKE) {
+        // As in VirtualDisplayAdapter, a display only gets its own focus if it is trusted, and
+        // can only disable stealing the top focus if it has its own focus.
+        if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_FOCUS) != 0
+            && (flags & Display.FLAG_TRUSTED) != 0) {
+          flags |= Display.FLAG_OWN_FOCUS;
+        }
+        if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED)
+                != 0
+            && (flags & Display.FLAG_OWN_FOCUS) != 0) {
+          flags |= Display.FLAG_STEAL_TOP_FOCUS_DISABLED;
+        }
       }
       return flags;
     }
