@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -372,6 +373,76 @@ public class ShadowDisplayManagerTest {
 
     assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRIVATE);
     assertThat(presentationDisplayIds()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void createVirtualDisplay_thatIsTrusted_isTrusted() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Trusted",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED);
+
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_TRUSTED);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void createVirtualDisplay_thatIsTrustedWithItsOwnFocus_hasItsOwnFocus() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Own focus",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_FOCUS
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED);
+
+    assertThat(virtualDisplay.getDisplay().getFlags())
+        .isEqualTo(
+            Display.FLAG_TRUSTED | Display.FLAG_OWN_FOCUS | Display.FLAG_STEAL_TOP_FOCUS_DISABLED);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void createVirtualDisplay_thatIsUntrustedWithItsOwnFocus_doesNotHaveItsOwnFocus() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Untrusted own focus",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_FOCUS
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED);
+
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void createVirtualDisplay_thatDisablesStealingTopFocusWithoutItsOwnFocus_canStealIt() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Steal top focus disabled",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED);
+
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_TRUSTED);
   }
 
   @Test
