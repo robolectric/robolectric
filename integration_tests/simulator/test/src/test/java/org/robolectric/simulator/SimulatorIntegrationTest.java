@@ -1,7 +1,10 @@
 package org.robolectric.simulator;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import java.awt.Color;
@@ -13,8 +16,14 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.swing.JPanel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +58,63 @@ public class SimulatorIntegrationTest {
     assertThat(c.getBlue()).isEqualTo(255);
     assertThat(c.getRed()).isEqualTo(0);
     assertThat(c.getGreen()).isEqualTo(0);
+  }
+
+  @Test
+  public void testSimulatorLaunchWithoutAndroidXTestMonitor() throws Exception {
+    List<File> args = getSimulatorArgs();
+    String monitorJar =
+        Paths.get(
+                InstrumentationRegistry.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI())
+            .toString();
+    String classpath =
+        Arrays.stream(System.getProperty("java.class.path").split(File.pathSeparator))
+            .filter(entry -> !entry.equals(monitorJar))
+            .collect(Collectors.joining(File.pathSeparator));
+
+    List<String> command = new ArrayList<>();
+    command.add(Path.of(System.getProperty("java.home"), "bin", "java").toString());
+    command.add("-Djava.awt.headless=true");
+    for (String name : System.getProperties().stringPropertyNames()) {
+      if (name.startsWith("robolectric.")) {
+        command.add("-D" + name + "=" + System.getProperty(name));
+      }
+    }
+    command.add("-cp");
+    command.add(classpath);
+    command.add(SimulatorMain.class.getName());
+    for (File arg : args) {
+      command.add(arg.getAbsolutePath());
+    }
+
+    File output = File.createTempFile("simulator-output", ".txt");
+    ProcessBuilder processBuilder =
+        new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(output);
+    processBuilder.environment().remove("DISPLAY");
+    processBuilder.environment().remove("WAYLAND_DISPLAY");
+    Process process = processBuilder.start();
+    try {
+      long deadline = System.currentTimeMillis() + 30_000;
+      String log = "";
+      while (process.isAlive() && System.currentTimeMillis() < deadline) {
+        log = new String(Files.readAllBytes(output.toPath()), UTF_8);
+        if (log.contains("Launching ")) {
+          break;
+        }
+        Thread.sleep(100);
+      }
+      log = new String(Files.readAllBytes(output.toPath()), UTF_8);
+      assertWithMessage("output:\n%s", log).that(log).contains("Launching ");
+      assertThat(process.isAlive()).isTrue();
+    } finally {
+      process.destroyForcibly();
+      process.waitFor();
+      Files.deleteIfExists(output.toPath());
+    }
   }
 
   /** The test app to launch, as a test resource. */

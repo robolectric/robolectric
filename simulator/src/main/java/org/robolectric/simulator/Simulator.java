@@ -16,7 +16,6 @@ import android.os.SystemClock;
 import android.view.Choreographer;
 import android.view.Display;
 import android.view.MotionEvent;
-import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -33,6 +32,7 @@ import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowChoreographer;
+import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
@@ -165,7 +165,7 @@ public final class Simulator {
   }
 
   private void postMotionEvent(int width, int height) {
-    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    UiAutomation uiAutomation = ShadowInstrumentation.getInstrumentation().getUiAutomation();
     MotionEvent androidEvent =
         MotionEvent.obtain(
             /* downTime= */ 0,
@@ -183,7 +183,7 @@ public final class Simulator {
     // The default RemoteControl is a no-op stub.
     remoteControl = injector.getInstance(RemoteControl.class);
     remoteControl.connect(
-        InstrumentationRegistry.getInstrumentation()
+        ShadowInstrumentation.getInstrumentation()
             .getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES),
         Looper.getMainLooper());
   }
