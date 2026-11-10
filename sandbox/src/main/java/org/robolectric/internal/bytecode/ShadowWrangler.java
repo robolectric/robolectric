@@ -21,7 +21,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.annotation.ClassName;
@@ -70,6 +72,29 @@ public class ShadowWrangler implements ClassHandler {
         @Override
         protected ShadowInfo computeValue(Class<?> type) {
           return shadowMap.getShadowInfo(type, shadowMatcher);
+        }
+      };
+
+  /** key is instrumented class, value is its shadow class */
+  private final ClassValueMap<Class<?>> cachedShadowClasses =
+      new ClassValueMap<Class<?>>() {
+        @Override
+        protected Class<?> computeValue(Class<?> type) {
+          ShadowInfo shadowInfo = getExactShadowInfo(type);
+          try {
+            return Class.forName(shadowInfo.shadowClassName, false, type.getClassLoader());
+          } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+          }
+        }
+      };
+
+  /** key is shadow class */
+  private final ClassValueMap<ShadowMethods> cachedShadowMethods =
+      new ClassValueMap<ShadowMethods>() {
+        @Override
+        protected ShadowMethods computeValue(Class<?> type) {
+          return new ShadowMethods(type, shadowMatcher);
         }
       };
 
@@ -329,14 +354,7 @@ public class ShadowWrangler implements ClassHandler {
     if (shadowInfo == null) {
       return CALL_REAL_CODE;
     } else {
-      ClassLoader classLoader = definingClass.getClassLoader();
-      Class<?> shadowClass;
-      try {
-        shadowClass = Class.forName(shadowInfo.shadowClassName, false, classLoader);
-      } catch (ClassNotFoundException e) {
-        throw new IllegalStateException(e);
-      }
-
+      Class<?> shadowClass = cachedShadowClasses.get(definingClass);
       Method method = findShadowMethod(definingClass, name, paramTypes, shadowClass);
       if (method == null) {
         return CALL_REAL_CODE;
@@ -356,111 +374,165 @@ public class ShadowWrangler implements ClassHandler {
    */
   private Method findShadowMethod(
       Class<?> definingClass, String name, Class<?>[] types, Class<?> shadowClass) {
-    Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
+    ShadowMethods shadowMethods = cachedShadowMethods.get(shadowClass);
+    Method method = shadowMethods.find(name, types);
 
-    if (method != null) {
-      return method;
-    } else {
+    if (method == null) {
       // if the shadow's superclass shadows the same class as this shadow, then recurse.
       // Buffalo buffalo buffalo buffalo buffalo buffalo buffalo.
-      Class<?> shadowSuperclass = shadowClass.getSuperclass();
-      if (shadowSuperclass != null && !shadowSuperclass.equals(Object.class)) {
-        ShadowInfo shadowSuperclassInfo = ShadowMap.obtainShadowInfo(shadowSuperclass, true);
-        if (shadowSuperclassInfo != null
-            && shadowSuperclassInfo.isShadowOf(definingClass)
-            && shadowMatcher.matches(shadowSuperclassInfo)) {
-
-          method = findShadowMethod(definingClass, name, types, shadowSuperclass);
-        }
+      ShadowInfo shadowSuperclassInfo = shadowMethods.superclassShadowInfo;
+      if (shadowSuperclassInfo != null && shadowSuperclassInfo.isShadowOf(definingClass)) {
+        method =
+            findShadowMethod(definingClass, name, types, shadowMethods.shadowClass.getSuperclass());
       }
     }
 
     return method;
   }
 
-  private Method findShadowMethodDeclaredOnClass(
-      Class<?> shadowClass, String methodName, Class<?>[] paramClasses) {
-    Method foundMethod = null;
-    Method[] methods = shadowClass.getDeclaredMethods();
-    for (Method method : methods) {
-      if (!Modifier.isPublic(method.getModifiers())
-          && !Modifier.isProtected(method.getModifiers())) {
-        continue;
+  /**
+   * The {@code @Implementation} and {@code @Filter} methods that a shadow class declares and that
+   * match the {@link ShadowMatcher}, indexed by the name of the method they shadow.
+   *
+   * <p>Built once per shadow class, so linking each shadowed method doesn't have to copy and scan
+   * all the shadow's declared methods and their annotations again.
+   */
+  private static final class ShadowMethods {
+    final Class<?> shadowClass;
+    final Map<String, List<ShadowMethod>> methodsByName = new HashMap<>();
+
+    /**
+     * The {@link ShadowInfo} of the shadow's superclass, if that superclass is a shadow that
+     * matches the {@link ShadowMatcher}, or null otherwise.
+     */
+    final ShadowInfo superclassShadowInfo;
+
+    ShadowMethods(Class<?> shadowClass, ShadowMatcher shadowMatcher) {
+      this.shadowClass = shadowClass;
+      for (Method method : shadowClass.getDeclaredMethods()) {
+        if (!Modifier.isPublic(method.getModifiers())
+            && !Modifier.isProtected(method.getModifiers())) {
+          continue;
+        }
+
+        if (!shadowMatcher.matches(method)) {
+          continue;
+        }
+
+        Filter filter = method.getAnnotation(Filter.class);
+        Implementation implementation = method.getAnnotation(Implementation.class);
+
+        if (filter != null && implementation != null) {
+          throw new IllegalStateException(
+              "Method "
+                  + method.getName()
+                  + " cannot be annotated with both @Implementation and @Filter");
+        }
+
+        ShadowMethod shadowMethod = new ShadowMethod(method);
+        add(method.getName(), shadowMethod);
+
+        String mappedMethodName = "";
+        if (filter != null) {
+          mappedMethodName = filter.methodName().trim();
+        } else if (implementation != null) {
+          mappedMethodName = implementation.methodName().trim();
+        }
+        if (!mappedMethodName.isEmpty() && !mappedMethodName.equals(method.getName())) {
+          add(mappedMethodName, shadowMethod);
+        }
       }
 
-      if (!shadowMatcher.matches(method)) {
-        continue;
+      Class<?> shadowSuperclass = shadowClass.getSuperclass();
+      ShadowInfo shadowSuperclassInfo = null;
+      if (shadowSuperclass != null && !shadowSuperclass.equals(Object.class)) {
+        shadowSuperclassInfo = ShadowMap.obtainShadowInfo(shadowSuperclass, true);
+        if (shadowSuperclassInfo != null && !shadowMatcher.matches(shadowSuperclassInfo)) {
+          shadowSuperclassInfo = null;
+        }
       }
-
-      Filter filter = method.getAnnotation(Filter.class);
-      Implementation implementation = method.getAnnotation(Implementation.class);
-
-      if (filter != null && implementation != null) {
-        throw new IllegalStateException(
-            "Method "
-                + method.getName()
-                + " cannot be annotated with both @Implementation and @Filter");
-      }
-
-      boolean nameMatches = method.getName().equals(methodName);
-
-      if (!nameMatches && filter != null) {
-        String mappedMethodName = filter.methodName().trim();
-        nameMatches = !mappedMethodName.isEmpty() && mappedMethodName.equals(methodName);
-      }
-
-      if (!nameMatches && implementation != null) {
-        String mappedMethodName = implementation.methodName().trim();
-        nameMatches = !mappedMethodName.isEmpty() && mappedMethodName.equals(methodName);
-      }
-
-      if (!nameMatches) {
-        continue;
-      }
-
-      if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
-        // Found an exact match, we can exit early.
-        foundMethod = method;
-        break;
-      }
-
-      // Or maybe support @ClassName.
-      if (parametersMatch(method.getParameters(), paramClasses)) {
-        // Found a @ClassName match, but continue looking for an exact match.
-        foundMethod = method;
-      }
+      this.superclassShadowInfo = shadowSuperclassInfo;
     }
 
-    if (foundMethod != null) {
-      foundMethod.setAccessible(true);
+    private void add(String methodName, ShadowMethod shadowMethod) {
+      methodsByName.computeIfAbsent(methodName, k -> new ArrayList<>(1)).add(shadowMethod);
+    }
+
+    Method find(String methodName, Class<?>[] paramClasses) {
+      List<ShadowMethod> candidates = methodsByName.get(methodName);
+      if (candidates == null) {
+        return null;
+      }
+
+      Method foundMethod = null;
+      for (ShadowMethod candidate : candidates) {
+        if (Arrays.equals(candidate.parameterTypes, paramClasses)) {
+          // Found an exact match, we can exit early.
+          foundMethod = candidate.method;
+          break;
+        }
+
+        // Or maybe support @ClassName.
+        if (candidate.parametersMatch(paramClasses)) {
+          // Found a @ClassName match, but continue looking for an exact match.
+          foundMethod = candidate.method;
+        }
+      }
+
+      if (foundMethod != null) {
+        foundMethod.setAccessible(true);
+      }
       return foundMethod;
-    } else {
-      return null;
     }
   }
 
-  private boolean parametersMatch(Parameter[] params, Class<?>[] expectedTypes) {
-    if (params.length != expectedTypes.length) {
-      return false;
+  /** A shadow method with its parameter types and {@link ClassName} values. */
+  private static final class ShadowMethod {
+    final Method method;
+    final Class<?>[] parameterTypes;
+
+    /**
+     * For each {@code Object} parameter annotated with {@link ClassName}, the class name it stands
+     * for, or null for other parameters. Null if no parameter is annotated.
+     */
+    final String[] classNames;
+
+    ShadowMethod(Method method) {
+      this.method = method;
+      this.parameterTypes = method.getParameterTypes();
+      String[] classNames = null;
+      Parameter[] parameters = method.getParameters();
+      for (int i = 0; i < parameters.length; i++) {
+        if (parameterTypes[i].equals(Object.class)) {
+          ClassName className = parameters[i].getAnnotation(ClassName.class);
+          if (className != null) {
+            if (classNames == null) {
+              classNames = new String[parameters.length];
+            }
+            classNames[i] = className.value();
+          }
+        }
+      }
+      this.classNames = classNames;
     }
 
-    for (int i = 0; i < params.length; i++) {
-      if (!isParameterMatch(params[i], expectedTypes[i])) {
+    boolean parametersMatch(Class<?>[] expectedTypes) {
+      if (parameterTypes.length != expectedTypes.length) {
         return false;
       }
-    }
-    return true;
-  }
 
-  private boolean isParameterMatch(Parameter param, Class<?> expectedType) {
-    if (param.getType().equals(Object.class)) {
-      ClassName className = param.getAnnotation(ClassName.class);
-      if (className != null) {
-        return className.value().equals(expectedType.getName());
+      for (int i = 0; i < parameterTypes.length; i++) {
+        String className = classNames == null ? null : classNames[i];
+        boolean matches =
+            className != null
+                ? className.equals(expectedTypes[i].getName())
+                : parameterTypes[i].equals(expectedTypes[i]);
+        if (!matches) {
+          return false;
+        }
       }
+      return true;
     }
-
-    return param.getType().equals(expectedType);
   }
 
   @Override

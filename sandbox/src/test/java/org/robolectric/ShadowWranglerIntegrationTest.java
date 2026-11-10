@@ -420,6 +420,14 @@ public class ShadowWranglerIntegrationTest {
         .isEqualTo("ClassNameGenericAnnotated");
   }
 
+  @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassNameAndExactOverloads.class)
+  @Test
+  public void methodMatch_exactMatchIsPreferredOverClassNameAnnotatedMatch() {
+    assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ExactMatch-bc");
+    assertThat(new AClassWithDifficultArgs().aMethodWithArrayParam(new CharSequence[] {"bc", "de"}))
+        .isEqualTo("ExactMatch-bc,de");
+  }
+
   @Implements(value = AClassWithDifficultArgs.class)
   public static class ShadowAClassWithDifficultArgsWithMethodRename {
     @Implementation(methodName = "aMethod")
@@ -434,6 +442,28 @@ public class ShadowWranglerIntegrationTest {
     protected @ClassName("java.lang.CharSequence") Object aMethod(
         @ClassName("java.lang.CharSequence") Object s) {
       return "ClassNameAnnotated-" + s;
+    }
+
+    protected @ClassName("java.lang.CharSequence") Object aMethodWithArrayParam(
+        @ClassName("[Ljava.lang.CharSequence;") Object s) {
+      return "ClassNameAnnotated-" + String.join(",", (CharSequence[]) s);
+    }
+  }
+
+  @Implements(value = AClassWithDifficultArgs.class)
+  public static class ShadowAClassWithDifficultArgsUseClassNameAndExactOverloads {
+
+    protected @ClassName("java.lang.CharSequence") Object aMethod(
+        @ClassName("java.lang.CharSequence") Object s) {
+      return "ClassNameAnnotated-" + s;
+    }
+
+    protected CharSequence aMethod(CharSequence s) {
+      return "ExactMatch-" + s;
+    }
+
+    protected CharSequence aMethodWithArrayParam(CharSequence[] s) {
+      return "ExactMatch-" + String.join(",", s);
     }
 
     protected @ClassName("java.lang.CharSequence") Object aMethodWithArrayParam(
