@@ -115,6 +115,8 @@ androidx-fragment = "1.9.1"
 androidx-window = "1.5.1"
 androidx-room = "2.8.5"
 androidx-recyclerview = "1.4.0"
+# https://github.com/material-components/material-components-android/tags
+material = "1.12.0"
 
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.7.0"
@@ -237,6 +239,7 @@ androidx-window-testing = { module = "androidx.window:window-testing", version.r
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
 
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 androidx-test-monitor = { module = "androidx.test:monitor", version.ref = "androidx-test-monitor" }
