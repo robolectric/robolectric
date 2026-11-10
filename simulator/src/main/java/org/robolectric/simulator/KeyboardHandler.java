@@ -3,17 +3,17 @@ package org.robolectric.simulator;
 import android.app.UiAutomation;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.collect.ImmutableMap;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import org.robolectric.shadows.ShadowInstrumentation;
 
 /** A {@link KeyListener} that forwards KeyEvents to Robolectric {@link UiAutomation}. */
 public final class KeyboardHandler implements KeyListener {
 
   private final Handler handler = new Handler(Looper.getMainLooper());
   private final UiAutomation uiAutomation =
-      InstrumentationRegistry.getInstrumentation().getUiAutomation();
+      ShadowInstrumentation.getInstrumentation().getUiAutomation();
 
   // Map of AWT KeyEvent constants to Android KeyEvent constants
   private static final ImmutableMap<Integer, Integer> KEY_MAP;

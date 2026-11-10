@@ -7,7 +7,6 @@ import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import androidx.test.platform.app.InstrumentationRegistry;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.MouseAdapter;
@@ -20,6 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.simulator.pluginapi.MenuCustomizer;
 import org.robolectric.util.inject.Injector;
 
@@ -30,7 +30,7 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
 
   private final Handler handler = new Handler(Looper.getMainLooper());
   private final UiAutomation uiAutomation =
-      InstrumentationRegistry.getInstrumentation().getUiAutomation();
+      ShadowInstrumentation.getInstrumentation().getUiAutomation();
 
   private final JPopupMenu rightClickMenu;
   private Component previouslyFocusedComponent;

@@ -49,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.FutureTask;
@@ -373,13 +374,23 @@ public class ShadowUiAutomation {
 
   private static Set<IBinder> getStartedActivityTokens() {
     Set<Activity> startedActivities = newConcurrentHashSet();
-    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
-      ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
-      startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
-      startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
-      // A paused activity is still visible, such as one below a dialog or transparent activity.
-      startedActivities.addAll(monitor.getActivitiesInStage(Stage.PAUSED));
-    });
+    try {
+      ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+        ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
+        startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
+        startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
+        // A paused activity is still visible, such as one below a dialog or transparent activity.
+        startedActivities.addAll(monitor.getActivitiesInStage(Stage.PAUSED));
+      });
+    } catch (NoClassDefFoundError e) {
+      if (!"androidx/test/runner/lifecycle/ActivityLifecycleMonitorRegistry"
+          .equals(e.getMessage())) {
+        throw e;
+      }
+      return ReflectionHelpers.<Map<IBinder, ?>>getField(
+              RuntimeEnvironment.getActivityThread(), "mActivities")
+          .keySet();
+    }
 
     return startedActivities.stream()
         .map(activity -> activity.getWindow().getDecorView().getApplicationWindowToken())

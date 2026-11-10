@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver.OnDrawListener;
 import android.view.inspector.WindowInspector;
-import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.FormatMethod;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.PerfStatsCollector;
 
@@ -157,7 +157,7 @@ public class ScreenUpdateHandler extends Handler
     return PerfStatsCollector.getInstance()
         .measure(
             "ScreenUpdateHandler-takeScreenshot",
-            () -> InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot());
+            () -> ShadowInstrumentation.getInstrumentation().getUiAutomation().takeScreenshot());
   }
 
   private Bitmap copyBitmap(Bitmap orig) {

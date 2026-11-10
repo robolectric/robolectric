@@ -78,6 +78,7 @@ public class AppLoader implements Runnable {
     // Android creates the manifest's content providers before Application.onCreate, and libraries
     // such as androidx.startup and Firebase initialize themselves from one.
     testEnvironment.setInstallContentProviders(true);
+    testEnvironment.setUseMonitoringInstrumentation(isAndroidXTestMonitorAvailable());
     testEnvironment.setUpApplicationState("simulator", configuration, manifest);
 
     Application application = RuntimeEnvironment.getApplication();
@@ -135,5 +136,17 @@ public class AppLoader implements Runnable {
       // Fall back to the first launcher below.
     }
     return launchers.get(0).activityInfo;
+  }
+
+  private static boolean isAndroidXTestMonitorAvailable() {
+    try {
+      Class.forName(
+          "androidx.test.platform.app.InstrumentationRegistry",
+          false,
+          AppLoader.class.getClassLoader());
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
   }
 }
