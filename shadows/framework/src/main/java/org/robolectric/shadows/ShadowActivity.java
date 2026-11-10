@@ -238,11 +238,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             token,
             activityTitle,
             lastNonConfigurationInstances);
-    if (activityContext != baseContext) {
-      // Activity#attach records the global configuration, but the activity context can differ.
+    // Activity#attach records the global configuration, but an activity on another display has
+    // that display's configuration. Configuration the app applies to itself, such as AppCompat's
+    // local night mode, is not part of it.
+    Configuration displayOverrideConfig =
+        WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+    if (activityContext != baseContext && displayOverrideConfig != null) {
       reflector(ActivityReflector.class, realActivity)
           .getCurrentConfig()
-          .setTo(activityContext.getResources().getConfiguration());
+          .updateFrom(displayOverrideConfig);
     }
 
     int theme = activityInfo.getThemeResource();
