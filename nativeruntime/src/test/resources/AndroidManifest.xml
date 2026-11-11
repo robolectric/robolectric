@@ -2,6 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="org.robolectric.nativeruntime">
 
-  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33"/>
+  <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="33"/>
   <application />
 </manifest>

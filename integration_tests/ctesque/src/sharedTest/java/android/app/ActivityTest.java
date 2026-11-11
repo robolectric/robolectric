@@ -27,12 +27,11 @@ public class ActivityTest {
   public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            Button theButton = activity.findViewById(R.id.button);
-            ColorDrawable background = (ColorDrawable) theButton.getBackground();
-            assertThat(background.getColor()).isEqualTo(0xffff0000);
-          });
+      scenario.onActivity(activity -> {
+        Button theButton = activity.findViewById(R.id.button);
+        ColorDrawable background = (ColorDrawable) theButton.getBackground();
+        assertThat(background.getColor()).isEqualTo(0xffff0000);
+      });
     }
   }
 
@@ -41,13 +40,12 @@ public class ActivityTest {
       whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            activity.setTheme(R.style.Theme_Robolectric);
-            Button theButton = activity.findViewById(R.id.button);
-            ColorDrawable background = (ColorDrawable) theButton.getBackground();
-            assertThat(background.getColor()).isEqualTo(0xffff0000);
-          });
+      scenario.onActivity(activity -> {
+        activity.setTheme(R.style.Theme_Robolectric);
+        Button theButton = activity.findViewById(R.id.button);
+        ColorDrawable background = (ColorDrawable) theButton.getBackground();
+        assertThat(background.getColor()).isEqualTo(0xffff0000);
+      });
     }
   }
 
@@ -56,12 +54,11 @@ public class ActivityTest {
     ActivityWithAnotherTheme.setThemeBeforeContentView = R.style.Theme_Robolectric;
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            Button theButton = activity.findViewById(R.id.button);
-            ColorDrawable background = (ColorDrawable) theButton.getBackground();
-            assertThat(background.getColor()).isEqualTo(0xff00ff00);
-          });
+      scenario.onActivity(activity -> {
+        Button theButton = activity.findViewById(R.id.button);
+        ColorDrawable background = (ColorDrawable) theButton.getBackground();
+        assertThat(background.getColor()).isEqualTo(0xff00ff00);
+      });
     }
   }
 
@@ -69,12 +66,11 @@ public class ActivityTest {
   public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() {
     try (ActivityScenario<ActivityWithoutTheme> scenario =
         ActivityScenario.launch(ActivityWithoutTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            Button theButton = activity.findViewById(R.id.button);
-            ColorDrawable background = (ColorDrawable) theButton.getBackground();
-            assertThat(background.getColor()).isEqualTo(0xff00ff00);
-          });
+      scenario.onActivity(activity -> {
+        Button theButton = activity.findViewById(R.id.button);
+        ColorDrawable background = (ColorDrawable) theButton.getBackground();
+        assertThat(background.getColor()).isEqualTo(0xff00ff00);
+      });
     }
   }
 

@@ -119,6 +119,9 @@ public class ShadowTextToSpeech {
   @Implementation
   protected int speak(
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
+    if (shutdown) {
+      return TextToSpeech.ERROR;
+    }
     stopped = false;
     lastSpokenText = text.toString();
     spokenTextList.add(text.toString());
@@ -131,23 +134,20 @@ public class ShadowTextToSpeech {
       // simulated by posting it on a handler. The behavior of the callback can be changed for
       // each individual test by changing the idling mode of the foreground scheduler.
       Handler handler = new Handler(Looper.getMainLooper());
-      handler.post(
-          () -> {
-            UtteranceProgressListener utteranceProgressListener = getUtteranceProgressListener();
-            if (utteranceProgressListener != null) {
-              utteranceProgressListener.onStart(utteranceId);
-            }
-            // The onDone callback is posted in a separate run-loop from onStart, so that tests
-            // can pause the scheduler and test the behavior between these two callbacks.
-            handler.post(
-                () -> {
-                  UtteranceProgressListener utteranceProgressListener2 =
-                      getUtteranceProgressListener();
-                  if (utteranceProgressListener2 != null) {
-                    utteranceProgressListener2.onDone(utteranceId);
-                  }
-                });
-          });
+      handler.post(() -> {
+        UtteranceProgressListener utteranceProgressListener = getUtteranceProgressListener();
+        if (utteranceProgressListener != null) {
+          utteranceProgressListener.onStart(utteranceId);
+        }
+        // The onDone callback is posted in a separate run-loop from onStart, so that tests
+        // can pause the scheduler and test the behavior between these two callbacks.
+        handler.post(() -> {
+          UtteranceProgressListener utteranceProgressListener2 = getUtteranceProgressListener();
+          if (utteranceProgressListener2 != null) {
+            utteranceProgressListener2.onDone(utteranceId);
+          }
+        });
+      });
     }
     return TextToSpeech.SUCCESS;
   }

@@ -32,6 +32,9 @@ public interface ActivityReflector {
   @Accessor("mShareableActivityToken")
   IBinder getShareableActivityTokenField();
 
+  // >= O
+  void dispatchMovedToDisplay(int displayId, Configuration config);
+
   // <= N_MR1
   void attach(
       Context context,
@@ -300,4 +303,7 @@ public interface ActivityReflector {
 
   @Accessor("mInstrumentation")
   Instrumentation getInstrumentation();
+
+  @Accessor("mCurrentConfig")
+  Configuration getCurrentConfig();
 }

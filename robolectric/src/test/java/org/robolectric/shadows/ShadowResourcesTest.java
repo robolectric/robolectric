@@ -9,6 +9,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -32,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
@@ -68,6 +70,31 @@ public class ShadowResourcesTest {
   @Config(qualifiers = "fr")
   public void testGetValuesResFromSpecificQualifiers() {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Bonjour");
+  }
+
+  @Test
+  public void getString_mobileCountryCode_usesTheQualifiedValueOnlyWhenTheCodeMatches() {
+    assertThat(resources.getString(R.string.mobile_country)).isEqualTo("any");
+
+    RuntimeEnvironment.setQualifiers("mcc310");
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getString(R.string.mobile_country))
+        .isEqualTo("310");
+
+    RuntimeEnvironment.setQualifiers("mcc311");
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getString(R.string.mobile_country))
+        .isEqualTo("any");
+  }
+
+  @Test
+  @Config(qualifiers = "mcc310")
+  public void getString_mobileCountryCodeQualifier_usesTheQualifiedValue() {
+    assertThat(resources.getString(R.string.mobile_country)).isEqualTo("310");
   }
 
   /**
@@ -251,11 +278,10 @@ public class ShadowResourcesTest {
   public void addConfigurationChangeListener_callsOnConfigurationChange() {
     AtomicBoolean listenerWasCalled = new AtomicBoolean();
     shadowOf(resources)
-        .addConfigurationChangeListener(
-            (oldConfig, newConfig, newMetrics) -> {
-              listenerWasCalled.set(true);
-              assertThat(newConfig.fontScale).isEqualTo(oldConfig.fontScale * 2);
-            });
+        .addConfigurationChangeListener((oldConfig, newConfig, newMetrics) -> {
+          listenerWasCalled.set(true);
+          assertThat(newConfig.fontScale).isEqualTo(oldConfig.fontScale * 2);
+        });
 
     Configuration newConfig = new Configuration(resources.getConfiguration());
     newConfig.fontScale *= 2;
@@ -343,5 +369,24 @@ public class ShadowResourcesTest {
     long elapsedNs = endTime - startTime;
     System.err.println(
         "updateConfiguration benchmark took " + TimeUnit.NANOSECONDS.toMillis(elapsedNs) + " ms");
+  }
+
+  @Ignore("Re-enable when performing benchmarks")
+  @Test
+  @Config(sdk = BAKLAVA)
+  public void benchmarkCreateResources() {
+    long startTime = System.nanoTime();
+    for (int i = 0; i < 10_000; i++) {
+      // Creating an AssetManager and setting its configuration trigger RebuildFilterList in
+      // CppAssetManager2, as setting up each test's contexts does.
+      AssetManager assetManager = new AssetManager();
+      Object unused =
+          new Resources(assetManager, resources.getDisplayMetrics(), resources.getConfiguration());
+      assetManager.close();
+    }
+    long endTime = System.nanoTime();
+    long elapsedNs = endTime - startTime;
+    System.err.println(
+        "createResources benchmark took " + TimeUnit.NANOSECONDS.toMillis(elapsedNs) + " ms");
   }
 }

@@ -86,7 +86,7 @@ public final class KeyboardHandler implements KeyListener {
             .put(KeyEvent.VK_F10, android.view.KeyEvent.KEYCODE_F10)
             .put(KeyEvent.VK_F11, android.view.KeyEvent.KEYCODE_F11)
             .put(KeyEvent.VK_F12, android.view.KeyEvent.KEYCODE_F12)
-            .put(KeyEvent.VK_ESCAPE, android.view.KeyEvent.KEYCODE_ESCAPE)
+            .put(KeyEvent.VK_ESCAPE, android.view.KeyEvent.KEYCODE_BACK)
             .put(KeyEvent.VK_BACK_QUOTE, android.view.KeyEvent.KEYCODE_GRAVE)
             .put(KeyEvent.VK_MINUS, android.view.KeyEvent.KEYCODE_MINUS)
             .put(KeyEvent.VK_EQUALS, android.view.KeyEvent.KEYCODE_EQUALS)
@@ -118,32 +118,29 @@ public final class KeyboardHandler implements KeyListener {
       shiftKeyPressed = true;
       return;
     }
-    handler.post(
-        () -> {
-          if (!KEY_MAP.containsKey(e.getKeyCode())) {
-            System.err.println("Unknown mapping for AWT key " + e.getKeyCode());
-          } else {
-            if (shiftKeyPressed) {
-              uiAutomation.injectInputEvent(
-                  newAndroidKeyEvent(
-                      android.view.KeyEvent.ACTION_DOWN,
-                      android.view.KeyEvent.KEYCODE_SHIFT_LEFT,
-                      android.view.KeyEvent.META_SHIFT_ON
-                          | android.view.KeyEvent.META_SHIFT_LEFT_ON),
-                  true);
-            }
+    handler.post(() -> {
+      if (!KEY_MAP.containsKey(e.getKeyCode())) {
+        System.err.println("Unknown mapping for AWT key " + e.getKeyCode());
+      } else {
+        if (shiftKeyPressed) {
+          uiAutomation.injectInputEvent(
+              newAndroidKeyEvent(
+                  android.view.KeyEvent.ACTION_DOWN,
+                  android.view.KeyEvent.KEYCODE_SHIFT_LEFT,
+                  android.view.KeyEvent.META_SHIFT_ON | android.view.KeyEvent.META_SHIFT_LEFT_ON),
+              true);
+        }
 
-            uiAutomation.injectInputEvent(
-                newAndroidKeyEvent(
-                    android.view.KeyEvent.ACTION_DOWN,
-                    KEY_MAP.get(e.getKeyCode()),
-                    shiftKeyPressed
-                        ? android.view.KeyEvent.META_SHIFT_ON
-                            | android.view.KeyEvent.META_SHIFT_LEFT_ON
-                        : 0),
-                true);
-          }
-        });
+        uiAutomation.injectInputEvent(
+            newAndroidKeyEvent(
+                android.view.KeyEvent.ACTION_DOWN,
+                KEY_MAP.get(e.getKeyCode()),
+                shiftKeyPressed
+                    ? android.view.KeyEvent.META_SHIFT_ON | android.view.KeyEvent.META_SHIFT_LEFT_ON
+                    : 0),
+            true);
+      }
+    });
   }
 
   @Override
@@ -152,28 +149,26 @@ public final class KeyboardHandler implements KeyListener {
       shiftKeyPressed = false;
       return;
     }
-    handler.post(
-        () -> {
-          if (!KEY_MAP.containsKey(e.getKeyCode())) {
-            System.err.println("Unknown mapping for AWT key " + e.getKeyCode());
-          } else {
-            uiAutomation.injectInputEvent(
-                newAndroidKeyEvent(
-                    android.view.KeyEvent.ACTION_UP,
-                    KEY_MAP.get(e.getKeyCode()),
-                    shiftKeyPressed
-                        ? android.view.KeyEvent.META_SHIFT_ON
-                            | android.view.KeyEvent.META_SHIFT_LEFT_ON
-                        : 0),
-                true);
-            if (shiftKeyPressed) {
-              uiAutomation.injectInputEvent(
-                  newAndroidKeyEvent(
-                      android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_SHIFT_LEFT, 0),
-                  true);
-            }
-          }
-        });
+    handler.post(() -> {
+      if (!KEY_MAP.containsKey(e.getKeyCode())) {
+        System.err.println("Unknown mapping for AWT key " + e.getKeyCode());
+      } else {
+        uiAutomation.injectInputEvent(
+            newAndroidKeyEvent(
+                android.view.KeyEvent.ACTION_UP,
+                KEY_MAP.get(e.getKeyCode()),
+                shiftKeyPressed
+                    ? android.view.KeyEvent.META_SHIFT_ON | android.view.KeyEvent.META_SHIFT_LEFT_ON
+                    : 0),
+            true);
+        if (shiftKeyPressed) {
+          uiAutomation.injectInputEvent(
+              newAndroidKeyEvent(
+                  android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_SHIFT_LEFT, 0),
+              true);
+        }
+      }
+    });
   }
 
   private static android.view.KeyEvent newAndroidKeyEvent(int action, int code, int metaState) {

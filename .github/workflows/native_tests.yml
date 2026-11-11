@@ -10,8 +10,17 @@ on:
     # Do not add `paths-ignore` here, this is required to be run on every PR for the `google` branch.
     branches: [ master, google ]
 
+  # Run by the release workflow.
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to test'
+        type: string
+        required: true
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # When called by another workflow, github.workflow is the caller's name.
+  group: graphics-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -23,30 +32,71 @@ jobs:
       fail-fast: false
       matrix:
         device: [
-          macos-15-intel, # Tests Mac x86_64
           macos-latest, # Tests Mac arm64
+          macos-latest-x64, # Tests Mac x86_64, on Apple Silicon under Rosetta 2
           ubuntu-latest, # Tests Linux x86_64
+          ubuntu-24.04-arm, # Tests Linux arm64
           windows-latest, # Tests Windows x86_64
         ]
+        include:
+          # An x64 JDK on an arm64 Mac runs under Rosetta 2 and loads the x86_64 native libraries.
+          - device: macos-latest-x64
+            runs-on: macos-latest
+            java-architecture: x64
+          # Linux arm64 runs the native graphics tests on every SDK from O.
+          - device: ubuntu-24.04-arm
+            setup-android-sdk: true
+            # A test without an SDK in its @Config only runs on the target SDK. A minSdk
+            # default runs each test on every SDK from it.
+            nativegraphics-min-sdk: 26
+            gradle-tasks: ':integration_tests:nativegraphics:testDebugUnitTest'
 
     name: Native Tests
-    runs-on: ${{ matrix.device }}
+    runs-on: ${{ matrix.runs-on || matrix.device }}
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
+          # Empty, so the runner's architecture, except for the Rosetta 2 job.
+          architecture: ${{ matrix.java-architecture }}
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Check that Java runs under Rosetta 2
+        if: matrix.java-architecture == 'x64'
+        run: |
+          test "$(uname -m)" = arm64
+          java -XshowSettings:properties -version 2>&1 | grep 'os.arch = x86_64'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/google' }}
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
-      - name: Show runner info
-        run: uname -a
+      # Arm's ubuntu-24.04-arm image omits the Android SDK that the x86_64 images include.
+      - name: Set up Android SDK
+        if: matrix.setup-android-sdk
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36'
+
+      - name: Set the default minSdk of the native graphics tests
+        if: matrix.nativegraphics-min-sdk
+        run: |
+          mkdir -p integration_tests/nativegraphics/src/test/resources
+          echo "minSdk=${{ matrix.nativegraphics-min-sdk }}" \
+            > integration_tests/nativegraphics/src/test/resources/robolectric.properties
 
       - name: Run unit tests
         env:
@@ -54,11 +104,9 @@ jobs:
           SKIP_JAVADOC: true
         run: >
           ./gradlew
-          :integration_tests:nativegraphics:testDebugUnitTest
-          :integration_tests:ctesque:testDebugUnitTestNativeResources
+          ${{ matrix.gradle-tasks || ':integration_tests:nativegraphics:testDebugUnitTest :integration_tests:roborazzi:verifyRoborazziDebug :integration_tests:ctesque:testDebugUnitTestNativeResources' }}
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
-          "-Dorg.gradle.workers.max=2"
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7

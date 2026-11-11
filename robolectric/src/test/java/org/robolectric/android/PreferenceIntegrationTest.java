@@ -119,11 +119,10 @@ public class PreferenceIntegrationTest {
     final Preference preference = screen.findPreference("preference");
 
     boolean[] holder = new boolean[1];
-    preference.setOnPreferenceClickListener(
-        clickedPreference -> {
-          holder[0] = true;
-          return true;
-        });
+    preference.setOnPreferenceClickListener(clickedPreference -> {
+      holder[0] = true;
+      return true;
+    });
 
     shadowOf(preference).click();
     assertThat(holder[0]).isTrue();

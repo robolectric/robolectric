@@ -196,7 +196,6 @@ public class ImplementsValidator extends Validator {
       TypeElement shadowClassElem,
       int classMinSdk,
       int classMaxSdk,
-
       boolean allowInDev) {
     Problems problems = new Problems(this.checkKind);
     if (sdkCheckMode != SdkCheckMode.OFF) {
@@ -381,7 +380,6 @@ public class ImplementsValidator extends Validator {
   private static class Problems {
     private final Kind kind;
     private final Map<String, Set<Integer>> problems = new HashMap<>();
-
 
     public Problems(Kind kind) {
       this.kind = kind;

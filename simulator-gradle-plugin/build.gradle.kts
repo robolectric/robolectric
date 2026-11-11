@@ -28,6 +28,10 @@ gradlePlugin {
 java {
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
+  // AGP 9.3+ publishes gradle-api for Java 17. Lift the JVM-version constraint on the
+  // compile classpath so the latest API can be used while this module keeps emitting
+  // and advertising Java 11. Safe because gradle-api is compileOnly.
+  disableAutoTargetJvm()
 }
 
 kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
@@ -37,13 +41,45 @@ afterEvaluate {
   publishing { signing { setRequired { !isSnapshotVersion } } }
 }
 
+// The Android Gradle plugin, for the projects that the Gradle TestKit tests build. The plugin only
+// compiles against AGP's API, so TestKit has to put AGP itself on the plugin classpath it injects.
+val testKitAndroidGradlePlugin by configurations.creating
+
 dependencies {
   compileOnly(libs.android.gradle.api)
-  implementation(libs.kotlin.stdlib)
 
+  testImplementation(gradleTestKit())
   testImplementation(libs.junit4)
   testImplementation(libs.test.parameter.injector)
   testImplementation(libs.truth)
+
+  testKitAndroidGradlePlugin(libs.android.gradle)
+}
+
+tasks.pluginUnderTestMetadata { pluginClasspath.from(testKitAndroidGradlePlugin) }
+
+tasks.test {
+  // PublicationTest checks the Gradle module metadata that gets published for the plugin.
+  val moduleMetadata =
+    tasks.named<GenerateModuleMetadata>("generateMetadataFileForPluginMavenPublication")
+  val moduleMetadataFile = moduleMetadata.flatMap { it.outputFile }
+  inputs.file(moduleMetadataFile).withPropertyName("moduleMetadata")
+  jvmArgumentProviders.add(
+    CommandLineArgumentProvider {
+      listOf("-Dsimulator.plugin.moduleMetadata=${moduleMetadataFile.get().asFile.path}")
+    },
+  )
+
+  // The TestKit builds need an Android SDK, from ANDROID_HOME or the root local.properties.
+  val localProperties = rootProject.file("local.properties")
+  if (localProperties.exists()) {
+    val sdkDir =
+      localProperties
+        .readLines()
+        .firstOrNull { it.startsWith("sdk.dir=") }
+        ?.removePrefix("sdk.dir=")
+    if (sdkDir != null) systemProperty("android.sdk.dir", sdkDir)
+  }
 }
 
 tasks.validatePlugins {

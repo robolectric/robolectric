@@ -65,10 +65,9 @@ public class ShadowUwbAdapterStateListener {
   protected void register(Executor executor, AdapterStateCallback callback) {
     callbackToExecutorMap.put(callback, executor);
 
-    executor.execute(
-        () ->
-            callback.onStateChanged(
-                adapterState, AdapterStateCallback.STATE_CHANGED_REASON_ERROR_UNKNOWN));
+    executor.execute(() ->
+        callback.onStateChanged(
+            adapterState, AdapterStateCallback.STATE_CHANGED_REASON_ERROR_UNKNOWN));
   }
 
   /** Unregisters a callback. */

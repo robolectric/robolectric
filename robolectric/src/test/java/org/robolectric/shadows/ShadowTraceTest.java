@@ -278,17 +278,16 @@ public class ShadowTraceTest {
       for (int i = 0; i < threadCount; i++) {
         final int threadIndex = i;
         futures.add(
-            executor.submit(
-                () -> {
-                  try {
-                    barrier.await();
-                    for (int j = 0; j < iterationsPerThread; j++) {
-                      Trace.setCounter("Counter_" + threadIndex, j);
-                    }
-                  } catch (Exception e) {
-                    throw new RuntimeException(e);
-                  }
-                }));
+            executor.submit(() -> {
+              try {
+                barrier.await();
+                for (int j = 0; j < iterationsPerThread; j++) {
+                  Trace.setCounter("Counter_" + threadIndex, j);
+                }
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+            }));
       }
 
       for (Future<?> future : futures) {
@@ -350,16 +349,15 @@ public class ShadowTraceTest {
       assertThat(ShadowTrace.getCurrentSections()).isEmpty();
 
       f =
-          backgroundExecutor.submit(
-              () -> {
-                assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
-                assertThat(ShadowTrace.getPreviousSections()).isEmpty();
+          backgroundExecutor.submit(() -> {
+            assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
+            assertThat(ShadowTrace.getPreviousSections()).isEmpty();
 
-                Trace.endSection();
+            Trace.endSection();
 
-                assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
-                assertThat(ShadowTrace.getCurrentSections()).isEmpty();
-              });
+            assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
+            assertThat(ShadowTrace.getCurrentSections()).isEmpty();
+          });
       f.get();
     } finally {
       backgroundExecutor.shutdown();
@@ -394,13 +392,12 @@ public class ShadowTraceTest {
       assertThat(ShadowTrace.getCurrentAsyncSections()).containsExactly(bgLooperSection);
 
       f =
-          backgroundExecutor.submit(
-              () -> {
-                Trace.endAsyncSection("bg_trace", COOKIE);
-                assertThat(ShadowTrace.getPreviousAsyncSections())
-                    .containsExactly(mainLooperSection, bgLooperSection);
-                assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
-              });
+          backgroundExecutor.submit(() -> {
+            Trace.endAsyncSection("bg_trace", COOKIE);
+            assertThat(ShadowTrace.getPreviousAsyncSections())
+                .containsExactly(mainLooperSection, bgLooperSection);
+            assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
+          });
       f.get();
 
     } finally {

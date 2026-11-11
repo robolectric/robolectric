@@ -32,14 +32,13 @@ public class SimulatorIntegrationTest {
     }
     // Run SimulatorMain in a separate thread
     Thread simulatorThread =
-        new Thread(
-            () -> {
-              String[] stringArgs = args.stream().map(File::getAbsolutePath).toArray(String[]::new);
-              for (int i = 0; i < args.size(); i++) {
-                stringArgs[i] = args.get(i).getAbsolutePath();
-              }
-              SimulatorMain.main(stringArgs);
-            });
+        new Thread(() -> {
+          String[] stringArgs = args.stream().map(File::getAbsolutePath).toArray(String[]::new);
+          for (int i = 0; i < args.size(); i++) {
+            stringArgs[i] = args.get(i).getAbsolutePath();
+          }
+          SimulatorMain.main(stringArgs);
+        });
     simulatorThread.setDaemon(true);
     simulatorThread.start();
 
@@ -52,8 +51,13 @@ public class SimulatorIntegrationTest {
     assertThat(c.getGreen()).isEqualTo(0);
   }
 
+  /** The test app to launch, as a test resource. */
+  protected String getApkResource() {
+    return "/simulator-app.apk";
+  }
+
   protected List<File> getSimulatorArgs() {
-    URL resource = getClass().getResource("/simulator-app.apk");
+    URL resource = getClass().getResource(getApkResource());
     assertThat(resource).isNotNull();
     try {
       if (Objects.equals(resource.getProtocol(), "file")) {

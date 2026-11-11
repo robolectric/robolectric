@@ -4,7 +4,6 @@ import android.annotation.ColorInt;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
@@ -203,29 +202,28 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private void performSuccessfulPageLoad(String url) {
     new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              if (webChromeClient != null) {
-                webChromeClient.onProgressChanged(realWebView, 10);
-              }
-              if (webViewClient != null) {
-                webViewClient.onPageStarted(realWebView, url, /* favicon= */ null);
-              }
-              if (webChromeClient != null) {
-                webChromeClient.onProgressChanged(realWebView, 40);
-                webChromeClient.onProgressChanged(realWebView, 80);
-              }
-              if (webViewClient != null && VERSION.SDK_INT >= 23) {
-                webViewClient.onPageCommitVisible(realWebView, url);
-              }
-              if (webChromeClient != null) {
-                webChromeClient.onReceivedTitle(realWebView, url);
-                webChromeClient.onProgressChanged(realWebView, 100);
-              }
-              if (webViewClient != null) {
-                webViewClient.onPageFinished(realWebView, url);
-              }
-            });
+        .post(() -> {
+          if (webChromeClient != null) {
+            webChromeClient.onProgressChanged(realWebView, 10);
+          }
+          if (webViewClient != null) {
+            webViewClient.onPageStarted(realWebView, url, /* favicon= */ null);
+          }
+          if (webChromeClient != null) {
+            webChromeClient.onProgressChanged(realWebView, 40);
+            webChromeClient.onProgressChanged(realWebView, 80);
+          }
+          if (webViewClient != null) {
+            webViewClient.onPageCommitVisible(realWebView, url);
+          }
+          if (webChromeClient != null) {
+            webChromeClient.onReceivedTitle(realWebView, url);
+            webChromeClient.onProgressChanged(realWebView, 100);
+          }
+          if (webViewClient != null) {
+            webViewClient.onPageFinished(realWebView, url);
+          }
+        });
   }
 
   /**

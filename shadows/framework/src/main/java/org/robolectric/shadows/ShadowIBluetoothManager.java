@@ -19,7 +19,7 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import javax.annotation.concurrent.GuardedBy;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -76,7 +76,7 @@ public class ShadowIBluetoothManager {
       return false;
     }
     return true;
-    }
+  }
 
   /**
    * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
@@ -107,4 +107,3 @@ public class ShadowIBluetoothManager {
     void onBluetoothServiceUp(IBluetooth bluetoothService);
   }
 }
-

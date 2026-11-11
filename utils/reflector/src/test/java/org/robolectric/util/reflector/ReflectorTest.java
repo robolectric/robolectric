@@ -75,7 +75,7 @@ public class ReflectorTest {
 
   @Test
   public void reflector_staticFieldAccessors() {
-    assertThat(reflector.getEStatic()).isEqualTo(null);
+    assertThat(reflector.getEStatic()).isNull();
 
     reflector.setEStatic("eee!");
     assertThat(reflector.getEStatic()).isEqualTo("eee!");

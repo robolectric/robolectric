@@ -165,12 +165,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       List<FrameworkMethod> methods = entry.getValue();
       Sandbox sandbox = ensureSandboxIsAlive(entry.getKey(), methods.get(0));
       configureSandbox(sandbox, methods.get(0));
-      sandbox.runOnMainThreadWithClassLoader(
-          () -> {
-            result.addAll(
-                (List<FrameworkMethod>)
-                    runInSandbox(sandbox, methods.get(0), unused -> mapper.map(sandbox, methods)));
-          });
+      sandbox.runOnMainThreadWithClassLoader(() -> {
+        result.addAll(
+            (List<FrameworkMethod>)
+                runInSandbox(sandbox, methods.get(0), unused -> mapper.map(sandbox, methods)));
+      });
     }
     return result.build();
   }
@@ -274,14 +273,13 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         // not available once we install the Robolectric class loader.
         configureSandbox(sandbox, firstMethod);
 
-        sandbox.runOnMainThreadWithClassLoader(
-            () -> {
-              try {
-                base.evaluate();
-              } catch (Throwable throwable) {
-                throw Util.sneakyThrow(throwable);
-              }
-            });
+        sandbox.runOnMainThreadWithClassLoader(() -> {
+          try {
+            base.evaluate();
+          } catch (Throwable throwable) {
+            throw Util.sneakyThrow(throwable);
+          }
+        });
       }
     };
   }

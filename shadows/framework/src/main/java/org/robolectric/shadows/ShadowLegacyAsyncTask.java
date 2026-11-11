@@ -52,10 +52,8 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result>
 
           try {
             RuntimeEnvironment.getMasterScheduler()
-                .post(
-                    () ->
-                        reflector(LegacyAsyncTaskReflector.class, realAsyncTask)
-                            .onPostExecute(result));
+                .post(() ->
+                    reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onPostExecute(result));
           } catch (Throwable t) {
             throw new OnPostExecuteException(t);
           }
@@ -135,9 +133,8 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result>
   @Implementation
   protected void publishProgress(final Progress... values) {
     RuntimeEnvironment.getMasterScheduler()
-        .post(
-            () ->
-                reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onProgressUpdate(values));
+        .post(() ->
+            reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onProgressUpdate(values));
   }
 
   private final class BackgroundWorker implements Callable<Result> {

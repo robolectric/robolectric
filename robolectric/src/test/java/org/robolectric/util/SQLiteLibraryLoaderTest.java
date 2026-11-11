@@ -137,6 +137,12 @@ public class SQLiteLibraryLoaderTest {
   }
 
   @Test
+  public void shouldNotSupportLinuxWithArchArm64() {
+    setNameAndArch(OS_NAME_LINUX, OS_ARCH_ARM64);
+    assertThat(SQLiteLibraryLoader.isOsSupported()).isFalse();
+  }
+
+  @Test
   public void shouldSupportMacOSWithArchX86() {
     setNameAndArch(OS_NAME_MAC, OS_ARCH_X86);
     assertThat(SQLiteLibraryLoader.isOsSupported()).isTrue();

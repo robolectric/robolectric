@@ -1,3 +1,4 @@
+import com.android.build.api.variant.HostTestBuilder
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -31,6 +32,9 @@ androidComponents {
   beforeVariants { variantBuilder ->
     // composeui does not support AndroidTest now.
     variantBuilder.enableAndroidTest = false
+    if (variantBuilder.buildType == "release") {
+      variantBuilder.hostTests.getValue(HostTestBuilder.UNIT_TEST_TYPE).enable = true
+    }
   }
 }
 
@@ -47,4 +51,12 @@ dependencies {
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
   testImplementation(libs.androidx.compose.ui.test.junit4)
+  testImplementation(libs.androidx.compose.material3.adaptive)
+  testImplementation(libs.androidx.compose.material3.adaptive.layout)
+  testImplementation(libs.androidx.compose.material3.adaptive.navigation)
+  testImplementation(libs.androidx.compose.material3.adaptive.navigation.suite)
+  testImplementation(libs.androidx.window.testing)
+  testImplementation(libs.truth)
+  testImplementation(libs.androidx.fragment)
+  testImplementation(libs.molecule.runtime)
 }

@@ -559,7 +559,7 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(virtualDisplay.getSurface()).isEqualTo(surface);
       assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
       assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
-      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
     }
   }
 
@@ -600,7 +600,7 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
       assertThat(virtualDisplay.getDisplay().getName())
           .isEqualTo("VirtualDisplay-1"); // Default name format
-      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
     }
   }
 
@@ -696,10 +696,9 @@ public class ShadowVirtualDeviceManagerTest {
           virtualDeviceManager.getVirtualDevices().stream()
               .filter(device -> virtualDeviceName.equals(device.getName()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new AssertionError(
-                          "Virtual device with name '" + virtualDeviceName + "' not found"));
+              .orElseThrow(() ->
+                  new AssertionError(
+                      "Virtual device with name '" + virtualDeviceName + "' not found"));
 
       assertThat(secondVirtualDisplay).isNotNull();
       assertThat(firstVirtualDisplay).isNotNull();
@@ -889,28 +888,26 @@ public class ShadowVirtualDeviceManagerTest {
     AudioFormat captureFormat = createAudioCaptureFormat();
     AtomicBoolean observedIsBlocking = new AtomicBoolean(true);
     byte[] expectedBytes = new byte[] {10, 20, 30, 40};
-    ShadowAudioRecord.setSourceProvider(
-        audioRecord ->
-            new AudioRecordSource() {
-              @Override
-              public int readInByteArray(
-                  byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
-                observedIsBlocking.set(isBlocking);
-                int toCopy = Math.min(expectedBytes.length, sizeInBytes);
-                System.arraycopy(expectedBytes, 0, audioData, offsetInBytes, toCopy);
-                return toCopy;
-              }
+    ShadowAudioRecord.setSourceProvider(audioRecord ->
+        new AudioRecordSource() {
+          @Override
+          public int readInByteArray(
+              byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
+            observedIsBlocking.set(isBlocking);
+            int toCopy = Math.min(expectedBytes.length, sizeInBytes);
+            System.arraycopy(expectedBytes, 0, audioData, offsetInBytes, toCopy);
+            return toCopy;
+          }
 
-              @Override
-              public int readInDirectBuffer(
-                  ByteBuffer buffer, int sizeInBytes, boolean isBlocking) {
-                observedIsBlocking.set(isBlocking);
-                int maxBytes = Math.min(buffer.remaining(), sizeInBytes);
-                int toCopy = Math.min(expectedBytes.length, maxBytes);
-                buffer.put(expectedBytes, 0, toCopy);
-                return toCopy;
-              }
-            });
+          @Override
+          public int readInDirectBuffer(ByteBuffer buffer, int sizeInBytes, boolean isBlocking) {
+            observedIsBlocking.set(isBlocking);
+            int maxBytes = Math.min(buffer.remaining(), sizeInBytes);
+            int toCopy = Math.min(expectedBytes.length, maxBytes);
+            buffer.put(expectedBytes, 0, toCopy);
+            return toCopy;
+          }
+        });
 
     try (VirtualDevice virtualDevice =
         virtualDeviceManager.createVirtualDevice(

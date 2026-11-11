@@ -75,12 +75,11 @@ public class ShadowTabSpecTest {
     TabHost.TabSpec foo =
         new TabHost(context)
             .newTabSpec("Foo")
-            .setContent(
-                tag -> {
-                  TextView tv = new TextView(context);
-                  tv.setText("The Text of " + tag);
-                  return tv;
-                });
+            .setContent(tag -> {
+              TextView tv = new TextView(context);
+              tv.setText("The Text of " + tag);
+              return tv;
+            });
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
     TextView textView = (TextView) shadowFoo.getContentView();

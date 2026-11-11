@@ -13,7 +13,7 @@ public final class ShadowPaintDrawableTest {
   @Test
   public void noCornerRadii_returnsNull() {
     PaintDrawable paintDrawable = new PaintDrawable();
-    assertThat(shadowOf(paintDrawable).getCornerRadii()).isEqualTo(null);
+    assertThat(shadowOf(paintDrawable).getCornerRadii()).isNull();
   }
 
   @Test

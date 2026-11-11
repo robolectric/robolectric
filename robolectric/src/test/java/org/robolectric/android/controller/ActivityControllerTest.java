@@ -13,9 +13,11 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Fragment;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -42,13 +45,17 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ActivityReflector;
+import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName =
       new ComponentName("org.robolectric", MyActivity.class.getName());
@@ -359,6 +366,41 @@ public class ActivityControllerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void noArgsConfigurationChange_onNonDefaultDisplay_whenManaged_keepsTheActivity() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(
+                ConfigAwareActivity.class,
+                null,
+                ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+            .setup();
+    ConfigAwareActivity activity = configController.get();
+
+    RuntimeEnvironment.setFontScale(2f);
+    configController.configurationChange();
+
+    assertThat(configController.get()).isSameInstanceAs(activity);
+    assertThat(activity.newConfig.fontScale).isEqualTo(2f);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void noArgsConfigurationChange_afterRecreateWithAppOverrideConfig_keepsTheActivity() {
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+    ActivityController<NightOverrideActivity> nightController =
+        Robolectric.buildActivity(NightOverrideActivity.class).setup();
+    nightController.recreate();
+    NightOverrideActivity activity = nightController.get();
+
+    // The global configuration hasn't changed, so the activity must not be recreated, even though
+    // the configuration it applied to itself (e.g. AppCompat's local night mode) differs from it.
+    nightController.configurationChange();
+
+    assertThat(nightController.get()).isSameInstanceAs(activity);
+  }
+
+  @Test
   @Config(qualifiers = "land")
   public void configurationChange_restoresTheme() {
     Configuration config =
@@ -404,6 +446,23 @@ public class ActivityControllerTest {
       controller.recreate();
 
       assertThat(transcript).containsExactly("onPause true", "onStop true", "onDestroy true");
+    }
+  }
+
+  /**
+   * An activity that applies a night mode override configuration to itself, like AppCompat does for
+   * {@code AppCompatDelegate#setLocalNightMode}, and doesn't handle uiMode changes.
+   */
+  public static class NightOverrideActivity extends Activity {
+    @Override
+    protected void attachBaseContext(Context newBase) {
+      super.attachBaseContext(newBase);
+      Configuration overrideConfig = new Configuration();
+      overrideConfig.uiMode =
+          Configuration.UI_MODE_NIGHT_YES
+              | (newBase.getResources().getConfiguration().uiMode
+                  & ~Configuration.UI_MODE_NIGHT_MASK);
+      applyOverrideConfiguration(overrideConfig);
     }
   }
 

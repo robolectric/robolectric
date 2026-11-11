@@ -71,13 +71,12 @@ public class AccessibilityNodeInfoTest {
   public void obtain_withWindow_returnsWindowId() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            View rootView = activity.findViewById(android.R.id.content);
-            AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(rootView);
-            long sourceNodeId = ReflectionHelpers.getField(node, "mSourceNodeId");
-            assertThat(sourceNodeId).isNotEqualTo(-1);
-          });
+      scenario.onActivity(activity -> {
+        View rootView = activity.findViewById(android.R.id.content);
+        AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(rootView);
+        long sourceNodeId = ReflectionHelpers.getField(node, "mSourceNodeId");
+        assertThat(sourceNodeId).isNotEqualTo(-1);
+      });
     }
   }
 
@@ -115,19 +114,18 @@ public class AccessibilityNodeInfoTest {
   public void directAccessibilityConnection_queryChildCount() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            View rootView = activity.findViewById(android.R.id.content);
-            AccessibilityNodeInfo node = rootView.createAccessibilityNodeInfo();
-            node.setQueryFromAppProcessEnabled(rootView, true);
-            assertThat(node.getChildCount()).isEqualTo(1);
-            assertThat(node.getChild(0)).isNotNull();
-            // Only expect getWindowId() is -1 in Robolectric environment.
-            // TODO remove Robolectric checking after fixing Robolectric's implementation.
-            if (Build.FINGERPRINT.equals("robolectric")) {
-              assertThat(node.getWindowId()).isEqualTo(-1);
-            }
-          });
+      scenario.onActivity(activity -> {
+        View rootView = activity.findViewById(android.R.id.content);
+        AccessibilityNodeInfo node = rootView.createAccessibilityNodeInfo();
+        node.setQueryFromAppProcessEnabled(rootView, true);
+        assertThat(node.getChildCount()).isEqualTo(1);
+        assertThat(node.getChild(0)).isNotNull();
+        // Only expect getWindowId() is -1 in Robolectric environment.
+        // TODO remove Robolectric checking after fixing Robolectric's implementation.
+        if (Build.FINGERPRINT.equals("robolectric")) {
+          assertThat(node.getWindowId()).isEqualTo(-1);
+        }
+      });
     }
   }
 }

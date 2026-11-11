@@ -323,8 +323,6 @@ public class AttributeResolution9 {
       }
     }
 
-
-
     // Retrieve the style class bag, if requested.
     ResolvedBag xml_style_bag = null;
     if (style_res_id != 0) {

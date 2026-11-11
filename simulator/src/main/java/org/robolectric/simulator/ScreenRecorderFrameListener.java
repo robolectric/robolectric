@@ -40,14 +40,13 @@ public class ScreenRecorderFrameListener implements FrameListener {
 
     Runtime.getRuntime()
         .addShutdownHook(
-            new Thread(
-                () -> {
-                  // Make sure that we don't stop the screen recorder in the middle of a write!
-                  writingFrame.acquireUninterruptibly();
-                  screenRecorder.stop();
-                  screenRecorder = null;
-                  writingFrame.release();
-                }));
+            new Thread(() -> {
+              // Make sure that we don't stop the screen recorder in the middle of a write!
+              writingFrame.acquireUninterruptibly();
+              screenRecorder.stop();
+              screenRecorder = null;
+              writingFrame.release();
+            }));
   }
 
   @Override

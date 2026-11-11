@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.AndroidLibrarySourceSet
 import org.robolectric.gradle.AndroidSdk
 
 plugins {
@@ -15,8 +16,6 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
-  lint { abortOnError = false }
-
   testOptions {
     targetSdk = 36
     unitTests {
@@ -33,17 +32,15 @@ android {
   androidResources { noCompress.add("txt") }
 
   sourceSets {
-    val sharedTestDir = "src/sharedTest/"
-    val sharedTestSourceDir = sharedTestDir + "java"
-    val sharedTestResourceDir = sharedTestDir + "resources"
+    val configurationAction: AndroidLibrarySourceSet.() -> Unit = {
+      val sharedTestDir = "src/sharedTest/"
 
-    val test by getting
-    test.resources.srcDirs(sharedTestResourceDir)
-    test.java.srcDirs(sharedTestSourceDir)
+      resources.directories.add(sharedTestDir + "resources")
+      java.directories.add(sharedTestDir + "java")
+    }
 
-    val androidTest by getting
-    androidTest.resources.srcDirs(sharedTestResourceDir)
-    androidTest.java.srcDirs(sharedTestSourceDir)
+    named("test", configurationAction)
+    named("androidTest", configurationAction)
   }
 }
 

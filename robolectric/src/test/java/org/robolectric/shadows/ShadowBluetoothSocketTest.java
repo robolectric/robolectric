@@ -140,16 +140,15 @@ public class ShadowBluetoothSocketTest {
     CountDownLatch completedConnectLatch = new CountDownLatch(1);
     Future<?> unused =
         Executors.newSingleThreadExecutor()
-            .submit(
-                () -> {
-                  aboutToConnectLatch.countDown();
-                  try {
-                    bluetoothSocket.connect();
-                  } catch (IOException e) {
-                    connectCompletedExceptionally.set(true);
-                  }
-                  completedConnectLatch.countDown();
-                });
+            .submit(() -> {
+              aboutToConnectLatch.countDown();
+              try {
+                bluetoothSocket.connect();
+              } catch (IOException e) {
+                connectCompletedExceptionally.set(true);
+              }
+              completedConnectLatch.countDown();
+            });
     aboutToConnectLatch.await();
 
     assertThat(completedConnectLatch.await(100, MILLISECONDS)).isFalse();
@@ -168,16 +167,15 @@ public class ShadowBluetoothSocketTest {
     CountDownLatch completedConnectLatch = new CountDownLatch(1);
     Future<?> unused =
         Executors.newSingleThreadExecutor()
-            .submit(
-                () -> {
-                  aboutToConnectLatch.countDown();
-                  try {
-                    bluetoothSocket.connect();
-                  } catch (IOException e) {
-                    connectCompletedExceptionally.set(true);
-                  }
-                  completedConnectLatch.countDown();
-                });
+            .submit(() -> {
+              aboutToConnectLatch.countDown();
+              try {
+                bluetoothSocket.connect();
+              } catch (IOException e) {
+                connectCompletedExceptionally.set(true);
+              }
+              completedConnectLatch.countDown();
+            });
     aboutToConnectLatch.await();
 
     assertThat(completedConnectLatch.await(100, MILLISECONDS)).isFalse();

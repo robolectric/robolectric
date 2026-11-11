@@ -10,6 +10,7 @@ public class ResName {
   public static final String ID_TYPE = "id";
 
   private static final Pattern FQN_PATTERN = Pattern.compile("^([^:]*):([^/]+)/(.+)$");
+  private static final Pattern STRIP_PREFIX_PATTERN = Pattern.compile("[@+]");
   private static final int NAMESPACE = 1;
   private static final int TYPE = 2;
   private static final int NAME = 3;
@@ -111,13 +112,15 @@ public class ResName {
       return null;
     }
 
-    return fullyQualifiedResourceName.replaceAll("[@+]", "");
+    return STRIP_PREFIX_PATTERN.matcher(fullyQualifiedResourceName).replaceAll("");
   }
 
   public static ResName qualifyFromFilePath(
       @Nonnull final String packageName, @Nonnull final String filePath) {
     final File file = new File(filePath);
-    final String type = file.getParentFile().getName().split("-", 0)[0];
+    final String dirName = file.getParentFile().getName();
+    final int dashIndex = dirName.indexOf('-');
+    final String type = dashIndex >= 0 ? dirName.substring(0, dashIndex) : dirName;
     final String name = Fs.baseNameFor(file.toPath());
 
     return new ResName(packageName, type, name);

@@ -20,48 +20,34 @@ permissions:
 
 jobs:
   check_code_style:
+    name: Check Code Style
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
-      
-      - name: Check Android Lint
-        run: |
-          ./gradlew lint --continue
 
-      - name: Download google-java-format
-        run: |
-          googleJavaFormatVersion="1.32.0"
-          curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar
-          curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/v${googleJavaFormatVersion}/scripts/google-java-format-diff.py
-          chmod +x $HOME/google-java-format-diff.py
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Only the test jobs save the cache, to keep its entries within GitHub's 10 GB limit.
+          cache-read-only: true
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
-      - name: Check Java formatting
-        run: |
-          base_branch="${{ github.event.pull_request.base.ref }}"
-          echo "Running google-java-format-diff against 'origin/$base_branch'"
-          git fetch origin "$base_branch" --depth 1
-          diff=$(git diff -U0 "$(git merge-base HEAD "origin/$base_branch")" -- . \
-            ':(exclude)processor/src/test/resources/org/robolectric/Robolectric_*.java' \
-            ':(exclude)robolectric/src/test/java/org/robolectric/R.java' \
-            ':(exclude)robolectric/src/test/java/org/robolectric/Manifest.java' \
-            | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
-          if [[ $diff ]]; then
-            echo "Please run google-java-format on the changes in this pull request"
-            git diff -U0 "$(git merge-base HEAD "origin/$base_branch")" | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
-            exit 1
-          fi
-
-      - name: Check Kotlin formatting
+      - name: Check Java and Kotlin Formatting
         run: ./gradlew spotlessCheck
 
       - name: Check Kotlin Quality
         run: ./gradlew detekt
+
+      - name: Check Android Lint
+        run: ./gradlew lint --continue

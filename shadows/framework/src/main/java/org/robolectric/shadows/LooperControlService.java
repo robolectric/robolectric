@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -24,7 +25,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 
@@ -150,16 +150,15 @@ final class LooperControlService {
   //
   void unpause() {
     checkState(looper != getMainLooper() || looperMode() == Mode.INSTRUMENTATION_TEST);
-    executeControlTask(
-        () -> {
-          synchronized (lock) {
-            checkState(
-                state != State.SHUTDOWN,
-                "unpause of %s failed: Looper is shutdown",
-                Thread.currentThread().getName());
-            state = State.UNPAUSED;
-          }
-        });
+    executeControlTask(() -> {
+      synchronized (lock) {
+        checkState(
+            state != State.SHUTDOWN,
+            "unpause of %s failed: Looper is shutdown",
+            Thread.currentThread().getName());
+        state = State.UNPAUSED;
+      }
+    });
   }
 
   void executeControlTask(Runnable runnable) {

@@ -20,7 +20,7 @@ public class SensorBuilderTest {
     assertThat(testSensor.getMaximumRange()).isEqualTo(0f);
     assertThat(testSensor.getMinDelay()).isEqualTo(0);
     assertThat(testSensor.getMaxDelay()).isEqualTo(0);
-    assertThat(testSensor.getName()).isEqualTo(null);
+    assertThat(testSensor.getName()).isNull();
     assertThat(testSensor.getFifoMaxEventCount()).isEqualTo(0);
     assertThat(testSensor.getFifoReservedEventCount()).isEqualTo(0);
   }

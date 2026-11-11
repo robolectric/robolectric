@@ -43,6 +43,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +58,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -2079,28 +2079,26 @@ public class ShadowLocationManager {
 
     @Override
     void onLocations(List<Location> locations) {
-      executor.execute(
-          () -> {
-            if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
-              getKey().onLocationChanged(locations);
-            } else {
-              for (Location location : locations) {
-                getKey().onLocationChanged(location);
-              }
-            }
-          });
+      executor.execute(() -> {
+        if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
+          getKey().onLocationChanged(locations);
+        } else {
+          for (Location location : locations) {
+            getKey().onLocationChanged(location);
+          }
+        }
+      });
     }
 
     @Override
     void onProviderEnabled(String provider, boolean enabled) {
-      executor.execute(
-          () -> {
-            if (enabled) {
-              getKey().onProviderEnabled(provider);
-            } else {
-              getKey().onProviderDisabled(provider);
-            }
-          });
+      executor.execute(() -> {
+        if (enabled) {
+          getKey().onProviderEnabled(provider);
+        } else {
+          getKey().onProviderDisabled(provider);
+        }
+      });
     }
 
     @Override
@@ -2176,13 +2174,12 @@ public class ShadowLocationManager {
     public void invokeFlush() {
       ArrayList<Location> delivery = batch;
       batch = new ArrayList<>();
-      executor.execute(
-          () -> {
-            callback.onLocationBatch(delivery);
-            if (!delivery.isEmpty()) {
-              callback.onLocationBatch(new ArrayList<>());
-            }
-          });
+      executor.execute(() -> {
+        callback.onLocationBatch(delivery);
+        if (!delivery.isEmpty()) {
+          callback.onLocationBatch(new ArrayList<>());
+        }
+      });
     }
 
     public void invokeOnLocations(Location... locations) {

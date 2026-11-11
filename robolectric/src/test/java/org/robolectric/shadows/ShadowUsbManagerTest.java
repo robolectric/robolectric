@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -139,7 +138,7 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  @Config(minSdk = M, maxSdk = P)
+  @Config(minSdk = Config.OLDEST_SDK, maxSdk = P)
   public void getPorts_shouldReturnAddedPorts() {
     shadowOf(usbManager).addPort("port1");
     shadowOf(usbManager).addPort("port2");
@@ -172,7 +171,7 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void clearPorts_shouldRemoveAllPorts() {
     shadowOf(usbManager).addPort("port1");
     shadowOf(usbManager).clearPorts();
@@ -182,7 +181,7 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  @Config(minSdk = M, maxSdk = P)
+  @Config(minSdk = Config.OLDEST_SDK, maxSdk = P)
   public void setPortRoles_sinkHost_shouldSetPortStatus() {
     final int powerRoleSink = getStaticField(UsbPort.class, "POWER_ROLE_SINK");
     final int dataRoleHost = getStaticField(UsbPort.class, "DATA_ROLE_HOST");

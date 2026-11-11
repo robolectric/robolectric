@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
@@ -42,7 +41,7 @@ public final class ShadowStatusBarManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getDisable2() {
     statusBarManager.disable2(ShadowStatusBarManager.DEFAULT_DISABLE2_MASK);
     assertThat(shadowStatusBarManager.getDisable2Flags())

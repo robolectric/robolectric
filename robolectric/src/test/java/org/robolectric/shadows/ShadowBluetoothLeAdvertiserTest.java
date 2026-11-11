@@ -257,7 +257,7 @@ public class ShadowBluetoothLeAdvertiserTest {
         advertiseSettings1, oversizedData, null, advertiseCallback1);
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
-    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(null);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isNull();
   }
 
   @Test
@@ -900,7 +900,7 @@ public class ShadowBluetoothLeAdvertiserTest {
 
     idleMainLooper();
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
-    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(null);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isNull();
   }
 
   @Test

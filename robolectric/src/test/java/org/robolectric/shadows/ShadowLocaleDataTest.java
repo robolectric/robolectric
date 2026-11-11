@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.truth.Truth.assertThat;
@@ -142,7 +141,7 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldSupportLocaleEn_US_since_m() {
     LocaleData localeData = LocaleData.get(Locale.US);
 

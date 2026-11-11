@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.annotation.RequiresApi;
 import android.net.Network;
 import android.net.nsd.DiscoveryRequest;
 import android.net.nsd.NsdManager;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -127,17 +129,20 @@ public class ShadowNsdManager {
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void discoverServices(
-      DiscoveryRequest request, Executor executor, NsdManager.DiscoveryListener listener) {
+      @ClassName("android.net.nsd.DiscoveryRequest") Object requestObject,
+      Executor executor,
+      NsdManager.DiscoveryListener listener) {
+    String serviceType = ((DiscoveryRequest) requestObject).getServiceType();
     // Check for existing discovery listeners.
     Preconditions.checkArgument(
         !discoveryListeners.containsKey(listener), "listener already registered");
     // Register the listener.
-    discoveryServiceTypes.putIfAbsent(request.getServiceType(), new ArrayList<>());
-    discoveryServiceTypes.get(request.getServiceType()).add(listener);
+    discoveryServiceTypes.putIfAbsent(serviceType, new ArrayList<>());
+    discoveryServiceTypes.get(serviceType).add(listener);
     // Add new listener to listener tracking.
-    discoveryListeners.put(listener, request.getServiceType());
+    discoveryListeners.put(listener, serviceType);
     // Notify the listener of the successful start of discovery.
-    executor.execute(() -> listener.onDiscoveryStarted(request.getServiceType()));
+    executor.execute(() -> listener.onDiscoveryStarted(serviceType));
   }
 
   @Implementation
@@ -154,7 +159,10 @@ public class ShadowNsdManager {
 
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void registerServiceInfoCallback(
-      NsdServiceInfo serviceInfo, Executor executor, NsdManager.ServiceInfoCallback callback) {
+      NsdServiceInfo serviceInfo,
+      Executor executor,
+      @ClassName("android.net.nsd.NsdManager$ServiceInfoCallback") Object callbackObject) {
+    NsdManager.ServiceInfoCallback callback = (NsdManager.ServiceInfoCallback) callbackObject;
     Preconditions.checkArgument(
         !serviceInfoCallbacks.containsKey(callback), "callback already registered");
     // Register the callback.
@@ -165,7 +173,9 @@ public class ShadowNsdManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  protected void unregisterServiceInfoCallback(NsdManager.ServiceInfoCallback callback) {
+  protected void unregisterServiceInfoCallback(
+      @ClassName("android.net.nsd.NsdManager$ServiceInfoCallback") Object callbackObject) {
+    NsdManager.ServiceInfoCallback callback = (NsdManager.ServiceInfoCallback) callbackObject;
     // Check for existing callback.
     Preconditions.checkArgument(
         serviceInfoCallbacks.containsKey(callback), "callback not registered");
@@ -280,8 +290,16 @@ public class ShadowNsdManager {
     return resolveListeners.getOrDefault(listener, null);
   }
 
+  /**
+   * Returns the {@link NsdServiceInfo} that the given callback was registered with, or null if it
+   * is not registered.
+   *
+   * @param callback an {@code android.net.nsd.NsdManager.ServiceInfoCallback}
+   */
   @Nullable
-  public NsdServiceInfo getServiceInfoCallbackServiceInfo(NsdManager.ServiceInfoCallback callback) {
+  @RequiresApi(VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public NsdServiceInfo getServiceInfoCallbackServiceInfo(Object callback) {
+    Preconditions.checkArgument(callback instanceof NsdManager.ServiceInfoCallback);
     if (serviceInfoCallbacks.containsKey(callback)) {
       return serviceInfoCallbacks.get(callback);
     }
@@ -297,7 +315,14 @@ public class ShadowNsdManager {
     }
   }
 
-  protected void removeServiceInfoCallback(NsdManager.ServiceInfoCallback callback) {
+  /**
+   * Unregisters the given callback, if it is registered.
+   *
+   * @param callback an {@code android.net.nsd.NsdManager.ServiceInfoCallback}
+   */
+  @RequiresApi(VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void removeServiceInfoCallback(Object callback) {
+    Preconditions.checkArgument(callback instanceof NsdManager.ServiceInfoCallback);
     if (serviceInfoCallbacks.containsKey(callback)) {
       NsdServiceInfo serviceInfo = serviceInfoCallbacks.get(callback);
       NsdServiceKey serviceKey = getServiceKey(serviceInfo);

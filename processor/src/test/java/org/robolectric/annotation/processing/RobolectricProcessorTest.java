@@ -303,5 +303,4 @@ public class RobolectricProcessorTest {
         .hasSourceEquivalentTo(
             Utils.sourceResource("org/robolectric/Robolectric_ShadowPickers.java.txt"));
   }
-
 }

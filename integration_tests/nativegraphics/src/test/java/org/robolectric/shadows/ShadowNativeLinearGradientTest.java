@@ -71,7 +71,7 @@ public class ShadowNativeLinearGradientTest {
     LinearGradient lg = new LinearGradient(0, 0, 0, 40, colors, null, TileMode.CLAMP);
     Bitmap b = drawLinearGradient(lg, Bitmap.Config.RGBA_F16);
     final ColorSpace bitmapColorSpace = b.getColorSpace();
-    Function<Long, Color> convert = (l) -> Color.valueOf(Color.convert(l, bitmapColorSpace));
+    Function<Long, Color> convert = l -> Color.valueOf(Color.convert(l, bitmapColorSpace));
 
     ColorUtils.verifyColor(
         "Top-most color should be mostly blue!", convert.apply(blue), b.getColor(0, 0), 0.09f);

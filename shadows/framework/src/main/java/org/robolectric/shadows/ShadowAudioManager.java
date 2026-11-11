@@ -567,9 +567,8 @@ public class ShadowAudioManager {
    * executors, with the provided {@link AudioDeviceInfo} as argument.
    */
   public void callOnCommunicationDeviceChangedListeners(AudioDeviceInfo device) {
-    registeredCommunicationDeviceChangedListeners.forEach(
-        (listener, executor) ->
-            executor.execute(() -> listener.onCommunicationDeviceChanged(device)));
+    registeredCommunicationDeviceChangedListeners.forEach((listener, executor) ->
+        executor.execute(() -> listener.onCommunicationDeviceChanged(device)));
   }
 
   /**

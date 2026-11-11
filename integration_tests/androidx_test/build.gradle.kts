@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.AndroidLibrarySourceSet
+
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.robolectric.android.project)
@@ -26,20 +28,16 @@ android {
   }
 
   sourceSets {
-    val sharedTestDir = "src/sharedTest/"
-    val sharedTestSourceDir = sharedTestDir + "java"
-    val sharedTestResourceDir = sharedTestDir + "resources"
-    val sharedAndroidManifest = sharedTestDir + "AndroidManifest.xml"
+    val configurationAction: AndroidLibrarySourceSet.() -> Unit = {
+      val sharedTestDir = "src/sharedTest/"
 
-    val test by getting
-    test.resources.srcDirs(sharedTestResourceDir)
-    test.java.srcDirs(sharedTestSourceDir)
-    test.manifest.srcFile(sharedAndroidManifest)
+      resources.directories.add(sharedTestDir + "resources")
+      java.directories.add(sharedTestDir + "java")
+      manifest.srcFile(sharedTestDir + "AndroidManifest.xml")
+    }
 
-    val androidTest by getting
-    androidTest.resources.srcDirs(sharedTestResourceDir)
-    androidTest.java.srcDirs(sharedTestSourceDir)
-    androidTest.manifest.srcFile(sharedAndroidManifest)
+    named("test", configurationAction)
+    named("androidTest", configurationAction)
   }
 }
 

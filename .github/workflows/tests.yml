@@ -11,8 +11,17 @@ on:
     paths-ignore:
       - '**.md'
 
+  # Run by the release workflow.
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The commit to test'
+        type: string
+        required: true
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # When called by another workflow, github.workflow is the caller's name.
+  group: tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -23,20 +32,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
       - name: Build
-        run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --stacktrace
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: ./gradlew assemble testClasses --stacktrace
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -44,28 +64,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-versions: [ '24,25,26', '27,28,29', '30,31,32', '33,34,35', '36,37' ]
+        api-versions: [
+          '24,25,26',
+          '27,28,29',
+          '30,31,32',
+          '33,34,35',
+          '36,37'
+        ]
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
       - name: Run unit tests
-        run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
-          --stacktrace --continue \
-          -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
-          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-          -Dorg.gradle.workers.max=2 \
-          -x :integration_tests:nativegraphics:test \
-          -x :integration_tests:roborazzi:test \
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: >
+          ./gradlew test
+          --stacktrace --continue
+          -Drobolectric.enabledSdks=${{ matrix.api-versions }}
+          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
+          -x :integration_tests:nativegraphics:test
+          -x :integration_tests:roborazzi:test
           -x :integration_tests:ctesque:testDebugUnitTestNativeResources
 
       - name: Upload Test Results
@@ -77,31 +115,41 @@ jobs:
 
   instrumentation-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     needs: build
 
     strategy:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 30, 36 ]
+        api-level: [ 30, 37 ]
 
     steps:
       - name: Free disk space
-        uses: jlumbroso/free-disk-space@v1.3.1
+        uses: jlumbroso/free-disk-space@v2.0.0
         with:
-          tool-cache: true
+          preinstalled-runtimes: true
           android: false
 
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
       - name: Enable KVM group perms
         run: |
@@ -109,37 +157,23 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Determine emulator target
-        id: determine-target
-        run: |
-          TARGET="aosp_atd"
-          echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
 
       - name: Run device tests
-        # We need to use adb shell wm density to reset device's density to use fixed density
-        # for all devices. Hope it can improve the stability of Emulator testing.
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
-          channel: canary
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          profile: Nexus One
-          script: |
-            adb shell wm density 240
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace -Dorg.gradle.workers.max=2
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: ./gradlew -Pandroid.sdk.channel=3 nexusOneApi${{ matrix.api-level }}DebugAndroidTest --stacktrace
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}
+          name: test-results-${{ matrix.api-level }}
           path: |
-            **/build/reports/*
-            **/build/outputs/*/connected/*
+            **/build/reports/androidTests/**
+            **/build/outputs/androidTest-results/**
 
   publish-to-snapshots:
     runs-on: ubuntu-latest
@@ -147,17 +181,29 @@ jobs:
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
     needs: unit-tests
-    if: github.repository == 'robolectric/robolectric' && github.ref == 'refs/heads/master'
+    if: github.repository == 'robolectric/robolectric' && github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Only the test jobs save the cache, to keep its entries within GitHub's 10 GB limit.
+          cache-read-only: true
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
       - name: Publish
         run: ./gradlew publish --stacktrace

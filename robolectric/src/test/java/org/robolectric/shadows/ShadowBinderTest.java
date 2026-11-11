@@ -227,17 +227,16 @@ public class ShadowBinderTest {
     assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
 
     Thread thread =
-        new Thread(
-            () -> {
-              // Other thread should see default process values
-              assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
-              assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
+        new Thread(() -> {
+          // Other thread should see default process values
+          assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+          assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
 
-              // Setting it here should not affect main thread
-              ShadowBinder.setCallingIdentityForCurrentThread(
-                  CallingIdentity.newBuilder().setUid(300).build());
-              assertThat(Binder.getCallingUid()).isEqualTo(300);
-            });
+          // Setting it here should not affect main thread
+          ShadowBinder.setCallingIdentityForCurrentThread(
+              CallingIdentity.newBuilder().setUid(300).build());
+          assertThat(Binder.getCallingUid()).isEqualTo(300);
+        });
     thread.start();
     thread.join();
 
@@ -298,19 +297,18 @@ public class ShadowBinderTest {
     AtomicInteger bgUidAfterReset = new AtomicInteger();
 
     Thread thread =
-        new Thread(
-            () -> {
-              ShadowBinder.setCallingIdentityForCurrentThread(
-                  CallingIdentity.newBuilder().setUid(200).build());
-              bgUidBeforeReset.set(Binder.getCallingUid());
-              threadStarted.countDown();
-              try {
-                resetDone.await();
-              } catch (InterruptedException e) {
-                // ignore
-              }
-              bgUidAfterReset.set(Binder.getCallingUid());
-            });
+        new Thread(() -> {
+          ShadowBinder.setCallingIdentityForCurrentThread(
+              CallingIdentity.newBuilder().setUid(200).build());
+          bgUidBeforeReset.set(Binder.getCallingUid());
+          threadStarted.countDown();
+          try {
+            resetDone.await();
+          } catch (InterruptedException e) {
+            // ignore
+          }
+          bgUidAfterReset.set(Binder.getCallingUid());
+        });
     thread.start();
     threadStarted.await();
 

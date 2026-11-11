@@ -332,30 +332,26 @@ public class ShadowTimeManager {
 
   /** Simulates triggering all registered {@link TimeManager.TimeZoneDetectorListener}s. */
   public void triggerTimeZoneDetectorListeners() {
-    listeners.forEach(
-        (listener, executor) ->
-            executor.execute(
-                () -> {
-                  try {
-                    Method[] methods =
-                        TimeManager.TimeZoneDetectorListener.class.getDeclaredMethods();
-                    Method target = null;
-                    for (Method m : methods) {
-                      if (Modifier.isAbstract(m.getModifiers())) {
-                        target = m;
-                        break;
-                      }
-                    }
-                    if (target != null) {
-                      target.invoke(listener);
-                    } else {
-                      throw new RuntimeException(
-                          "No abstract method found in TimeZoneDetectorListener");
-                    }
-                  } catch (Exception e) {
-                    throw new RuntimeException("Failed to trigger TimeZoneDetectorListener", e);
-                  }
-                }));
+    listeners.forEach((listener, executor) ->
+        executor.execute(() -> {
+          try {
+            Method[] methods = TimeManager.TimeZoneDetectorListener.class.getDeclaredMethods();
+            Method target = null;
+            for (Method m : methods) {
+              if (Modifier.isAbstract(m.getModifiers())) {
+                target = m;
+                break;
+              }
+            }
+            if (target != null) {
+              target.invoke(listener);
+            } else {
+              throw new RuntimeException("No abstract method found in TimeZoneDetectorListener");
+            }
+          } catch (Exception e) {
+            throw new RuntimeException("Failed to trigger TimeZoneDetectorListener", e);
+          }
+        }));
   }
 
   private static TimeZoneCapabilities createDefaultTimeZoneCapabilities() {

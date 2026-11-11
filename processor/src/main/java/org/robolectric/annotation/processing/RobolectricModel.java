@@ -263,21 +263,19 @@ public class RobolectricModel {
       shadowTypes.values().forEach(shadowInfo -> shadowInfo.prepare(referentResolver, helpers));
       resetterMap
           .values()
-          .forEach(
-              resetterInfo -> {
-                ShadowInfo si =
-                    shadowTypes.get(resetterInfo.shadowType.getQualifiedName().toString());
-                String actualBinaryName = si != null ? si.getActualBinaryName() : null;
-                if (actualBinaryName == null) {
-                  actualBinaryName =
-                      extraShadowTypes.get(helpers.getBinaryName(resetterInfo.shadowType));
-                }
-                if (actualBinaryName == null) {
-                  actualBinaryName =
-                      extraShadowTypes.get(resetterInfo.shadowType.getQualifiedName().toString());
-                }
-                resetterInfo.prepare(referentResolver, helpers, actualBinaryName);
-              });
+          .forEach(resetterInfo -> {
+            ShadowInfo si = shadowTypes.get(resetterInfo.shadowType.getQualifiedName().toString());
+            String actualBinaryName = si != null ? si.getActualBinaryName() : null;
+            if (actualBinaryName == null) {
+              actualBinaryName =
+                  extraShadowTypes.get(helpers.getBinaryName(resetterInfo.shadowType));
+            }
+            if (actualBinaryName == null) {
+              actualBinaryName =
+                  extraShadowTypes.get(resetterInfo.shadowType.getQualifiedName().toString());
+            }
+            resetterInfo.prepare(referentResolver, helpers, actualBinaryName);
+          });
     }
 
     private void registerType(TypeElement type) {
@@ -330,24 +328,23 @@ public class RobolectricModel {
   public TreeMap<String, ShadowInfo> getShadowPickers() {
     TreeMap<String, ShadowInfo> map = new TreeMap<>();
     Iterables.filter(shadowTypes.values(), ShadowInfo::hasShadowPicker)
-        .forEach(
-            shadowInfo -> {
-              String actualName = shadowInfo.getActualName();
-              String shadowPickerClassName = shadowInfo.getShadowPickerBinaryName();
-              ShadowInfo otherShadowInfo = map.get(actualName);
-              String otherPicker =
-                  otherShadowInfo == null ? null : otherShadowInfo.getShadowPickerBinaryName();
-              if (otherPicker != null && !otherPicker.equals(shadowPickerClassName)) {
-                throw new IllegalArgumentException(
-                    actualName
-                        + " has conflicting pickers: "
-                        + shadowPickerClassName
-                        + " != "
-                        + otherPicker);
-              } else {
-                map.put(actualName, shadowInfo);
-              }
-            });
+        .forEach(shadowInfo -> {
+          String actualName = shadowInfo.getActualName();
+          String shadowPickerClassName = shadowInfo.getShadowPickerBinaryName();
+          ShadowInfo otherShadowInfo = map.get(actualName);
+          String otherPicker =
+              otherShadowInfo == null ? null : otherShadowInfo.getShadowPickerBinaryName();
+          if (otherPicker != null && !otherPicker.equals(shadowPickerClassName)) {
+            throw new IllegalArgumentException(
+                actualName
+                    + " has conflicting pickers: "
+                    + shadowPickerClassName
+                    + " != "
+                    + otherPicker);
+          } else {
+            map.put(actualName, shadowInfo);
+          }
+        });
     return map;
   }
 

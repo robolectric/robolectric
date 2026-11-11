@@ -11,18 +11,19 @@ shadows {
   sdkCheckMode = "ERROR"
 }
 
-val sqlite4java = configurations.create("sqlite4java")
-val sqlite4javaVersion = libs.versions.sqlite4java.get()
+val sqlite4java = configurations.register("sqlite4java")
+val sqlite4javaVersion = libs.versions.sqlite4java
 
-val copySqliteNatives by
-  tasks.registering(Copy::class) {
+val copySqliteNatives =
+  tasks.register<Copy>("copySqliteNatives") {
     from(sqlite4java) {
       include("**/*.dll")
       include("**/*.so")
       include("**/*.dylib")
 
+      val sqliteVersion = sqlite4javaVersion.get()
       rename { filename ->
-        val filenameMatch = "^([^\\-]+)-(.+)-${sqlite4javaVersion}\\.(.+)".toRegex().find(filename)
+        val filenameMatch = "^([^\\-]+)-(.+)-$sqliteVersion\\.(.+)".toRegex().find(filename)
         if (filenameMatch != null) {
           val platformFilename = filenameMatch.groupValues[1]
           val platformFolder = filenameMatch.groupValues[2]
@@ -34,7 +35,7 @@ val copySqliteNatives by
         }
       }
     }
-    into(project.file(layout.buildDirectory.dir("resources/main/sqlite4java")))
+    into(project.layout.buildDirectory.dir("resources/main/sqlite4java"))
   }
 
 tasks.jar.configure { dependsOn(copySqliteNatives) }

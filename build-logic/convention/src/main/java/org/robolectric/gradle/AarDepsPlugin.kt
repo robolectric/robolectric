@@ -28,24 +28,22 @@ class AarDepsPlugin : Plugin<Project> {
       to.attribute(ARTIFACT_TYPE_ATTRIBUTE, EXT_JAR)
     }
 
-    project.afterEvaluate {
-      configurations.forEach { configuration ->
-        // I suspect we're meant to use the org.gradle.usage attribute, but this works.
-        if (configuration.name.endsWith("Classpath")) {
-          // We should skip swift related classpath as Kotlin from some versions started
-          // to support it to avoid configuration method calling issue.
-          if (!configuration.name.contains("swift")) {
-            configuration.attributes { attribute(ARTIFACT_TYPE_ATTRIBUTE, EXT_JAR) }
-          }
+    project.configurations.configureEach {
+      // I suspect we're meant to use the org.gradle.usage attribute, but this works.
+      if (name.endsWith("Classpath")) {
+        // We should skip swift related classpath as Kotlin from some versions started
+        // to support it to avoid configuration method calling issue.
+        if (!name.contains("swift")) {
+          attributes { attribute(ARTIFACT_TYPE_ATTRIBUTE, EXT_JAR) }
         }
       }
     }
 
     // Warn if any AARs do make it through somehow; there must be a Gradle configuration
     // that isn't matched above.
-    project.tasks.withType<JavaCompile>().forEach { task ->
-      task.doFirst {
-        val aarFiles = findAarFiles(task.classpath)
+    project.tasks.withType<JavaCompile>().configureEach {
+      doFirst {
+        val aarFiles = findAarFiles(classpath)
 
         check(aarFiles.isEmpty()) { "AARs on classpath: " + aarFiles.joinToString("\n  ") }
       }
@@ -69,14 +67,15 @@ class AarDepsPlugin : Plugin<Project> {
             // ExtractAarTransform needs a place to extract the AAR. We don't really need to
             // register this as an output, but it'd be tricky to avoid it.
             val dir = outputs.dir(path)
+            val jarsDir = File(dir, FD_JARS)
 
             // Also, register our jar file. Its name needs to be quasi-unique or IntelliJ
             // Gradle/Android plugins get confused.
-            classesJarFile.set(File(File(dir, FD_JARS), FN_CLASSES_JAR))
-            outJarFile.set(File(File(dir, FD_JARS), "$path$DOT_JAR"))
+            classesJarFile.set(File(jarsDir, FN_CLASSES_JAR))
+            outJarFile.set(File(jarsDir, "$path$DOT_JAR"))
             outputs.file("$path/$FD_JARS/$path$DOT_JAR")
 
-            return outputs.dir(path)
+            return dir
           }
 
           override fun file(path: Any): File {

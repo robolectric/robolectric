@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
@@ -67,6 +68,7 @@ import org.robolectric.util.inject.Injector;
 @SuppressWarnings("NewApi")
 public class RobolectricTestRunner extends SandboxTestRunner {
   private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
+  private static final Pattern SANITIZE_DIR_PATTERN = Pattern.compile("[^a-zA-Z0-9.-]");
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
   private static final ImmutableList<RunListener> RUN_LISTENERS = loadRunListeners();
@@ -295,6 +297,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
     androidSandbox.updateModes(sqliteMode);
+    if (roboMethod.configuration != null) {
+      // Class-level code (@BeforeClass, class rules) runs before any test sets up its environment.
+      androidSandbox.updateConfigurationRegistry(roboMethod.configuration);
+    }
     super.configureSandbox(sandbox, method);
   }
 
@@ -332,9 +338,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /** Returns a filesystem-safe directory path name for the current test. */
   private String getTempDirName(Method method) {
     // Cap the size to 120 to avoid unnecessarily long directory names.
-    String directoryName =
-        (method.getDeclaringClass().getSimpleName() + "_" + method.getName())
-            .replaceAll("[^a-zA-Z0-9.-]", "_");
+    String rawName = method.getDeclaringClass().getSimpleName() + "_" + method.getName();
+    String directoryName = SANITIZE_DIR_PATTERN.matcher(rawName).replaceAll("_");
     if (directoryName.length() > MAX_DATA_DIR_NAME_LENGTH) {
       directoryName = directoryName.substring(0, MAX_DATA_DIR_NAME_LENGTH);
     }

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.telecom.CallAudioState;
@@ -13,7 +12,7 @@ import org.robolectric.shadow.api.Shadow;
 
 /** Robolectric test for {@link ShadowInCallAdapter}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class ShadowInCallAdapterTest {
 
   @Test

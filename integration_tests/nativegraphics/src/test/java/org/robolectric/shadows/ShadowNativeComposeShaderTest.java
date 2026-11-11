@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.junit.Assert.assertEquals;
 
 import android.graphics.Bitmap;
@@ -22,6 +23,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = O)
@@ -172,5 +174,33 @@ public class ShadowNativeComposeShaderTest {
     canvas.drawPaint(paint);
     assertEquals(Color.RED, bitmap.getPixel(2, 2));
     assertEquals(Color.CYAN, bitmap.getPixel(2, 1));
+  }
+
+  /**
+   * A ComposeShader notices that a child has changed by the address of the native shader of the
+   * child. So the ones that it remembers have to be the ones that its own native shader keeps
+   * alive, whose addresses no other native shader can get.
+   */
+  @Config(minSdk = S)
+  @Test
+  public void remembersTheNativeShadersOfTheChildrenThatItIsCreatedFrom() {
+    Bitmap childBitmap = Bitmap.createBitmap(3, 3, Bitmap.Config.ARGB_8888);
+    BitmapShader shaderA = new BitmapShader(childBitmap, TileMode.CLAMP, TileMode.CLAMP);
+    BitmapShader shaderB = new BitmapShader(childBitmap, TileMode.CLAMP, TileMode.CLAMP);
+    ComposeShader composeShader = new ComposeShader(shaderA, shaderB, PorterDuff.Mode.ADD);
+    // A paint filters bitmaps by default, which a BitmapShader has a native shader of its own for.
+    Paint paint = new Paint();
+    paint.setShader(composeShader);
+
+    new Canvas(Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)).drawPaint(paint);
+
+    long rememberedA = ReflectionHelpers.getField(composeShader, "mNativeInstanceShaderA");
+    long rememberedB = ReflectionHelpers.getField(composeShader, "mNativeInstanceShaderB");
+    assertEquals(nativeInstance(shaderA), rememberedA);
+    assertEquals(nativeInstance(shaderB), rememberedB);
+  }
+
+  private static long nativeInstance(Shader shader) {
+    return ReflectionHelpers.getField(shader, "mNativeInstance");
   }
 }

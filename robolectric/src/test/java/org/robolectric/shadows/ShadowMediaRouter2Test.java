@@ -125,10 +125,9 @@ public final class ShadowMediaRouter2Test {
 
     assertThat(
             routes.stream()
-                .anyMatch(
-                    route ->
-                        (route.getId().contains(DEFAULT_ROUTE_ID)
-                            && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
+                .anyMatch(route ->
+                    (route.getId().contains(DEFAULT_ROUTE_ID)
+                        && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
         .isTrue();
   }
 
@@ -158,10 +157,9 @@ public final class ShadowMediaRouter2Test {
     assertThat(routesCaptor.getValue()).isNotEmpty();
     assertThat(
             routesCaptor.getValue().stream()
-                .anyMatch(
-                    route ->
-                        (route.getId().contains(DEFAULT_ROUTE_ID)
-                            && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
+                .anyMatch(route ->
+                    (route.getId().contains(DEFAULT_ROUTE_ID)
+                        && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
         .isTrue();
   }
 
@@ -189,10 +187,9 @@ public final class ShadowMediaRouter2Test {
     assertThat(routesCaptor.getValue()).isNotEmpty();
     assertThat(
             routesCaptor.getValue().stream()
-                .anyMatch(
-                    route ->
-                        (route.getId().contains(DEFAULT_ROUTE_ID)
-                            && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
+                .anyMatch(route ->
+                    (route.getId().contains(DEFAULT_ROUTE_ID)
+                        && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
         .isTrue();
   }
 
@@ -231,10 +228,9 @@ public final class ShadowMediaRouter2Test {
     assertThat(routesCaptor.getValue()).isNotEmpty();
     assertThat(
             routesCaptor.getValue().stream()
-                .anyMatch(
-                    route ->
-                        (route.getId().contains(DEFAULT_ROUTE_ID)
-                            && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
+                .anyMatch(route ->
+                    (route.getId().contains(DEFAULT_ROUTE_ID)
+                        && route.getId().contains(SYSTEM_ROUTE_PROVIDER_ID))))
         .isTrue();
   }
 

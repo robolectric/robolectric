@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ComponentName;
@@ -16,7 +15,7 @@ import org.robolectric.annotation.Config;
 
 /** Test for {@link PhoneAccountBuilder}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class PhoneAccountBuilderTest {
   private PhoneAccount phoneAccount;
 

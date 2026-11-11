@@ -8,6 +8,7 @@ import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Matrix;
 import android.os.Build;
+import android.os.Parcel;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -176,6 +177,54 @@ public class ShadowMotionEventTest {
 
     assertThat(event.getXCursorPosition()).isEqualTo(21.0f); // (10.0 * 2.0) + 1.0
     assertThat(event.getYCursorPosition()).isEqualTo(302.0f); // (100.0 * 3.0) + 2.0
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_scale_scalesPosition() {
+    MotionEvent event = createMouseEvent(createCoords(10.0f, 100.0f));
+
+    event.scale(2.0f);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(20.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(200.0f);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_offsetLocation_appliesOffset() {
+    MotionEvent event = createMouseEvent(createCoords(10.0f, 100.0f));
+
+    event.offsetLocation(3.0f, 4.0f);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(13.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(104.0f);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_copy_preservesPosition() {
+    MotionEvent event = createMouseEvent(createCoords(10.0f, 100.0f));
+
+    MotionEvent copy = MotionEvent.obtain(event);
+
+    assertThat(copy.getXCursorPosition()).isEqualTo(10.0f);
+    assertThat(copy.getYCursorPosition()).isEqualTo(100.0f);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_parcelRoundTrip_preservesPosition() {
+    MotionEvent event = createMouseEvent(createCoords(10.0f, 100.0f));
+
+    Parcel parcel = Parcel.obtain();
+    event.writeToParcel(parcel, /* flags= */ 0);
+    parcel.setDataPosition(0);
+    MotionEvent unparceled = MotionEvent.CREATOR.createFromParcel(parcel);
+    parcel.recycle();
+
+    assertThat(unparceled.getXCursorPosition()).isEqualTo(10.0f);
+    assertThat(unparceled.getYCursorPosition()).isEqualTo(100.0f);
   }
 
   private static MotionEvent createMouseEvent(MotionEvent.PointerCoords... coords) {

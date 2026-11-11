@@ -10,19 +10,30 @@ class SpotlessPlugin : Plugin<Project> {
     project.pluginManager.apply("com.diffplug.spotless")
 
     project.extensions.configure<SpotlessExtension> {
+      // Add configuration for Java files
+      java {
+        googleJavaFormat("2.0.0")
+        target("**/*.java")
+        targetExclude(
+          "processor/src/test/resources/org/robolectric/**/*.java",
+          "robolectric/src/test/java/org/robolectric/Manifest.java",
+          "robolectric/src/test/java/org/robolectric/R.java",
+        )
+      }
+
       // Add configurations for Kotlin files
       kotlin {
         target("**/*.kt")
-        ktfmt("0.49").googleStyle()
+        ktfmt("0.65").googleStyle()
       }
 
       // Add configurations for Kotlin Gradle files
       kotlinGradle {
         target("**/*.kts")
-        ktfmt("0.49").googleStyle()
+        ktfmt("0.65").googleStyle()
       }
 
-      // Only apply yaml and json formatting for root project
+      // Only apply YAML and JSON formatting for root project
       // to avoid some files are added into multiple project's spotless targets.
       if (project.rootProject == project) {
         // Add configurations for JSON files

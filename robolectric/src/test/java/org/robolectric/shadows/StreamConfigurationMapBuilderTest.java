@@ -6,7 +6,6 @@ import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
-import android.os.Build.VERSION_CODES;
 import android.util.Size;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
@@ -69,14 +68,14 @@ public class StreamConfigurationMapBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetInputSizesIfNotAddInputSizes() {
     StreamConfigurationMap map = StreamConfigurationMapBuilder.newBuilder().build();
     assertThat(map.getInputSizes(ImageFormat.PRIVATE)).isNull();
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetInputSizesForTwoFormats() {
     Size size1 = new Size(1920, 1080);
     Size size2 = new Size(1280, 720);
@@ -90,7 +89,7 @@ public class StreamConfigurationMapBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetInputSizesForImageFormatNV21() {
     Size size1 = new Size(1920, 1080);
     Size size2 = new Size(1280, 720);
@@ -103,7 +102,7 @@ public class StreamConfigurationMapBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetInputSizesPixelFormatRgba8888() {
     Size size1 = new Size(1920, 1080);
     Size size2 = new Size(1280, 720);

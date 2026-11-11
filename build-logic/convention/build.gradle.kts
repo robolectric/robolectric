@@ -16,6 +16,14 @@ gradlePlugin {
       id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin"
       implementationClass = "org.robolectric.gradle.DeployedRoboJavaModulePlugin"
     }
+    register("DeployedRoboKotlinModulePlugin") {
+      id = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin"
+      implementationClass = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin"
+    }
+    register("ErrorProneReportPlugin") {
+      id = "org.robolectric.gradle.ErrorProneReportPlugin"
+      implementationClass = "org.robolectric.gradle.ErrorProneReportPlugin"
+    }
     register("GradleManagedDevicePlugin") {
       id = "org.robolectric.gradle.GradleManagedDevicePlugin"
       implementationClass = "org.robolectric.gradle.GradleManagedDevicePlugin"
@@ -52,3 +60,8 @@ java {
 }
 
 kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+
+tasks.validatePlugins {
+  failOnWarning = true
+  enableStricterValidation = true
+}

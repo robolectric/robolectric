@@ -17,6 +17,13 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.robolectric.internal.ClassTracker;
@@ -41,6 +48,15 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
   private final String dumpClassesDirectory;
+  // Set robolectric.cacheServiceLoaderResources=false if descriptor locations in the sandbox or its
+  // parent class loader change. The cache stores URLs, so changes to the contents of an existing
+  // descriptor remain visible.
+  private final boolean cacheServiceLoaderResources =
+      Boolean.parseBoolean(System.getProperty("robolectric.cacheServiceLoaderResources", "true"));
+  private final Map<String, List<URL>> serviceLoaderResources = new HashMap<>();
+  // Names that isClassLoaded found loaded. A class stays loaded for the life of its loader, and
+  // Shadows.reset asks about the same classes after every test.
+  private final Set<String> loadedClassNames = ConcurrentHashMap.newKeySet();
   private boolean isClosed;
 
   /** Constructor for use by tests. */
@@ -109,6 +125,33 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
       }
     }
     return urls.build().toArray(new URL[0]);
+  }
+
+  @Override
+  public Enumeration<URL> getResources(String name) throws IOException {
+    if (!cacheServiceLoaderResources || !name.startsWith("META-INF/services/")) {
+      return super.getResources(name);
+    }
+    synchronized (serviceLoaderResources) {
+      if (isClosed) {
+        return super.getResources(name);
+      }
+      List<URL> resources = serviceLoaderResources.get(name);
+      if (resources == null) {
+        resources = Collections.list(super.getResources(name));
+        serviceLoaderResources.put(name, resources);
+      }
+      // Only the URLs are cached. Each ServiceLoader reads the descriptors through its own cursor.
+      return Collections.enumeration(resources);
+    }
+  }
+
+  @Override
+  protected void addURL(URL url) {
+    synchronized (serviceLoaderResources) {
+      super.addURL(url);
+      serviceLoaderResources.clear();
+    }
   }
 
   @Override
@@ -206,7 +249,14 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
     if (className == null) {
       return false;
     }
-    return findLoadedClass(className) != null;
+    if (loadedClassNames.contains(className)) {
+      return true;
+    }
+    if (findLoadedClass(className) == null) {
+      return false;
+    }
+    loadedClassNames.add(className);
+    return true;
   }
 
   private Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
@@ -258,8 +308,15 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
 
   @Override
   public void close() throws IOException {
-    super.close();
-    resourceProvider.close();
-    isClosed = true;
+    synchronized (serviceLoaderResources) {
+      try {
+        super.close();
+        resourceProvider.close();
+      } finally {
+        // A resource-provider failure can follow a successful URLClassLoader close.
+        isClosed = true;
+        serviceLoaderResources.clear();
+      }
+    }
   }
 }

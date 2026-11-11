@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +25,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public abstract class Fs {

@@ -1,5 +1,6 @@
 package org.robolectric.integrationtests.sdkcompat
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Bitmap
@@ -55,6 +56,27 @@ class NormalCompatibilityTest {
       val activity = controller.setup().get()
       Shadows.shadowOf(activity)
     }
+  }
+
+  // These shadows reference framework types newer than this module's SDK. Such a type named in a
+  // field or method descriptor is resolved while the shadow is wired up, which would make the
+  // whole shadow unloadable here. See https://github.com/robolectric/robolectric/issues/11520
+  @Test
+  fun `Initialize WifiManager succeed`() {
+    val wifiManager = application.getSystemService(Context.WIFI_SERVICE)
+    assertThat(wifiManager).isNotNull()
+  }
+
+  @Test
+  fun `Initialize NsdManager succeed`() {
+    val nsdManager = application.getSystemService(Context.NSD_SERVICE)
+    assertThat(nsdManager).isNotNull()
+  }
+
+  @Test
+  fun `Retrieve remote BluetoothDevice succeed`() {
+    val device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice("00:11:22:33:AA:BB")
+    assertThat(device).isNotNull()
   }
 
   @Test

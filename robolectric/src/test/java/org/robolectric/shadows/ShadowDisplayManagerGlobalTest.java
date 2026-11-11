@@ -62,12 +62,11 @@ public class ShadowDisplayManagerGlobalTest {
     CountDownLatch latch = new CountDownLatch(1);
 
     Thread bgThread =
-        new Thread(
-            () -> {
-              bgDisplayInfo.set(
-                  DisplayManagerGlobal.getInstance().getDisplayInfo(Display.DEFAULT_DISPLAY));
-              latch.countDown();
-            });
+        new Thread(() -> {
+          bgDisplayInfo.set(
+              DisplayManagerGlobal.getInstance().getDisplayInfo(Display.DEFAULT_DISPLAY));
+          latch.countDown();
+        });
     bgThread.start();
     latch.await(5, TimeUnit.SECONDS);
 
@@ -111,7 +110,7 @@ public class ShadowDisplayManagerGlobalTest {
     assertThat(virtualDisplay.getSurface()).isEqualTo(surface);
     assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
     assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
-    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
   }
 
   @Test

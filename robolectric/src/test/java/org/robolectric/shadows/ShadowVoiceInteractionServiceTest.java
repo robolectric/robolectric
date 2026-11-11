@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -72,20 +71,20 @@ public class ShadowVoiceInteractionServiceTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void showSessionInvokedBeforeServiceReady_throwsException() {
     assertThrows(IllegalStateException.class, () -> service.showSession(new Bundle(), 0));
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void showSessionNotInvoked_returnsNull() {
     service.onReady();
     assertThat(shadowService.getLastSessionBundle()).isNull();
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void showSessionInvoked_returnsValues() {
     service.onReady();
     service.showSession(new Bundle(), /* flags= */ 0);

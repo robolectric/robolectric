@@ -216,7 +216,7 @@ public class ShadowTrace {
     }
 
     /** Builder for traces triggered by one of the async apis */
-    @AutoValue.Builder()
+    @AutoValue.Builder
     public abstract static class Builder {
       public abstract Builder setSectionName(String sectionName);
 
@@ -239,7 +239,7 @@ public class ShadowTrace {
     }
 
     /** Builder for counters emitted with the setCounter API */
-    @AutoValue.Builder()
+    @AutoValue.Builder
     public abstract static class Builder {
 
       public abstract Builder setName(String value);

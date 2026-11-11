@@ -48,10 +48,9 @@ public final class AnimationTest {
     // In Android animations can only run on Looper threads.
     try (ActivityScenario<ActivityWithoutTheme> scenario =
         ActivityScenario.launch(ActivityWithoutTheme.class)) {
-      scenario.onActivity(
-          activity -> {
-            animatorSet.start();
-          });
+      scenario.onActivity(activity -> {
+        animatorSet.start();
+      });
     }
 
     Espresso.onIdle();

@@ -86,6 +86,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.errorprone.annotations.InlineMe;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,7 +107,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -1592,15 +1592,15 @@ public class ShadowPackageManager {
       }
       if (o1.preferredOrder != o2.preferredOrder) {
         // higher priority is before lower
-        return -Integer.compare(o1.preferredOrder, o2.preferredOrder);
+        return Integer.compare(o2.preferredOrder, o1.preferredOrder);
       }
       if (o1.priority != o2.priority) {
         // higher priority is before lower
-        return -Integer.compare(o1.priority, o2.priority);
+        return Integer.compare(o2.priority, o1.priority);
       }
       if (o1.match != o2.match) {
         // higher match is before lower
-        return -Integer.compare(o1.match, o2.match);
+        return Integer.compare(o2.match, o1.match);
       }
       return 0;
     }

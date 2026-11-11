@@ -85,15 +85,14 @@ public class FragmentController<F extends Fragment>
    * contentViewId}.
    */
   public FragmentController<F> create(final int contentViewId, final Bundle bundle) {
-    shadowMainLooper.runPaused(
-        () ->
-            activityController
-                .create(bundle)
-                .get()
-                .getFragmentManager()
-                .beginTransaction()
-                .add(contentViewId, fragment)
-                .commit());
+    shadowMainLooper.runPaused(() ->
+        activityController
+            .create(bundle)
+            .get()
+            .getFragmentManager()
+            .beginTransaction()
+            .add(contentViewId, fragment)
+            .commit());
     return this;
   }
 

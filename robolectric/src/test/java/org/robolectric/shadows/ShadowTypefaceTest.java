@@ -60,7 +60,7 @@ public class ShadowTypefaceTest {
   public void create_withoutFamily_shouldCreateTypeface() {
     Typeface typeface = Typeface.create((Typeface) null, Typeface.ITALIC);
     assertThat(typeface.getStyle()).isEqualTo(Typeface.ITALIC);
-    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo(null);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isNull();
     assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.ITALIC);
   }
 
@@ -80,7 +80,7 @@ public class ShadowTypefaceTest {
   public void create_withoutFamily_customWeight_shouldCreateTypeface() {
     Typeface typeface = Typeface.create(null, /* weight= */ 500, /* italic= */ false);
     assertThat(typeface.getStyle()).isEqualTo(500);
-    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo(null);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isNull();
     assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(500);
   }
 

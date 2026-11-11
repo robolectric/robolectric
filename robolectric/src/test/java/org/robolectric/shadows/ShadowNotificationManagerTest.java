@@ -59,7 +59,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getCurrentInterruptionFilter() {
     // Sensible default
     assertThat(notificationManager.getCurrentInterruptionFilter())
@@ -71,7 +71,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getNotificationPolicy() {
     assertThat(notificationManager.getNotificationPolicy()).isNull();
 
@@ -247,7 +247,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isNotificationPolicyAccessGranted() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     assertThat(notificationManager.isNotificationPolicyAccessGranted()).isTrue();
@@ -739,7 +739,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testNotify_setsPostTime() {
     long startTimeMillis = ShadowSystem.currentTimeMillis();
 
@@ -811,7 +811,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetActiveNotifications() {
     notificationManager.notify(1, notification1);
     notificationManager.notify(31, notification2);

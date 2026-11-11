@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
@@ -16,10 +15,10 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link AudioDeviceInfoBuilder}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class AudioDeviceInfoBuilderTest {
 
-  @Config(minSdk = M, maxSdk = R)
+  @Config(minSdk = Config.OLDEST_SDK, maxSdk = R)
   @Test
   public void buildAudioDeviceInfo_apiM_withDefaultValues_buildsExpectedObject() {
     AudioDeviceInfo audioDeviceInfo = AudioDeviceInfoBuilder.newBuilder().build();
@@ -36,7 +35,7 @@ public class AudioDeviceInfoBuilderTest {
     assertThat(audioDeviceInfo.getAudioProfiles()).isEmpty();
   }
 
-  @Config(minSdk = M, maxSdk = R)
+  @Config(minSdk = Config.OLDEST_SDK, maxSdk = R)
   @Test
   public void buildAudioDeviceInfo_apiM_witSetValues_buildsExpectedObject() {
     AudioDeviceInfo audioDeviceInfo =

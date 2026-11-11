@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -304,5 +303,4 @@ public class ShadowRegion {
     @Direct
     boolean equals(Object obj);
   }
-
 }

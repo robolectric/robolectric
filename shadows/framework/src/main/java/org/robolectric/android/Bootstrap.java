@@ -53,7 +53,6 @@ public class Bootstrap {
     displayResources.updateConfiguration(configuration, displayMetrics);
   }
 
-
   public static void applyQualifiers(
       String qualifiersStrs,
       int apiLevel,

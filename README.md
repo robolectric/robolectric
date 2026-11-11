@@ -3,19 +3,24 @@
 
 [![Build Status](https://github.com/robolectric/robolectric/actions/workflows/tests.yml/badge.svg)](https://github.com/robolectric/robolectric/actions?query=workflow%3Atests)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
+[![Agents welcome](https://img.shields.io/badge/agents-welcome-brightgreen)](AGENTS.md)
 
-Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
+Robolectric is the industry-standard unit testing framework for Android. With
+Robolectric, your tests run in a simulated Android environment inside a JVM,
+without the overhead and flakiness of an emulator. Robolectric tests routinely
+run 10x faster than those on cold-started emulators.
 
 Robolectric supports running unit tests for *14* different versions of Android,
 ranging from Nougat (API level 24) to Cinnamon Bun (API level 37).
 
 ## Usage
 
-To use Robolectric in your project, simply add the necessary dependencies to your module's `build.gradle`/`build.gradle.kts` file:
+To use Robolectric in your project, simply add the necessary dependencies to
+your module's `build.gradle`/`build.gradle.kts` file:
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
-testImplementation("org.robolectric:robolectric:4.16.1")
+testImplementation("org.robolectric:robolectric:4.17")
 testImplementation("androidx.test.ext:junit:1.3.0")
 ```
 
@@ -37,11 +42,15 @@ public class MyActivityTest {
 }
 ```
 
-For more information about how to install and use Robolectric in your project, extend its functionality, and join the community of contributors, you can visit [robolectric.org](https://robolectric.org).
+For more information about how to install and use Robolectric in your project,
+extend its functionality, and join the community of contributors, you can visit
+[robolectric.org](https://robolectric.org).
 
 ## Building and Contributing
 
-Robolectric is built using Gradle. Both Android Studio and IntelliJ can import the top-level `build.gradle.kts` file and will automatically generate their project files from it.
+Robolectric is built using Gradle. Both Android Studio and IntelliJ can import
+the top-level `build.gradle.kts` file and will automatically generate their
+project files from it.
 
 To get Robolectric up and running on your machine, check out
 [this guide](https://robolectric.org/building-robolectric/).
@@ -83,7 +92,9 @@ changes to eventually make their way to public Robolectric releases.
 
 ## Using Snapshots
 
-If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on the `master` and may contain bugs.
+If you would like to live on the bleeding edge, you can try running against a
+snapshot build. Keep in mind that snapshots represent the most recent changes on
+the `master` and may contain bugs.
 
 ### `build.gradle`
 
@@ -93,6 +104,29 @@ repositories {
 }
 
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.17-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.19-SNAPSHOT"
 }
 ```
+
+## Coding agents
+
+We encourage using coding agents, both to write contributions and to review
+them.
+
+Robolectric has historically been a difficult project to understand, because it
+relies on many low-level JVM APIs, such as bytecode instrumentation and custom
+class loaders. Agents help contributors work through that complexity and make
+high-quality contributions.
+
+The complexity of the project has also limited what we could take on with the
+time and people available. With agents, we can take on more ambitious projects
+for Robolectric.
+
+One goal is to make Robolectric as useful as possible to coding agents, so that
+iterating on Android projects is quick and efficient.
+
+Before sending a pull request, review the code yourself and make sure it is
+sensible and well-formed.
+
+[AGENTS.md](AGENTS.md) has the instructions for coding agents working in this
+repository.

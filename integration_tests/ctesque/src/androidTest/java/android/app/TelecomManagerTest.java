@@ -21,26 +21,24 @@ public class TelecomManagerTest {
         (TelecomManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TelecomManager activityTelecomManager =
-                (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
-            assertThat(applicationTelecomManager).isNotSameInstanceAs(activityTelecomManager);
-          });
+      scenario.onActivity(activity -> {
+        TelecomManager activityTelecomManager =
+            (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
+        assertThat(applicationTelecomManager).isNotSameInstanceAs(activityTelecomManager);
+      });
     }
   }
 
   @Test
   public void telecomManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TelecomManager activityTelecomManager =
-                (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
-            TelecomManager anotherActivityTelecomManager =
-                (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
-            assertThat(anotherActivityTelecomManager).isSameInstanceAs(activityTelecomManager);
-          });
+      scenario.onActivity(activity -> {
+        TelecomManager activityTelecomManager =
+            (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
+        TelecomManager anotherActivityTelecomManager =
+            (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
+        assertThat(anotherActivityTelecomManager).isSameInstanceAs(activityTelecomManager);
+      });
     }
   }
 
@@ -50,16 +48,15 @@ public class TelecomManagerTest {
         (TelecomManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            TelecomManager activityTelecomManager =
-                (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
+      scenario.onActivity(activity -> {
+        TelecomManager activityTelecomManager =
+            (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
 
-            String applicationDefaultDialer = applicationTelecomManager.getDefaultDialerPackage();
-            String activityDefaultDialer = activityTelecomManager.getDefaultDialerPackage();
+        String applicationDefaultDialer = applicationTelecomManager.getDefaultDialerPackage();
+        String activityDefaultDialer = activityTelecomManager.getDefaultDialerPackage();
 
-            assertThat(activityDefaultDialer).isEqualTo(applicationDefaultDialer);
-          });
+        assertThat(activityDefaultDialer).isEqualTo(applicationDefaultDialer);
+      });
     }
   }
 }

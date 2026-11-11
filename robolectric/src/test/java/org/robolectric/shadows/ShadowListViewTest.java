@@ -181,9 +181,8 @@ public class ShadowListViewTest {
     listView.setAdapter(adapter);
     shadowOf(listView).populateItems();
     ShadowListView shadowListView = shadowOf(listView);
-    listView.setOnItemClickListener(
-        (parent, view, position, id) ->
-            transcript.add("clicked on item " + adapter.getItem(position)));
+    listView.setOnItemClickListener((parent, view, position, id) ->
+        transcript.add("clicked on item " + adapter.getItem(position)));
     shadowListView.clickFirstItemContainingText("Item 3");
     assertThat(transcript).containsExactly("clicked on item Item 3");
   }

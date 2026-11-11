@@ -24,23 +24,21 @@ public class VpnManagerTest {
     VpnManager applicationVpnManager =
         ApplicationProvider.getApplicationContext().getSystemService(VpnManager.class);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
-            assertThat(applicationVpnManager).isNotSameInstanceAs(activityVpnManager);
-          });
+      scenario.onActivity(activity -> {
+        VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
+        assertThat(applicationVpnManager).isNotSameInstanceAs(activityVpnManager);
+      });
     }
   }
 
   @Test
   public void vpnManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
-            VpnManager anotherActivityVpnManager = activity.getSystemService(VpnManager.class);
-            assertThat(anotherActivityVpnManager).isSameInstanceAs(activityVpnManager);
-          });
+      scenario.onActivity(activity -> {
+        VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
+        VpnManager anotherActivityVpnManager = activity.getSystemService(VpnManager.class);
+        assertThat(anotherActivityVpnManager).isSameInstanceAs(activityVpnManager);
+      });
     }
   }
 
@@ -50,17 +48,15 @@ public class VpnManagerTest {
     VpnManager applicationVpnManager =
         ApplicationProvider.getApplicationContext().getSystemService(VpnManager.class);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
+      scenario.onActivity(activity -> {
+        VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
 
-            VpnProfileState applicationProfileState =
-                applicationVpnManager.getProvisionedVpnProfileState();
-            VpnProfileState activityProfileState =
-                activityVpnManager.getProvisionedVpnProfileState();
+        VpnProfileState applicationProfileState =
+            applicationVpnManager.getProvisionedVpnProfileState();
+        VpnProfileState activityProfileState = activityVpnManager.getProvisionedVpnProfileState();
 
-            assertThat(activityProfileState).isEqualTo(applicationProfileState);
-          });
+        assertThat(activityProfileState).isEqualTo(applicationProfileState);
+      });
     }
   }
 }

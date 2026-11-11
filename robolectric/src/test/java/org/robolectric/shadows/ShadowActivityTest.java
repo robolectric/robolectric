@@ -25,6 +25,7 @@ import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.RuntimeEnvironment.systemContext;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.Manifest;
 import android.app.ActionBar;
@@ -45,14 +46,17 @@ import android.content.IntentSender;
 import android.content.LocusId;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -79,6 +83,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
@@ -935,9 +940,9 @@ public class ShadowActivityTest {
   public void decorViewSizeEqualToDisplaySize() {
     Activity activity = buildActivity(Activity.class).create().visible().get();
     View decorView = activity.getWindow().getDecorView();
-    assertThat(decorView).isNotEqualTo(null);
+    assertThat(decorView).isNotNull();
     ViewRootImpl root = decorView.getViewRootImpl();
-    assertThat(root).isNotEqualTo(null);
+    assertThat(root).isNotNull();
     assertThat(decorView.getWidth()).isNotEqualTo(0);
     assertThat(decorView.getHeight()).isNotEqualTo(0);
     Display display = ShadowDisplay.getDefaultDisplay();
@@ -1459,6 +1464,30 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void requestPermissions_declaredButNotGranted_startsRequestIntent() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    activity.requestPermissions(
+        new String[] {Manifest.permission.INTERNET}, /* requestCode= */ 1007);
+
+    assertThat(shadowOf(activity).getNextStartedActivity().getAction())
+        .isEqualTo("android.content.pm.action.REQUEST_PERMISSIONS");
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void requestPermissions_granted_doesNotStartRequestIntent() {
+    String[] permission = {Manifest.permission.INTERNET};
+    shadowOf(getApplication()).grantPermissions(permission);
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    activity.requestPermissions(permission, /* requestCode= */ 1007);
+
+    assertThat(shadowOf(activity).getNextStartedActivity()).isNull();
+  }
+
+  @Test
   public void getLastIntentSenderRequest() throws IntentSender.SendIntentException {
     Activity activity = Robolectric.setupActivity(Activity.class);
     int requestCode = 108;
@@ -1609,6 +1638,71 @@ public class ShadowActivityTest {
 
   @Test
   @Config(minSdk = O)
+  public void buildActivity_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId)) {
+      Configuration configuration = controller.setup().get().getResources().getConfiguration();
+
+      assertThat(configuration.screenWidthDp).isEqualTo(960);
+      assertThat(configuration.screenHeightDp).isEqualTo(540);
+      assertThat(configuration.smallestScreenWidthDp).isEqualTo(540);
+      assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+      assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void buildActivity_onNonDefaultDisplay_hasThatDisplaysWindowBounds() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId)) {
+      WindowManager windowManager = controller.setup().get().getWindowManager();
+
+      assertThat(windowManager.getCurrentWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1920, 1080));
+      assertThat(windowManager.getMaximumWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1920, 1080));
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void configurationChange_onNonDefaultDisplay_keepsThatDisplaysSize() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId).setup()) {
+      RuntimeEnvironment.setQualifiers("+night");
+      controller.configurationChange();
+
+      Activity activity = controller.get();
+      Configuration configuration = activity.getResources().getConfiguration();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+      assertThat(configuration.screenWidthDp).isEqualTo(960);
+      assertThat(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+          .isEqualTo(Configuration.UI_MODE_NIGHT_YES);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void recreate_onNonDefaultDisplay_staysOnThatDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId).setup()) {
+      controller.recreate();
+
+      Activity activity = controller.get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+      assertThat(activity.getResources().getConfiguration().screenWidthDp).isEqualTo(960);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(
@@ -1638,7 +1732,7 @@ public class ShadowActivityTest {
         Robolectric.buildActivity(TestActivity.class)) {
       TestActivity testActivity = controller.setup().get();
       Consumer<List<DirectAction>> testConsumer =
-          (directActions) -> {
+          directActions -> {
             assertThat(directActions).hasSize(1);
             DirectAction action = directActions.get(0);
             assertThat(action.getId()).isEqualTo(testActivity.getDirectActionForTesting().getId());
@@ -1661,7 +1755,7 @@ public class ShadowActivityTest {
           NullPointerException.class,
           () ->
               shadowOf(testActivity)
-                  .callOnGetDirectActions(new CancellationSignal(), (unused) -> {}));
+                  .callOnGetDirectActions(new CancellationSignal(), unused -> {}));
     }
   }
 
@@ -1935,4 +2029,9 @@ public class ShadowActivityTest {
   /** Activity for testing */
   public static class TestActivityWithAnotherTheme
       extends org.robolectric.shadows.testing.TestActivity {}
+
+  private static ActivityController<Activity> buildActivityOnDisplay(int displayId) {
+    return Robolectric.buildActivity(
+        Activity.class, null, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle());
+  }
 }

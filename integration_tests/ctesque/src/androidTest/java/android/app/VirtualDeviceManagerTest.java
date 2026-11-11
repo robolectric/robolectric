@@ -27,28 +27,26 @@ public class VirtualDeviceManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            VirtualDeviceManager activityVirtualDeviceManager =
-                (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
-            assertThat(applicationVirtualDeviceManager)
-                .isNotSameInstanceAs(activityVirtualDeviceManager);
-          });
+      scenario.onActivity(activity -> {
+        VirtualDeviceManager activityVirtualDeviceManager =
+            (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
+        assertThat(applicationVirtualDeviceManager)
+            .isNotSameInstanceAs(activityVirtualDeviceManager);
+      });
     }
   }
 
   @Test
   public void virtualDeviceManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            VirtualDeviceManager activityVirtualDeviceManager =
-                (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
-            VirtualDeviceManager anotherActivityVirtualDeviceManager =
-                (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
-            assertThat(anotherActivityVirtualDeviceManager)
-                .isSameInstanceAs(activityVirtualDeviceManager);
-          });
+      scenario.onActivity(activity -> {
+        VirtualDeviceManager activityVirtualDeviceManager =
+            (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
+        VirtualDeviceManager anotherActivityVirtualDeviceManager =
+            (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
+        assertThat(anotherActivityVirtualDeviceManager)
+            .isSameInstanceAs(activityVirtualDeviceManager);
+      });
     }
   }
 
@@ -59,21 +57,20 @@ public class VirtualDeviceManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            VirtualDeviceManager activityVirtualDeviceManager =
-                (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
+      scenario.onActivity(activity -> {
+        VirtualDeviceManager activityVirtualDeviceManager =
+            (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
 
-            List<VirtualDevice> applicationVirtualDevices =
-                applicationVirtualDeviceManager.getVirtualDevices();
-            List<VirtualDevice> activityVirtualDevices =
-                activityVirtualDeviceManager.getVirtualDevices();
+        List<VirtualDevice> applicationVirtualDevices =
+            applicationVirtualDeviceManager.getVirtualDevices();
+        List<VirtualDevice> activityVirtualDevices =
+            activityVirtualDeviceManager.getVirtualDevices();
 
-            assertThat(applicationVirtualDevices).isNotNull();
-            assertThat(activityVirtualDevices).isNotNull();
+        assertThat(applicationVirtualDevices).isNotNull();
+        assertThat(activityVirtualDevices).isNotNull();
 
-            assertThat(activityVirtualDevices).isEqualTo(applicationVirtualDevices);
-          });
+        assertThat(activityVirtualDevices).isEqualTo(applicationVirtualDevices);
+      });
     }
   }
 }

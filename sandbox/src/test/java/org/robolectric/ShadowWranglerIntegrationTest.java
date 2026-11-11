@@ -337,7 +337,6 @@ public class ShadowWranglerIntegrationTest {
   @Implements(AClassWithDefaultConstructor.class)
   public static class ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate {}
 
-
   @Instrument
   public static class AClassWithDifficultArgs {
     public CharSequence aMethod(CharSequence s) {
@@ -359,7 +358,6 @@ public class ShadowWranglerIntegrationTest {
       return ret.toString();
     }
   }
-
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgsWithMethodRename.class)
   @Test

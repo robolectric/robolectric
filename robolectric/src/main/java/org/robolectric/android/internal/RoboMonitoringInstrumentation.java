@@ -30,6 +30,7 @@ import androidx.test.runner.lifecycle.ApplicationLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.ApplicationStage;
 import androidx.test.runner.lifecycle.Stage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
+import org.robolectric.shadows.ShadowResources;
 
 /**
  * A Robolectric instrumentation that acts like a slimmed down {@link
@@ -62,6 +64,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       new ApplicationLifecycleMonitorImpl();
   private final IntentMonitorImpl intentMonitor = new IntentMonitorImpl();
   private final List<ActivityController<?>> createdActivities = new ArrayList<>();
+  private final Set<ShadowResources> configurationChangeResources = new HashSet<>();
+  private final ShadowResources.OnConfigurationChangeListener configurationChangeListener =
+      this::updateConfiguration;
 
   private final AtomicBoolean attachedConfigListener = new AtomicBoolean();
 
@@ -122,41 +127,40 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       // To avoid infinite recursion listen to the system resources, this will be updated before
       // the application resources but because activities use the application resources they will
       // get updated by the first activity (via updateConfiguration).
-      shadowOf(Resources.getSystem()).addConfigurationChangeListener(this::updateConfiguration);
+      addConfigurationChangeListener(Resources.getSystem());
     }
 
     AtomicReference<ActivityController<? extends Activity>> activityControllerReference =
         new AtomicReference<>();
-    ShadowInstrumentation.runOnMainSyncNoIdle(
-        () -> {
-          ActivityController<? extends Activity> controller =
-              Robolectric.buildActivity(activityClass, intent, activityOptions);
-          if (callingPackageName != null) {
-            ShadowActivity shadowActivity = Shadow.extract(controller.get());
-            shadowActivity.setCallingPackage(callingPackageName);
-          }
-          activityControllerReference.set(controller);
-          controller.create();
-          if (controller.get().isFinishing()) {
-            controller.destroy();
-          } else {
-            createdActivities.add(controller);
-            controller
-                .start()
-                .postCreate(null)
-                .resume()
-                .visible()
-                .windowFocusChanged(true)
-                .topActivityResumed(true);
-          }
-        });
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> {
+      ActivityController<? extends Activity> controller =
+          Robolectric.buildActivity(activityClass, intent, activityOptions);
+      if (callingPackageName != null) {
+        ShadowActivity shadowActivity = Shadow.extract(controller.get());
+        shadowActivity.setCallingPackage(callingPackageName);
+      }
+      activityControllerReference.set(controller);
+      controller.create();
+      if (controller.get().isFinishing()) {
+        controller.destroy();
+      } else {
+        createdActivities.add(controller);
+        controller
+            .start()
+            .postCreate(null)
+            .resume()
+            .visible()
+            .windowFocusChanged(true)
+            .topActivityResumed(true);
+      }
+    });
     return activityControllerReference.get();
   }
 
   @Override
   public void callApplicationOnCreate(Application app) {
     if (willCreateActivityContexts()) {
-      shadowOf(app.getResources()).addConfigurationChangeListener(this::updateConfiguration);
+      addConfigurationChangeListener(app.getResources());
     }
     applicationMonitor.signalLifecycleChange(app, ApplicationStage.PRE_ON_CREATE);
     super.callApplicationOnCreate(app);
@@ -280,10 +284,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   private void postDispatchActivityResult(
       ShadowActivity shadowActivity, String target, int requestCode, ActivityResult ar) {
     new Handler(Looper.getMainLooper())
-        .post(
-            () ->
-                shadowActivity.internalCallDispatchActivityResult(
-                    target, requestCode, ar.getResultCode(), ar.getResultData()));
+        .post(() ->
+            shadowActivity.internalCallDispatchActivityResult(
+                target, requestCode, ar.getResultCode(), ar.getResultData()));
   }
 
   protected ActivityResult stubResultFor(Intent intent) {
@@ -408,7 +411,14 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   }
 
   @Override
-  public void finish(int resultCode, Bundle bundle) {}
+  public void finish(int resultCode, Bundle bundle) {
+    for (ShadowResources resources : configurationChangeResources) {
+      resources.removeConfigurationChangeListener(configurationChangeListener);
+    }
+    configurationChangeResources.clear();
+    createdActivities.clear();
+    attachedConfigListener.set(false);
+  }
 
   @Override
   public Context getTargetContext() {
@@ -420,6 +430,12 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     return RuntimeEnvironment.getApplication();
   }
 
+  private void addConfigurationChangeListener(Resources resources) {
+    ShadowResources shadowResources = shadowOf(resources);
+    shadowResources.addConfigurationChangeListener(configurationChangeListener);
+    configurationChangeResources.add(shadowResources);
+  }
+
   private void updateConfiguration(
       Configuration oldConfig, Configuration newConfig, DisplayMetrics newMetrics) {
     int changedConfig = oldConfig.diff(newConfig);
@@ -428,7 +444,11 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       if (createdActivities.contains(controller)) {
         Activity activity = controller.get();
         if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
-          controller.configurationChange(newConfig, newMetrics);
+          // An activity on another display keeps that display's size and density.
+          int displayId = activity.getWindowManager().getDefaultDisplay().getDisplayId();
+          controller.configurationChange(
+              WindowConfigurations.getDisplayConfiguration(displayId, newConfig),
+              WindowConfigurations.getDisplayMetrics(displayId, newMetrics));
         } else {
           controller.configurationChange(newConfig, newMetrics, changedConfig);
         }

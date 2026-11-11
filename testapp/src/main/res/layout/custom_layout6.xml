@@ -2,6 +2,8 @@
 
 <org.robolectric.android.CustomStateView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:text="Some text"
     android:textColor="@color/custom_state_view_text_color"
+    tools:ignore="MissingClass"
     />

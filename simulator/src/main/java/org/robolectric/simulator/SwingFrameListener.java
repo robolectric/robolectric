@@ -30,22 +30,21 @@ public class SwingFrameListener implements FrameListener {
 
   @Override
   public void onInitialize() {
-    SwingUtilities.invokeLater(
-        () -> {
-          this.simulatorPanel = new SimulatorPanel();
-          simulatorPanel.setPreferredSize(new Dimension(width, height));
+    SwingUtilities.invokeLater(() -> {
+      this.simulatorPanel = new SimulatorPanel();
+      simulatorPanel.setPreferredSize(new Dimension(width, height));
 
-          if (!isHeadless) {
-            try {
-              UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-              throw new RuntimeException(e);
-            }
-            simulatorFrame = new SimulatorFrame(simulatorPanel, width, height, apiLevel);
-            simulatorFrame.setVisible(true);
-            simulatorFrame.toFront();
-          }
-        });
+      if (!isHeadless) {
+        try {
+          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+        simulatorFrame = new SimulatorFrame(simulatorPanel, width, height, apiLevel);
+        simulatorFrame.setVisible(true);
+        simulatorFrame.toFront();
+      }
+    });
   }
 
   @Override

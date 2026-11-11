@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
@@ -13,6 +14,7 @@ import javax.inject.Named;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.SQLiteMode;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
@@ -20,7 +22,10 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.shadows.SQLiteShadowPicker;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.inject.Injector;
 
 /** Sandbox simulating an Android device. */
@@ -94,6 +99,24 @@ public class AndroidSandbox extends Sandbox {
       this.activeSQLiteMode = sqliteMode;
       modeInvalidatedClasses.addAll(SQLiteShadowPicker.getAffectedClasses());
     }
+  }
+
+  /**
+   * Makes {@code configuration} available to code running in this sandbox through {@link
+   * ConfigurationRegistry}.
+   *
+   * <p>{@link TestEnvironment#setUpApplicationState} populates the registry for each test, but code
+   * can run in the sandbox before that, e.g. {@code @BeforeClass} methods and class rules. Loading
+   * a class whose shadow is chosen by a {@code ShadowPicker} that reads the registry (such as the
+   * graphics shadows, which depend on {@link org.robolectric.annotation.GraphicsMode}) would
+   * otherwise fail, and leave the class unusable for the lifetime of the sandbox.
+   */
+  public void updateConfigurationRegistry(Configuration configuration) {
+    Class<?> registryClass = bootstrappedClass(ConfigurationRegistry.class);
+    Object registry =
+        ReflectionHelpers.callConstructor(
+            registryClass, ClassParameter.from(Map.class, configuration.map()));
+    ReflectionHelpers.setStaticField(registryClass, "instance", registry);
   }
 
   /**

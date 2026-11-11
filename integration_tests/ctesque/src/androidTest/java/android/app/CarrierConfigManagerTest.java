@@ -33,28 +33,26 @@ public class CarrierConfigManagerTest {
                 .getSystemService(Context.CARRIER_CONFIG_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CarrierConfigManager activityCarrierConfigManager =
-                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
-            assertThat(applicationCarrierConfigManager)
-                .isNotSameInstanceAs(activityCarrierConfigManager);
-          });
+      scenario.onActivity(activity -> {
+        CarrierConfigManager activityCarrierConfigManager =
+            (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+        assertThat(applicationCarrierConfigManager)
+            .isNotSameInstanceAs(activityCarrierConfigManager);
+      });
     }
   }
 
   @Test
   public void carrierConfigManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CarrierConfigManager activityCarrierConfigManager =
-                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
-            CarrierConfigManager anotherActivityCarrierConfigManager =
-                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
-            assertThat(anotherActivityCarrierConfigManager)
-                .isSameInstanceAs(activityCarrierConfigManager);
-          });
+      scenario.onActivity(activity -> {
+        CarrierConfigManager activityCarrierConfigManager =
+            (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+        CarrierConfigManager anotherActivityCarrierConfigManager =
+            (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+        assertThat(anotherActivityCarrierConfigManager)
+            .isSameInstanceAs(activityCarrierConfigManager);
+      });
     }
   }
 
@@ -66,32 +64,30 @@ public class CarrierConfigManagerTest {
                 .getSystemService(Context.CARRIER_CONFIG_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            CarrierConfigManager activityCarrierConfigManager =
-                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+      scenario.onActivity(activity -> {
+        CarrierConfigManager activityCarrierConfigManager =
+            (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
 
-            int subId = SubscriptionManager.getDefaultSubscriptionId();
+        int subId = SubscriptionManager.getDefaultSubscriptionId();
 
-            PersistableBundle applicationConfigs =
-                applicationCarrierConfigManager.getConfigForSubId(subId);
-            PersistableBundle activityConfigs =
-                activityCarrierConfigManager.getConfigForSubId(subId);
+        PersistableBundle applicationConfigs =
+            applicationCarrierConfigManager.getConfigForSubId(subId);
+        PersistableBundle activityConfigs = activityCarrierConfigManager.getConfigForSubId(subId);
 
-            Parcel applicationParcel = Parcel.obtain();
-            Parcel activityParcel = Parcel.obtain();
+        Parcel applicationParcel = Parcel.obtain();
+        Parcel activityParcel = Parcel.obtain();
 
-            applicationConfigs.writeToParcel(applicationParcel, 0);
-            activityConfigs.writeToParcel(activityParcel, 0);
+        applicationConfigs.writeToParcel(applicationParcel, 0);
+        activityConfigs.writeToParcel(activityParcel, 0);
 
-            byte[] applicationBytes = applicationParcel.marshall();
-            byte[] activityBytes = activityParcel.marshall();
+        byte[] applicationBytes = applicationParcel.marshall();
+        byte[] activityBytes = activityParcel.marshall();
 
-            assertThat(activityBytes).isEqualTo(applicationBytes);
+        assertThat(activityBytes).isEqualTo(applicationBytes);
 
-            applicationParcel.recycle();
-            activityParcel.recycle();
-          });
+        applicationParcel.recycle();
+        activityParcel.recycle();
+      });
     }
   }
 }

@@ -294,9 +294,9 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetName_atStart() throws Exception {
-    assertThat(parser.getName()).isEqualTo(null);
+    assertThat(parser.getName()).isNull();
     parseUntilNext(XmlResourceParser.START_DOCUMENT);
-    assertThat(parser.getName()).isEqualTo(null);
+    assertThat(parser.getName()).isNull();
     parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getName()).isEqualTo("PreferenceScreen");
   }
@@ -705,7 +705,7 @@ public class XmlResourceParserImplTest {
   @Test
   public void testGetIdAttribute() {
     forgeAndOpenDocument("<foo/>");
-    assertThat(parser.getIdAttribute()).isEqualTo(null);
+    assertThat(parser.getIdAttribute()).isNull();
 
     forgeAndOpenDocument("<foo id=\"bar\"/>");
     assertThat(parser.getIdAttribute()).isEqualTo("bar");
@@ -714,7 +714,7 @@ public class XmlResourceParserImplTest {
   @Test
   public void testGetClassAttribute() {
     forgeAndOpenDocument("<foo/>");
-    assertThat(parser.getClassAttribute()).isEqualTo(null);
+    assertThat(parser.getClassAttribute()).isNull();
 
     forgeAndOpenDocument("<foo class=\"bar\"/>");
     assertThat(parser.getClassAttribute()).isEqualTo("bar");

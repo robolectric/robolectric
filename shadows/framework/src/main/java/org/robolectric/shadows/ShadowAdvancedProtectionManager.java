@@ -105,7 +105,6 @@ public class ShadowAdvancedProtectionManager {
     }
   }
 
-
   // Invoke all the callbacks that were registered, using the executors they registered with.
   public void triggerListeners(
       Set<Map.Entry<AdvancedProtectionManager.Callback, Executor>> callbacksToTrigger,

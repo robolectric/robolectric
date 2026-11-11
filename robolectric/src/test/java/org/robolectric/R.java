@@ -579,6 +579,7 @@ containing a value of this type.
         public static final int leading_and_trailing_new_lines=0x7f0f0010;
         public static final int minute_plural=0x7f0f0017;
         public static final int minute_singular=0x7f0f0016;
+        public static final int mobile_country=0x7f0f0027;
         public static final int new_lines_and_tabs=0x7f0f0011;
         public static final int non_breaking_space=0x7f0f0012;
         public static final int not_in_the_r_file=0x7f0f0006;

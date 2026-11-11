@@ -114,12 +114,12 @@ import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
 import com.android.internal.textservice.ITextServicesManager;
 import com.android.internal.view.IInputMethodManager;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -254,7 +254,12 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.NOTIFICATION_SERVICE, INotificationManager.class);
     addBinderService(binderServices, Context.WALLPAPER_SERVICE, IWallpaperManager.class);
     addBinderService(binderServices, Context.BLUETOOTH_SERVICE, IBluetooth.class);
-    addBinderService(binderServices, Context.WINDOW_SERVICE, IWindowManager.class);
+    addBinderService(
+        binderServices,
+        Context.WINDOW_SERVICE,
+        IWindowManager.class,
+        BinderType.DELEGATING_PROXY,
+        new WindowManagerServiceDelegate());
     addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderType.DEEP_PROXY);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
     addBinderService(

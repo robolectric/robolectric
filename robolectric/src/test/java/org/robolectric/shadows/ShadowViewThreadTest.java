@@ -110,11 +110,10 @@ public class ShadowViewThreadTest {
       View view = new View(ApplicationProvider.getApplicationContext());
       AtomicBoolean ran = new AtomicBoolean(false);
       Thread t =
-          new Thread(
-              () -> {
-                view.invalidate();
-                ran.set(true);
-              });
+          new Thread(() -> {
+            view.invalidate();
+            ran.set(true);
+          });
       t.start();
       t.join();
 
@@ -130,11 +129,10 @@ public class ShadowViewThreadTest {
 
       AtomicBoolean ran = new AtomicBoolean(false);
       Thread t =
-          new Thread(
-              () -> {
-                view.invalidate();
-                ran.set(true);
-              });
+          new Thread(() -> {
+            view.invalidate();
+            ran.set(true);
+          });
       t.start();
       t.join();
 
@@ -150,12 +148,11 @@ public class ShadowViewThreadTest {
       activity.setContentView(view);
 
       Thread t =
-          new Thread(
-              () -> {
-                // Both calls are from the same lambda/call site
-                view.invalidate();
-                view.requestLayout();
-              });
+          new Thread(() -> {
+            // Both calls are from the same lambda/call site
+            view.invalidate();
+            view.requestLayout();
+          });
       t.start();
       t.join();
 
@@ -202,11 +199,10 @@ public class ShadowViewThreadTest {
 
       AtomicBoolean ran = new AtomicBoolean(false);
       Thread t =
-          new Thread(
-              () -> {
-                textView.setText("Hello");
-                ran.set(true);
-              });
+          new Thread(() -> {
+            textView.setText("Hello");
+            ran.set(true);
+          });
       t.start();
       t.join();
 

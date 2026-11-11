@@ -68,12 +68,11 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
           }
 
           private void restoreFocus() {
-            SwingUtilities.invokeLater(
-                () -> {
-                  if (previouslyFocusedComponent != null) {
-                    previouslyFocusedComponent.requestFocusInWindow();
-                  }
-                });
+            SwingUtilities.invokeLater(() -> {
+              if (previouslyFocusedComponent != null) {
+                previouslyFocusedComponent.requestFocusInWindow();
+              }
+            });
           }
         });
 
@@ -87,31 +86,29 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
 
   private JMenuItem getBackMenuItem() {
     JMenuItem sendBackMenuItem = new JMenuItem("Press back");
-    sendBackMenuItem.addActionListener(
-        e ->
-            handler.post(
-                () -> {
-                  long eventTime = SystemClock.uptimeMillis();
-                  KeyEvent backKeyDown =
-                      new KeyEvent(
-                          eventTime,
-                          eventTime,
-                          KeyEvent.ACTION_DOWN,
-                          KeyEvent.KEYCODE_BACK,
-                          /* repeat= */ 0,
-                          0);
-                  uiAutomation.injectInputEvent(backKeyDown, true);
+    sendBackMenuItem.addActionListener(e ->
+        handler.post(() -> {
+          long eventTime = SystemClock.uptimeMillis();
+          KeyEvent backKeyDown =
+              new KeyEvent(
+                  eventTime,
+                  eventTime,
+                  KeyEvent.ACTION_DOWN,
+                  KeyEvent.KEYCODE_BACK,
+                  /* repeat= */ 0,
+                  0);
+          uiAutomation.injectInputEvent(backKeyDown, true);
 
-                  KeyEvent backKeyUp =
-                      new KeyEvent(
-                          eventTime,
-                          eventTime,
-                          KeyEvent.ACTION_UP,
-                          KeyEvent.KEYCODE_BACK,
-                          /* repeat= */ 0,
-                          0);
-                  uiAutomation.injectInputEvent(backKeyUp, true);
-                }));
+          KeyEvent backKeyUp =
+              new KeyEvent(
+                  eventTime,
+                  eventTime,
+                  KeyEvent.ACTION_UP,
+                  KeyEvent.KEYCODE_BACK,
+                  /* repeat= */ 0,
+                  0);
+          uiAutomation.injectInputEvent(backKeyUp, true);
+        }));
 
     return sendBackMenuItem;
   }

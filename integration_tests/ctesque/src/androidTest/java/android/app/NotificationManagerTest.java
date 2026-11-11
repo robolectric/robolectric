@@ -21,28 +21,25 @@ public class NotificationManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.NOTIFICATION_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            NotificationManager activityNotificationManager =
-                (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-            assertThat(applicationNotificationManager)
-                .isNotSameInstanceAs(activityNotificationManager);
-          });
+      scenario.onActivity(activity -> {
+        NotificationManager activityNotificationManager =
+            (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+        assertThat(applicationNotificationManager).isNotSameInstanceAs(activityNotificationManager);
+      });
     }
   }
 
   @Test
   public void notificationManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            NotificationManager activityNotificationManager =
-                (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationManager anotherActivityNotificationManager =
-                (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-            assertThat(anotherActivityNotificationManager)
-                .isSameInstanceAs(activityNotificationManager);
-          });
+      scenario.onActivity(activity -> {
+        NotificationManager activityNotificationManager =
+            (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager anotherActivityNotificationManager =
+            (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+        assertThat(anotherActivityNotificationManager)
+            .isSameInstanceAs(activityNotificationManager);
+      });
     }
   }
 
@@ -59,18 +56,17 @@ public class NotificationManagerTest {
     applicationNotificationManager.createNotificationChannel(testChannel);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            NotificationManager activityNotificationManager =
-                (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+      scenario.onActivity(activity -> {
+        NotificationManager activityNotificationManager =
+            (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            NotificationChannel applicationChannel =
-                applicationNotificationManager.getNotificationChannel("test_channel_id");
-            NotificationChannel activityChannel =
-                activityNotificationManager.getNotificationChannel("test_channel_id");
+        NotificationChannel applicationChannel =
+            applicationNotificationManager.getNotificationChannel("test_channel_id");
+        NotificationChannel activityChannel =
+            activityNotificationManager.getNotificationChannel("test_channel_id");
 
-            assertThat(activityChannel).isEqualTo(applicationChannel);
-          });
+        assertThat(activityChannel).isEqualTo(applicationChannel);
+      });
     }
   }
 }

@@ -18,14 +18,13 @@ public class UserManagerTest {
   @Test
   public void userManager_activityInstance_isSameAsAnotherActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UserManager activityUserManager =
-                (UserManager) activity.getSystemService(Context.USER_SERVICE);
-            UserManager anotherActivityUserManager =
-                (UserManager) activity.getSystemService(Context.USER_SERVICE);
-            assertThat(anotherActivityUserManager).isSameInstanceAs(activityUserManager);
-          });
+      scenario.onActivity(activity -> {
+        UserManager activityUserManager =
+            (UserManager) activity.getSystemService(Context.USER_SERVICE);
+        UserManager anotherActivityUserManager =
+            (UserManager) activity.getSystemService(Context.USER_SERVICE);
+        assertThat(anotherActivityUserManager).isSameInstanceAs(activityUserManager);
+      });
     }
   }
 
@@ -36,12 +35,11 @@ public class UserManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UserManager activityUserManager =
-                (UserManager) activity.getSystemService(Context.USER_SERVICE);
-            assertThat(applicationUserManager).isNotSameInstanceAs(activityUserManager);
-          });
+      scenario.onActivity(activity -> {
+        UserManager activityUserManager =
+            (UserManager) activity.getSystemService(Context.USER_SERVICE);
+        assertThat(applicationUserManager).isNotSameInstanceAs(activityUserManager);
+      });
     }
   }
 
@@ -52,16 +50,15 @@ public class UserManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            UserManager activityUserManager =
-                (UserManager) activity.getSystemService(Context.USER_SERVICE);
+      scenario.onActivity(activity -> {
+        UserManager activityUserManager =
+            (UserManager) activity.getSystemService(Context.USER_SERVICE);
 
-            boolean isUserAGoatApplication = applicationUserManager.isUserAGoat();
-            boolean isUserAGoatActivity = activityUserManager.isUserAGoat();
+        boolean isUserAGoatApplication = applicationUserManager.isUserAGoat();
+        boolean isUserAGoatActivity = activityUserManager.isUserAGoat();
 
-            assertThat(isUserAGoatApplication).isEqualTo(isUserAGoatActivity);
-          });
+        assertThat(isUserAGoatApplication).isEqualTo(isUserAGoatActivity);
+      });
     }
   }
 }

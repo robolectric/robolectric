@@ -749,6 +749,7 @@ public class ShadowTelecomManager {
     manageBlockNumbersIntent = intent;
   }
 
+  /** Sets the {@link PhoneAccountHandle} returned by {@link TelecomManager#getSimCallManager()}. */
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     ShadowTelecomManager.simCallManager = simCallManager;
   }

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.ColorInt;
@@ -120,6 +121,44 @@ public class ShadowNativeHardwareRendererTest {
         // Check for red pixels in ARGB format on Linux/Windows, and for Mac for V and above.
         assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ffff0000");
         assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ffff0000");
+      }
+      surface.release();
+    }
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void syncAndDraw_backToBack_drawsEveryFrame() {
+    int width = 100;
+    int height = 100;
+
+    try (ImageReader imageReader =
+        ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
+      HardwareRenderer renderer = new HardwareRenderer();
+      RenderNode renderNode = new RenderNode("BackToBackNode");
+      renderNode.setPosition(0, 0, width, height);
+      Surface surface = imageReader.getSurface();
+      renderer.setSurface(surface);
+      renderer.setContentRoot(renderNode);
+      Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+      for (int frame = 0; frame < 100; frame++) {
+        int color = frame % 2 == 0 ? Color.GREEN : Color.WHITE;
+        RecordingCanvas canvas = renderNode.beginRecording();
+        canvas.drawColor(color);
+        renderNode.endRecording();
+
+        int result = renderer.createRenderRequest().syncAndDraw();
+
+        assertWithMessage("frame %s was dropped", frame)
+            .that(result & HardwareRenderer.SYNC_FRAME_DROPPED)
+            .isEqualTo(0);
+        try (Image image = imageReader.acquireNextImage()) {
+          bitmap.copyPixelsFromBuffer(image.getPlanes()[0].getBuffer());
+          assertWithMessage("frame %s", frame)
+              .that(Integer.toHexString(bitmap.getPixel(50, 50)))
+              .isEqualTo(Integer.toHexString(color));
+        }
       }
       surface.release();
     }

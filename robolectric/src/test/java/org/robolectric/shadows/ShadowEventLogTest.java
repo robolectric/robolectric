@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowEventLog.NULL_PLACE_HOLDER;
 
-import android.os.Build.VERSION_CODES;
 import android.util.EventLog;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -191,7 +190,7 @@ public class ShadowEventLogTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testWriteEvent_float() throws Exception {
     int bytes = EventLog.writeEvent(TEST_TAG, TEST_FLOAT);
     assertThat(bytes).isEqualTo(Integer.BYTES + Float.BYTES);

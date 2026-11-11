@@ -995,7 +995,7 @@ public class ShadowWifiManagerTest {
     boolean status = wifiManager.setSoftApConfiguration(softApConfig);
     assertThat(status).isTrue();
 
-    assertThat(shadowOf(wifiManager).getSoftApConfiguration().getSsid()).isEqualTo("foo");
+    assertThat(wifiManager.getSoftApConfiguration().getSsid()).isEqualTo("foo");
   }
 
   @Test

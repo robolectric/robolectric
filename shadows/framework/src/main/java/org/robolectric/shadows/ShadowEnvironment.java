@@ -18,7 +18,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -302,13 +301,6 @@ public class ShadowEnvironment {
     protected File[] getExternalDirs() {
       return externalDirs.toArray(new File[0]);
     }
-  }
-
-  /** Accessor interface for Environment.UserEnvironment's internals. */
-  @ForType(className = "android.os.Environment$UserEnvironment")
-  interface UserEnvironmentReflector {
-    @Accessor("mExternalStorageAndroidData")
-    void setExternalStorageAndroidData(File file);
   }
 
   @ForType(Environment.class)

@@ -114,6 +114,51 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
+  public void speak_afterShutdown_returnsErrorWithoutSpeaking() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_ADD, null, null);
+    textToSpeech.stop();
+    AtomicReference<String> callback = new AtomicReference<>();
+    textToSpeech.setOnUtteranceProgressListener(
+        new UtteranceProgressListener() {
+          @Override
+          public void onStart(String utteranceId) {
+            callback.set(utteranceId);
+          }
+
+          @Override
+          public void onDone(String utteranceId) {
+            callback.set(utteranceId);
+          }
+
+          @Override
+          public void onError(String utteranceId) {
+            callback.set(utteranceId);
+          }
+        });
+    textToSpeech.shutdown();
+
+    int result = textToSpeech.speak("Hi", TextToSpeech.QUEUE_FLUSH, null, "utterance");
+    shadowMainLooper().idle();
+
+    assertThat(result).isEqualTo(TextToSpeech.ERROR);
+    assertThat(shadowOf(textToSpeech).getLastSpokenText()).isEqualTo("Hello");
+    assertThat(shadowOf(textToSpeech).getSpokenTextList()).containsExactly("Hello");
+    assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
+    assertThat(shadowOf(textToSpeech).getQueueMode()).isEqualTo(TextToSpeech.QUEUE_ADD);
+    assertThat(callback.get()).isNull();
+  }
+
+  @Test
+  public void threeArgumentSpeak_afterShutdown_returnsError() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    textToSpeech.shutdown();
+
+    assertThat(textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null))
+        .isEqualTo(TextToSpeech.ERROR);
+  }
+
+  @Test
   public void isStopped_shouldReturnTrueBeforeSpeak() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).isStopped()).isTrue();

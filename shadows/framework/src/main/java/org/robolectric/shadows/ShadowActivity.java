@@ -64,6 +64,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -199,10 +200,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
       loadedApkReflector.setResources(application.getResources());
       loadedApkReflector.setApplication(application);
+      // An activity on another display uses that display's configuration.
+      Configuration activityOverrideConfig =
+          overrideConfig != null
+              ? overrideConfig
+              : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
       activityContext =
           reflector(ContextImplReflector.class)
               .createActivityContext(
-                  activityThread, loadedApk, activityInfo, token, displayId, overrideConfig);
+                  activityThread,
+                  loadedApk,
+                  activityInfo,
+                  token,
+                  displayId,
+                  activityOverrideConfig);
       reflector(ContextImplReflector.class, activityContext).setOuterContext(realActivity);
       // This is not what the SDK does but for backwards compatibility with previous versions of
       // robolectric, which did not use a separate activity context, move the theme from the
@@ -227,6 +238,16 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             token,
             activityTitle,
             lastNonConfigurationInstances);
+    // Activity#attach records the global configuration, but an activity on another display has
+    // that display's configuration. Configuration the app applies to itself, such as AppCompat's
+    // local night mode, is not part of it.
+    Configuration displayOverrideConfig =
+        WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+    if (activityContext != baseContext && displayOverrideConfig != null) {
+      reflector(ActivityReflector.class, realActivity)
+          .getCurrentConfig()
+          .updateFrom(displayOverrideConfig);
+    }
 
     int theme = activityInfo.getThemeResource();
     if (theme != 0) {
@@ -677,6 +698,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /** For internal use only. Not for public use. */
   public <T extends Activity> void attachController(ActivityController controller) {
     this.controller = controller;
+  }
+
+  @Nullable
+  ActivityController<?> getController() {
+    return controller;
   }
 
   /** Sets if startIntentSenderForRequestCode will throw an IntentSender.SendIntentException. */

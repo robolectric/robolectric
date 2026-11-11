@@ -45,11 +45,10 @@ public final class ShadowVoiceInteractorTest {
     testActivity.getVoiceInteractor().notifyDirectActionsChanged();
     assertThat(shadowVoiceInteractor.getDirectActionsInvalidationCount()).isEqualTo(1);
     AssertionError unused =
-        expectFailure(
-            whenTesting ->
-                whenTesting
-                    .that(shadowVoiceInteractor.getDirectActionsInvalidationCount())
-                    .isEqualTo(2));
+        expectFailure(whenTesting ->
+            whenTesting
+                .that(shadowVoiceInteractor.getDirectActionsInvalidationCount())
+                .isEqualTo(2));
     testActivity.getVoiceInteractor().notifyDirectActionsChanged();
     assertThat(shadowVoiceInteractor.getDirectActionsInvalidationCount()).isEqualTo(2);
   }

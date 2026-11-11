@@ -37,7 +37,7 @@ dependencies {
 
 tasks.withType<JavaCompile>().configureEach {
   options.compilerArgs.add(
-    "-Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.rap"
+    "-Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.rap",
   )
   options.compilerArgs.add("-Aorg.robolectric.annotation.processing.priority=1")
 }

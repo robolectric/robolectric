@@ -137,6 +137,10 @@ public class TempDirectory {
   }
 
   public void destroy() {
+    if (!Files.isDirectory(basePath)) {
+      return;
+    }
+
     try {
       clearDirectory(basePath);
       Files.delete(basePath);
@@ -157,10 +161,10 @@ public class TempDirectory {
   private static void clearDirectory(final Path directory) throws IOException {
     Files.walkFileTree(
         directory,
-        new SimpleFileVisitor<Path>() {
+        new SimpleFileVisitor<>() {
           @Nonnull
           @Override
-          public FileVisitResult visitFile(Path file, @Nonnull BasicFileAttributes attrs)
+          public FileVisitResult visitFile(@Nonnull Path file, @Nonnull BasicFileAttributes attrs)
               throws IOException {
             // Avoid deleting the obsolete temp directory marker
             if (!(OsUtil.isWindows()

@@ -48,8 +48,8 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldInstrumentOrgApacheHttpClasses() {
-    assertThat(config.shouldInstrument(wrap("org.apache.http.util.CharArrayBuffer"))).isTrue();
+  public void shouldNotInstrumentOrgApacheHttpClasses() {
+    assertThat(config.shouldInstrument(wrap("org.apache.http.util.CharArrayBuffer"))).isFalse();
   }
 
   @Test
@@ -82,6 +82,13 @@ public class InstrumentationConfigurationTest {
     assertThat(config.shouldAcquire("org.specs2.whatever.foo")).isFalse();
     assertThat(config.shouldAcquire("com.almworks.sqlite4java.whatever.Cls$anything$else"))
         .isFalse();
+  }
+
+  @Test
+  public void shouldNotAcquireJdkPackages() {
+    // jdk.net.LinuxSocketOptions loads libextnet, which may only be loaded by one class loader.
+    assertThat(config.shouldAcquire("jdk.net.Sockets")).isFalse();
+    assertThat(config.shouldAcquire("jdk.internal.misc.Unsafe")).isFalse();
   }
 
   @Test

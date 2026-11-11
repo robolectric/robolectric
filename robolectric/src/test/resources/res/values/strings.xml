@@ -58,4 +58,5 @@
   -->
   <string name="bad_example">This is a "bad string".</string>
   <!-- Quotes are stripped; displays as: This is a bad string. -->
+  <string name="mobile_country">any</string>
 </resources>

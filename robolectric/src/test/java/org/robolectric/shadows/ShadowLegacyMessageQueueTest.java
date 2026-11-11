@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.setField;
@@ -264,14 +262,6 @@ public class ShadowLegacyMessageQueueTest {
   }
 
   private static int postSyncBarrier(MessageQueue queue) {
-    if (getApiLevel() >= M) {
-      return queue.postSyncBarrier();
-    } else {
-      return ReflectionHelpers.callInstanceMethod(
-          MessageQueue.class,
-          queue,
-          "enqueueSyncBarrier",
-          ClassParameter.from(long.class, SystemClock.uptimeMillis()));
-    }
+    return queue.postSyncBarrier();
   }
 }

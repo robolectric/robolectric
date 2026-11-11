@@ -21,27 +21,24 @@ public class InputMethodManagerTest {
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            InputMethodManager activityInputMethodManager =
-                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            assertThat(applicationInputMethodManager).isSameInstanceAs(activityInputMethodManager);
-          });
+      scenario.onActivity(activity -> {
+        InputMethodManager activityInputMethodManager =
+            (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        assertThat(applicationInputMethodManager).isSameInstanceAs(activityInputMethodManager);
+      });
     }
   }
 
   @Test
   public void inputMethodManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            InputMethodManager activityInputMethodManager =
-                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            InputMethodManager anotherActivityInputMethodManager =
-                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            assertThat(anotherActivityInputMethodManager)
-                .isSameInstanceAs(activityInputMethodManager);
-          });
+      scenario.onActivity(activity -> {
+        InputMethodManager activityInputMethodManager =
+            (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager anotherActivityInputMethodManager =
+            (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        assertThat(anotherActivityInputMethodManager).isSameInstanceAs(activityInputMethodManager);
+      });
     }
   }
 
@@ -53,16 +50,15 @@ public class InputMethodManagerTest {
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            InputMethodManager activityInputMethodManager =
-                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+      scenario.onActivity(activity -> {
+        InputMethodManager activityInputMethodManager =
+            (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 
-            boolean applicationIsAcceptingText = applicationInputMethodManager.isAcceptingText();
-            boolean activityIsAcceptingText = activityInputMethodManager.isAcceptingText();
+        boolean applicationIsAcceptingText = applicationInputMethodManager.isAcceptingText();
+        boolean activityIsAcceptingText = activityInputMethodManager.isAcceptingText();
 
-            assertThat(activityIsAcceptingText).isEqualTo(applicationIsAcceptingText);
-          });
+        assertThat(activityIsAcceptingText).isEqualTo(applicationIsAcceptingText);
+      });
     }
   }
 }

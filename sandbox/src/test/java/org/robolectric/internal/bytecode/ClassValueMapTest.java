@@ -32,18 +32,17 @@ public class ClassValueMapTest {
     CountDownLatch latch = new CountDownLatch(n);
     AtomicInteger failures = new AtomicInteger(0);
     for (int i = 0; i < n; i++) {
-      executor.submit(
-          () -> {
-            latch.countDown();
-            if (r.nextInt(2) == 0) {
-              if (map.get(Object.class) == null) {
-                failures.incrementAndGet();
-              }
-            } else {
-              // Simulate GC of weak references
-              map.clear();
-            }
-          });
+      executor.submit(() -> {
+        latch.countDown();
+        if (r.nextInt(2) == 0) {
+          if (map.get(Object.class) == null) {
+            failures.incrementAndGet();
+          }
+        } else {
+          // Simulate GC of weak references
+          map.clear();
+        }
+      });
     }
     latch.await();
     executor.shutdown();

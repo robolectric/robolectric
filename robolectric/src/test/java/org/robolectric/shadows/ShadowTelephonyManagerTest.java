@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.os.Build.VERSION_CODES.BASE;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -252,7 +251,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setDeviceId_withSlot_doesNotAffectCallingInstance() {
     String testId = "TESTING123";
     shadowOf(telephonyManager).setDeviceId(123, testId);
@@ -261,7 +260,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGiveDeviceIdForSlot() {
     shadowOf(telephonyManager).setDeviceId(1, "device in slot 1");
     shadowOf(telephonyManager).setDeviceId(2, "device in slot 2");
@@ -573,7 +572,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       getDeviceIdForSlot_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
@@ -596,7 +595,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setCurrentPhoneType_fromPhoneId_canBeReadFromAnyInstance() {
     shadowOf(telephonyManager).setCurrentPhoneType(123, TelephonyManager.PHONE_TYPE_CDMA);
 
@@ -718,7 +717,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGivePhoneCount() {
     shadowOf(telephonyManager).setPhoneCount(42);
 
@@ -1117,7 +1116,7 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
     shadowOf(telephonyManager).setSimCountryIso(subId, null);
 
-    assertThat(callGetSimCountryIso(telephonyManager, subId)).isEqualTo(null);
+    assertThat(callGetSimCountryIso(telephonyManager, subId)).isNull();
   }
 
   @Test
@@ -1165,14 +1164,13 @@ public class ShadowTelephonyManagerTest {
   public void shouldGetSimCarrierIdNameFromSupplier() {
     AtomicInteger callCount = new AtomicInteger(0);
     shadowOf(telephonyManager)
-        .setSimCarrierIdNameSupplier(
-            () -> {
-              int callCountCopy = callCount.getAndIncrement();
-              if (callCountCopy == 0) {
-                return "Fi";
-              }
-              return "Other";
-            });
+        .setSimCarrierIdNameSupplier(() -> {
+          int callCountCopy = callCount.getAndIncrement();
+          if (callCountCopy == 0) {
+            return "Fi";
+          }
+          return "Other";
+        });
 
     // First call to getSimCarrierIdName() should return "Fi".
     assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Fi");
@@ -1209,7 +1207,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGetCurrentPhoneTypeGivenSubId() {
     int subId = 1;
     int expectedPhoneType = TelephonyManager.PHONE_TYPE_GSM;
@@ -1219,7 +1217,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGetCurrentPhoneTypeGivenSubId_fromAllInstances() {
     int subId = 1;
     int expectedPhoneType = TelephonyManager.PHONE_TYPE_GSM;
@@ -1229,7 +1227,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void clearPhoneTypes_setsStartingState() {
     ShadowTelephonyManager.clearPhoneTypes();
     assertEquals(TelephonyManager.PHONE_TYPE_NONE, telephonyManager.getCurrentPhoneType(0));
@@ -1237,7 +1235,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGetCarrierPackageNamesForIntentAndPhone() {
     List<String> packages = Collections.singletonList("package1");
     int phoneId = 123;
@@ -1248,7 +1246,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setCarrierPackageNamesForPhone_acceptsNull() {
     List<String> packages = Collections.singletonList("package1");
     int phoneId = 123;
@@ -1256,11 +1254,11 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, null);
 
     assertThat(telephonyManager.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
-        .isEqualTo(null);
+        .isNull();
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGetCarrierPackageNamesForIntentAndPhone_fromAllInstances() {
     List<String> packages = Collections.singletonList("package1");
     int phoneId = 123;
@@ -1271,7 +1269,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGetCarrierPackageNamesForIntentAndPhone_doesNotAffectCaller() {
     List<String> packages = Collections.singletonList("package1");
     int phoneId = 123;
@@ -1281,7 +1279,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldGetCarrierPackageNamesForIntent() {
     List<String> packages = Collections.singletonList("package1");
     shadowOf(telephonyManager)
@@ -1595,7 +1593,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setTtyModeSupportedChangesIsTtyModeSupported() {
     shadowOf(telephonyManager).setTtyModeSupported(false);
     assertThat(telephonyManager.isTtyModeSupported()).isFalse();
@@ -1604,7 +1602,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       isTtyModeSupported_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
@@ -1633,7 +1631,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setHearingAidCompatibilitySupportedChangesisHearingAidCompatibilitySupported() {
     shadowOf(telephonyManager).setHearingAidCompatibilitySupported(false);
     assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isFalse();
@@ -1985,7 +1983,7 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.getCarrierRestrictionRules()).isEqualTo(carrierRestrictionRules);
   }
 
-  @Test()
+  @Test
   @Config(minSdk = Q)
   public void setCarrierRestrictionRules_throwsIllegalStateException() {
     assertThrows(
@@ -2004,7 +2002,7 @@ public class ShadowTelephonyManagerTest {
     assertThat(shadowTelephonyManager.getModemRebootCount()).isEqualTo(1);
   }
 
-  @Test()
+  @Test
   @Config(minSdk = Q)
   public void rebootModem_noModifyPhoneStatePermission_throwsSecurityException() {
     assertThrows(SecurityException.class, () -> shadowTelephonyManager.rebootModem());

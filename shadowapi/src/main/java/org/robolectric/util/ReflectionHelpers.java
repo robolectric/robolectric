@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
 
@@ -96,18 +98,20 @@ public class ReflectionHelpers {
    */
   public static <T> T createDelegatingProxy(Class<T> clazz, final Object delegate) {
     final Class<?> delegateClass = delegate.getClass();
+    // Scope hits and misses to this proxy so the cache cannot retain a sandbox class loader.
+    Map<Method, Optional<Method>> methods = new ConcurrentHashMap<>();
+    Function<Method, Optional<Method>> lookup = method -> findDelegateMethod(delegateClass, method);
     return (T)
         Proxy.newProxyInstance(
             clazz.getClassLoader(),
             new Class[] {clazz},
             (proxy, method, args) -> {
               try {
-                Method delegateMethod =
-                    findDelegateMethod(delegateClass, method.getName(), method.getParameterTypes());
-                delegateMethod.setAccessible(true);
+                Method delegateMethod = methods.computeIfAbsent(method, lookup).orElse(null);
+                if (delegateMethod == null) {
+                  return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+                }
                 return delegateMethod.invoke(delegate, args);
-              } catch (NoSuchMethodException e) {
-                return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
               } catch (InvocationTargetException e) {
                 // Required to propagate the correct throwable.
                 throw e.getTargetException();
@@ -115,9 +119,10 @@ public class ReflectionHelpers {
             });
   }
 
-  private static Method findDelegateMethod(
-      Class<?> delegateClass, String methodName, Class<?>[] parameterTypes)
-      throws NoSuchMethodException {
+  private static Optional<Method> findDelegateMethod(
+      Class<?> delegateClass, Method interfaceMethod) {
+    String methodName = interfaceMethod.getName();
+    Class<?>[] parameterTypes = interfaceMethod.getParameterTypes();
     for (Method delegateMethod : delegateClass.getMethods()) {
       if (delegateMethod.getName().equals(methodName)
           && Modifier.isPublic(delegateMethod.getModifiers())
@@ -125,10 +130,11 @@ public class ReflectionHelpers {
               parameterTypes,
               delegateMethod.getParameterTypes(),
               delegateMethod.getParameterAnnotations())) {
-        return delegateMethod;
+        delegateMethod.setAccessible(true);
+        return Optional.of(delegateMethod);
       }
     }
-    throw new NoSuchMethodException();
+    return Optional.empty();
   }
 
   private static boolean parametersMatch(

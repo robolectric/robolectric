@@ -33,31 +33,29 @@ public class WifiP2pManagerTest {
         (WifiP2pManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.WIFI_P2P_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WifiP2pManager activityWifiP2pManager =
-                (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
+      scenario.onActivity(activity -> {
+        WifiP2pManager activityWifiP2pManager =
+            (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-              assertThat(applicationWifiP2pManager).isNotSameInstanceAs(activityWifiP2pManager);
-            } else {
-              assertThat(applicationWifiP2pManager).isSameInstanceAs(activityWifiP2pManager);
-            }
-          });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+          assertThat(applicationWifiP2pManager).isNotSameInstanceAs(activityWifiP2pManager);
+        } else {
+          assertThat(applicationWifiP2pManager).isSameInstanceAs(activityWifiP2pManager);
+        }
+      });
     }
   }
 
   @Test
   public void wifiP2pManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WifiP2pManager activityWifiP2pManager =
-                (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
-            WifiP2pManager anotherActivityWifiP2pManager =
-                (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
-            assertThat(anotherActivityWifiP2pManager).isSameInstanceAs(activityWifiP2pManager);
-          });
+      scenario.onActivity(activity -> {
+        WifiP2pManager activityWifiP2pManager =
+            (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
+        WifiP2pManager anotherActivityWifiP2pManager =
+            (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
+        assertThat(anotherActivityWifiP2pManager).isSameInstanceAs(activityWifiP2pManager);
+      });
     }
   }
 
@@ -84,22 +82,21 @@ public class WifiP2pManagerTest {
         });
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WifiP2pManager activityWifiP2pManager =
-                (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
-            WifiP2pManager.Channel activityChannel =
-                activityWifiP2pManager.initialize(activity, activity.getMainLooper(), null);
+      scenario.onActivity(activity -> {
+        WifiP2pManager activityWifiP2pManager =
+            (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
+        WifiP2pManager.Channel activityChannel =
+            activityWifiP2pManager.initialize(activity, activity.getMainLooper(), null);
 
-            activityWifiP2pManager.requestGroupInfo(
-                activityChannel,
-                group -> {
-                  if (group != null) {
-                    activityGroupNameHolder[0] = group.getNetworkName();
-                  }
-                  latch.countDown();
-                });
-          });
+        activityWifiP2pManager.requestGroupInfo(
+            activityChannel,
+            group -> {
+              if (group != null) {
+                activityGroupNameHolder[0] = group.getNetworkName();
+              }
+              latch.countDown();
+            });
+      });
     }
 
     latch.await(5, TimeUnit.SECONDS);

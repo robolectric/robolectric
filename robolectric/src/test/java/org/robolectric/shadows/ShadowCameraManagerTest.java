@@ -161,7 +161,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testSetTorchModeInvalidCameraId() throws CameraAccessException {
     try {
       cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
@@ -172,7 +172,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetTorchModeNullCameraId() {
     try {
       shadowOf(cameraManager).getTorchMode(null);
@@ -183,7 +183,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetTorchModeInvalidCameraId() {
     try {
       shadowOf(cameraManager).getTorchMode(CAMERA_ID_0);
@@ -194,7 +194,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetTorchModeCameraTorchModeNotSet() {
     try {
       shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
@@ -205,7 +205,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetTorchModeCameraTorchModeSet() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
@@ -458,21 +458,20 @@ public class ShadowCameraManagerTest {
 
     // 4 background threads repeatedly registering and unregistering callbacks
     for (int t = 0; t < threadCount; t++) {
-      executor.execute(
-          () -> {
-            try {
-              startLatch.await();
-              for (int i = 0; i < iterationsPerThread; i++) {
-                CameraManager.AvailabilityCallback cb = new CameraManager.AvailabilityCallback() {};
-                cameraManager.registerAvailabilityCallback(cb, /* handler= */ null);
-                cameraManager.unregisterAvailabilityCallback(cb);
-              }
-            } catch (Throwable t1) {
-              failure.compareAndSet(null, t1);
-            } finally {
-              doneLatch.countDown();
-            }
-          });
+      executor.execute(() -> {
+        try {
+          startLatch.await();
+          for (int i = 0; i < iterationsPerThread; i++) {
+            CameraManager.AvailabilityCallback cb = new CameraManager.AvailabilityCallback() {};
+            cameraManager.registerAvailabilityCallback(cb, /* handler= */ null);
+            cameraManager.unregisterAvailabilityCallback(cb);
+          }
+        } catch (Throwable t1) {
+          failure.compareAndSet(null, t1);
+        } finally {
+          doneLatch.countDown();
+        }
+      });
     }
 
     startLatch.countDown();
@@ -520,7 +519,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void registerTorchCallbackEnabled() throws CameraAccessException {
     CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
 
@@ -534,7 +533,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void unregisterTorchCallbackEnabled() throws CameraAccessException {
     CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
 
@@ -552,7 +551,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void registerTorchCallbackDisabled() throws CameraAccessException {
     CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
 
@@ -566,7 +565,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void unregisterTorchCallbackDisabled() throws CameraAccessException {
     CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
 
@@ -582,7 +581,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void registerTorchCallbackInvalidCameraId() throws CameraAccessException {
     CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
 

@@ -40,6 +40,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,7 +56,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -386,12 +386,10 @@ public class ShadowInstrumentation {
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
     final ShadowBroadcastReceiver shReceiver = Shadow.extract(receiver);
     final Intent broadcastIntent = intent;
-    scheduler.post(
-        () -> {
-          receiver.setPendingResult(
-              ShadowBroadcastPendingResult.create(resultCode, null, null, false));
-          shReceiver.onReceive(context, broadcastIntent, abort);
-        });
+    scheduler.post(() -> {
+      receiver.setPendingResult(ShadowBroadcastPendingResult.create(resultCode, null, null, false));
+      shReceiver.onReceive(context, broadcastIntent, abort);
+    });
   }
 
   private void postToWrappers(
@@ -421,14 +419,13 @@ public class ShadowInstrumentation {
     future.addListener(
         () ->
             getMainHandler(context)
-                .post(
-                    () -> {
-                      try {
-                        finalFuture.get();
-                      } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                      }
-                    }),
+                .post(() -> {
+                  try {
+                    finalFuture.get();
+                  } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                  }
+                }),
         directExecutor());
   }
 
@@ -454,12 +451,11 @@ public class ShadowInstrumentation {
                   broadcastResultHolder.resultExtras,
                   true /*ordered */);
           wrapper.broadcastReceiver.setPendingResult(result);
-          scheduler.post(
-              () -> {
-                ShadowBroadcastReceiver shadowBroadcastReceiver =
-                    Shadow.extract(wrapper.broadcastReceiver);
-                shadowBroadcastReceiver.onReceive(context, intent, abort);
-              });
+          scheduler.post(() -> {
+            ShadowBroadcastReceiver shadowBroadcastReceiver =
+                Shadow.extract(wrapper.broadcastReceiver);
+            shadowBroadcastReceiver.onReceive(context, intent, abort);
+          });
           return BroadcastResultHolder.transform(result);
         },
         directExecutor());
@@ -720,26 +716,25 @@ public class ShadowInstrumentation {
     unboundServiceConnections.add(serviceConnection);
     boundServiceConnections.remove(serviceConnection);
     Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(
-        () -> {
-          final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
-          if (serviceConnectionDataForServiceConnection.containsKey(serviceConnection)) {
-            serviceConnectionDataWrapper =
-                serviceConnectionDataForServiceConnection.get(serviceConnection);
-          } else {
-            serviceConnectionDataWrapper = defaultServiceConnectionData;
-          }
-          if (unbindServiceCallsOnServiceDisconnected) {
-            Logger.warn(
-                "Configured to call onServiceDisconnected when unbindService is called. This is"
-                    + " not accurate Android behavior. Please update your tests and call"
-                    + " ShadowApplication#setUnbindServiceCallsOnServiceDisconnected(false). This"
-                    + " will become default behavior in the future, which may break your tests if"
-                    + " you are expecting this inaccurate behavior.");
-            serviceConnection.onServiceDisconnected(
-                serviceConnectionDataWrapper.componentNameForBindService);
-          }
-        });
+    handler.post(() -> {
+      final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
+      if (serviceConnectionDataForServiceConnection.containsKey(serviceConnection)) {
+        serviceConnectionDataWrapper =
+            serviceConnectionDataForServiceConnection.get(serviceConnection);
+      } else {
+        serviceConnectionDataWrapper = defaultServiceConnectionData;
+      }
+      if (unbindServiceCallsOnServiceDisconnected) {
+        Logger.warn(
+            "Configured to call onServiceDisconnected when unbindService is called. This is"
+                + " not accurate Android behavior. Please update your tests and call"
+                + " ShadowApplication#setUnbindServiceCallsOnServiceDisconnected(false). This"
+                + " will become default behavior in the future, which may break your tests if"
+                + " you are expecting this inaccurate behavior.");
+        serviceConnection.onServiceDisconnected(
+            serviceConnectionDataWrapper.componentNameForBindService);
+      }
+    });
   }
 
   protected List<ServiceConnection> getBoundServiceConnections() {

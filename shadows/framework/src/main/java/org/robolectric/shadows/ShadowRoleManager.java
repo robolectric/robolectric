@@ -112,15 +112,13 @@ public class ShadowRoleManager {
     }
 
     private void broadcastRoleHoldersChanged(String roleName) {
-      roleHoldersListener.forEach(
-          (listener, executor) ->
-              executor.execute(() -> listener.onRoleHoldersChanged(roleName, user)));
+      roleHoldersListener.forEach((listener, executor) ->
+          executor.execute(() -> listener.onRoleHoldersChanged(roleName, user)));
 
       getUserState(UserHandle.ALL)
           .roleHoldersListener
-          .forEach(
-              (listener, executor) ->
-                  executor.execute(() -> listener.onRoleHoldersChanged(roleName, user)));
+          .forEach((listener, executor) ->
+              executor.execute(() -> listener.onRoleHoldersChanged(roleName, user)));
     }
 
     static RoleUserState getUserState(UserHandle u) {

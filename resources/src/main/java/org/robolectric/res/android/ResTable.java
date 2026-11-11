@@ -548,7 +548,6 @@ public class ResTable {
     return blockIndex;
   }
 
-
   private int getEntry(
       final PackageGroup packageGroup,
       int typeIndex,

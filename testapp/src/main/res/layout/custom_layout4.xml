@@ -4,6 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:robolectric="http://schemas.android.com/apk/res-auto"
     xmlns:fakens="http://example.com/fakens"
+    xmlns:tools="http://schemas.android.com/tools"
     >
   <org.robolectric.android.CustomView
       android:id="@+id/custom_view"
@@ -13,6 +14,7 @@
       robolectric:message="@string/hello"
       robolectric:itemType="marsupial"
       fakens:message="@layout/text_views"
+      tools:ignore="MissingClass"
       >
     <View
         android:layout_width="wrap_content"

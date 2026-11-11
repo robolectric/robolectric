@@ -17,10 +17,9 @@ public class AppCompatActivityWithToolbarMenu extends AppCompatActivity {
 
     final Toolbar toolbar = findViewById(R.id.toolbar);
     toolbar.inflateMenu(R.menu.menu);
-    toolbar.setOnMenuItemClickListener(
-        item -> {
-          menuClicked = true;
-          return true;
-        });
+    toolbar.setOnMenuItemClickListener(item -> {
+      menuClicked = true;
+      return true;
+    });
   }
 }

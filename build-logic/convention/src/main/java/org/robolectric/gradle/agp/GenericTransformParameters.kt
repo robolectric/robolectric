@@ -16,7 +16,7 @@
 
 /*
  * This class comes from AGP internals:
- * https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dependency/GenericTransformParameters.kt;bpv=0
+ * https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dependency/GenericTransformParameters.kt
  */
 
 package org.robolectric.gradle.agp

@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable.Creator;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -214,10 +214,9 @@ public class ShadowPendingIntent {
         handler == null
             ? onFinished
             : (pendingIntent, intent1, resultCode, resultData, resultExtras) ->
-                handler.post(
-                    () ->
-                        onFinished.onSendFinished(
-                            pendingIntent, intent1, resultCode, resultData, resultExtras));
+                handler.post(() ->
+                    onFinished.onSendFinished(
+                        pendingIntent, intent1, resultCode, resultData, resultExtras));
 
     if (canceled) {
       throw new CanceledException();

@@ -79,7 +79,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -584,10 +583,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return queryIntentComponents(
         intent,
         flags,
-        (pkg) -> pkg.services,
+        pkg -> pkg.services,
         serviceFilters,
         (resolveInfo, serviceInfo) -> resolveInfo.serviceInfo = serviceInfo,
-        (resolveInfo) -> resolveInfo.serviceInfo,
+        resolveInfo -> resolveInfo.serviceInfo,
         ServiceInfo::new);
   }
 
@@ -627,10 +626,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return this.queryIntentComponents(
         intent,
         flags,
-        (pkg) -> pkg.activities,
+        pkg -> pkg.activities,
         activityFilters,
         (resolveInfo, activityInfo) -> resolveInfo.activityInfo = activityInfo,
-        (resolveInfo) -> resolveInfo.activityInfo,
+        resolveInfo -> resolveInfo.activityInfo,
         ActivityInfo::new);
   }
 
@@ -937,10 +936,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return this.queryIntentComponents(
         intent,
         flags,
-        (pkg) -> pkg.receivers,
+        pkg -> pkg.receivers,
         receiverFilters,
         (resolveInfo, activityInfo) -> resolveInfo.activityInfo = activityInfo,
-        (resolveInfo) -> resolveInfo.activityInfo,
+        resolveInfo -> resolveInfo.activityInfo,
         ActivityInfo::new);
   }
 
@@ -1217,10 +1216,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return this.queryIntentComponents(
         intent,
         flags,
-        (pkg) -> pkg.providers,
+        pkg -> pkg.providers,
         providerFilters,
         (resolveInfo, providerInfo) -> resolveInfo.providerInfo = providerInfo,
-        (resolveInfo) -> resolveInfo.providerInfo,
+        resolveInfo -> resolveInfo.providerInfo,
         ProviderInfo::new);
   }
 
@@ -1243,15 +1242,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              try {
-                ((IPackageStatsObserver) observer)
-                    .onGetStatsCompleted(packageStats, packageStats != null);
-              } catch (RemoteException remoteException) {
-                remoteException.rethrowFromSystemServer();
-              }
-            });
+        .post(() -> {
+          try {
+            ((IPackageStatsObserver) observer)
+                .onGetStatsCompleted(packageStats, packageStats != null);
+          } catch (RemoteException remoteException) {
+            remoteException.rethrowFromSystemServer();
+          }
+        });
   }
 
   @Override
@@ -1582,7 +1580,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
-    if ((flags & MATCH_ALL) != 0 && Build.VERSION.SDK_INT >= 23) {
+    if ((flags & MATCH_ALL) != 0) {
       return;
     }
     if ((flags & MATCH_UNINSTALLED_PACKAGES) == 0 && (appInfo.flags & FLAG_INSTALLED) == 0) {

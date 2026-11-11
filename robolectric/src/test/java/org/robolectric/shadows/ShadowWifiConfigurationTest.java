@@ -62,7 +62,7 @@ public class ShadowWifiConfigurationTest {
     assertThat(copy.wepKeys[3]).isEqualTo("3");
   }
 
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   @Test
   public void shouldCopy_sdk23() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();

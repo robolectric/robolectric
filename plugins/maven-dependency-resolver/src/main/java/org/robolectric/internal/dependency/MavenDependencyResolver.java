@@ -39,6 +39,8 @@ import org.xml.sax.SAXException;
  */
 public class MavenDependencyResolver implements DependencyResolver {
 
+  private static final Object DOWNLOAD_LOCK = new Object();
+
   private final MavenArtifactFetcher mavenArtifactFetcher;
   private final File localRepositoryDir;
 
@@ -79,14 +81,13 @@ public class MavenDependencyResolver implements DependencyResolver {
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     List<MavenJarArtifact> artifacts = new ArrayList<>(dependencies.length);
-    whileLocked(
-        () -> {
-          for (DependencyJar dependencyJar : dependencies) {
-            MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
-            artifacts.add(artifact);
-            mavenArtifactFetcher.fetchArtifact(artifact);
-          }
-        });
+    whileLocked(() -> {
+      for (DependencyJar dependencyJar : dependencies) {
+        MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
+        artifacts.add(artifact);
+        mavenArtifactFetcher.fetchArtifact(artifact);
+      }
+    });
     URL[] urls = new URL[dependencies.length];
     try {
       for (int i = 0; i < artifacts.size(); i++) {
@@ -100,17 +101,19 @@ public class MavenDependencyResolver implements DependencyResolver {
   }
 
   private void whileLocked(Runnable runnable) {
-    File lockFile = createLockFile();
-    try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
-      try (FileChannel channel = raf.getChannel()) {
-        try (FileLock ignored = channel.lock()) {
-          runnable.run();
+    // File locks coordinate processes, but overlapping locks in the same JVM throw instead of wait.
+    synchronized (DOWNLOAD_LOCK) {
+      File lockFile = createLockFile();
+      try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
+        try (FileChannel channel = raf.getChannel()) {
+          try (FileLock ignored = channel.lock()) {
+            runnable.run();
+          }
         }
+      } catch (IOException e) {
+        throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
       }
-    } catch (IOException e) {
-      throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
-    } finally {
-      lockFile.delete();
+      // Keep the lock file: deleting it lets another process lock a different inode.
     }
   }
 

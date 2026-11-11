@@ -852,7 +852,6 @@ public class ShadowDevicePolicyManager {
       case DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE:
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING:
       case DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED:
-        break;
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY:
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER:
         break;

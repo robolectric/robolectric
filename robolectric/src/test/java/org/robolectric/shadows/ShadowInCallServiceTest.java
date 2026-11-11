@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -20,7 +19,7 @@ import org.robolectric.shadow.api.Shadow;
 
 /** Robolectric test for {@link ShadowInCallService}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class ShadowInCallServiceTest {
 
   private InCallService inCallService;

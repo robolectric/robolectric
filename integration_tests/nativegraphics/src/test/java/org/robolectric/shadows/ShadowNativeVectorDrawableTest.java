@@ -43,6 +43,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Drawable.ConstantState;
 import android.graphics.drawable.VectorDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Xml;
 import androidx.test.core.app.ApplicationProvider;
@@ -221,7 +222,6 @@ public class ShadowNativeVectorDrawableTest {
     resources = context.getResources();
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testBasicVectorDrawables() throws XmlPullParserException, IOException {
     // Skip this test on Windows because of slight difference in rendering
@@ -229,25 +229,24 @@ public class ShadowNativeVectorDrawableTest {
     verifyVectorDrawables(BASIC_ICON_RES_IDS, BASIC_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testLMVectorDrawables() throws XmlPullParserException, IOException {
     verifyVectorDrawables(L_M_ICON_RES_IDS, L_M_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testNVectorDrawables() throws XmlPullParserException, IOException {
     verifyVectorDrawables(N_ICON_RES_IDS, N_GOLDEN_IMAGES, null);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testVectorDrawableGradient() throws XmlPullParserException, IOException {
-    verifyVectorDrawables(GRADIENT_ICON_RES_IDS, GRADIENT_GOLDEN_IMAGES, null);
+    // On ARM, Skia renders vector_icon_gradient_1 with about 0.6% of its pixels slightly off the
+    // golden, which x86 matches.
+    float pixelCountThreshold = isArm() ? 0.01f : DrawableTestUtils.PIXEL_ERROR_COUNT_THRESHOLD;
+    verifyVectorDrawables(GRADIENT_ICON_RES_IDS, GRADIENT_GOLDEN_IMAGES, null, pixelCountThreshold);
   }
 
-  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): update this test for V
   @Test
   public void testColorStateList() throws XmlPullParserException, IOException {
     for (int i = 0; i < STATEFUL_STATE_SETS.length; i++) {
@@ -256,6 +255,13 @@ public class ShadowNativeVectorDrawableTest {
   }
 
   private void verifyVectorDrawables(int[] resIds, int[] goldenImages, int[] stateSet)
+      throws XmlPullParserException, IOException {
+    verifyVectorDrawables(
+        resIds, goldenImages, stateSet, DrawableTestUtils.PIXEL_ERROR_COUNT_THRESHOLD);
+  }
+
+  private void verifyVectorDrawables(
+      int[] resIds, int[] goldenImages, int[] stateSet, float pixelCountThreshold)
       throws XmlPullParserException, IOException {
     for (int i = 0; i < resIds.length; i++) {
       VectorDrawable vectorDrawable = new VectorDrawable();
@@ -298,10 +304,23 @@ public class ShadowNativeVectorDrawableTest {
             bitmap,
             golden,
             DrawableTestUtils.PIXEL_ERROR_THRESHOLD,
-            DrawableTestUtils.PIXEL_ERROR_COUNT_THRESHOLD,
+            pixelCountThreshold(resIds[i], pixelCountThreshold),
             DrawableTestUtils.PIXEL_ERROR_TOLERANCE);
       }
     }
+  }
+
+  private static float pixelCountThreshold(int resId, float pixelCountThreshold) {
+    // Older Skia doesn't snap arc endpoints, so glibc 2.41's rounding changes affect this icon.
+    if (resId == R.drawable.vector_icon_repeated_a_1 && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+      return Math.max(pixelCountThreshold, 0.03f);
+    }
+    return pixelCountThreshold;
+  }
+
+  private static boolean isArm() {
+    String arch = System.getProperty("os.arch");
+    return arch.equals("aarch64") || arch.equals("arm64");
   }
 
   /**

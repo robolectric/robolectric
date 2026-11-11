@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.KEYGUARD_SERVICE;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -76,7 +75,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isDeviceSecure() {
     assertThat(manager.isDeviceSecure()).isFalse();
 
@@ -86,7 +85,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isDeviceSecureByUserId() {
     assertThat(manager.isDeviceSecure(USER_ID)).isFalse();
 

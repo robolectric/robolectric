@@ -49,16 +49,14 @@ public class ShadowPausedSystemClockTest {
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {
       CountDownLatch latch = new CountDownLatch(2);
-      executor.submit(
-          () -> {
-            SystemClock.sleep(100);
-            latch.countDown();
-          });
-      executor.submit(
-          () -> {
-            SystemClock.sleep(100);
-            latch.countDown();
-          });
+      executor.submit(() -> {
+        SystemClock.sleep(100);
+        latch.countDown();
+      });
+      executor.submit(() -> {
+        SystemClock.sleep(100);
+        latch.countDown();
+      });
       latch.await();
 
       assertThat(SystemClock.uptimeMillis()).isEqualTo(300);
@@ -97,11 +95,10 @@ public class ShadowPausedSystemClockTest {
       CountDownLatch latch = new CountDownLatch(numToExecute);
 
       for (int i = 0; i < numToExecute; i++) {
-        executor.submit(
-            () -> {
-              ShadowPausedSystemClock.deepSleep(100);
-              latch.countDown();
-            });
+        executor.submit(() -> {
+          ShadowPausedSystemClock.deepSleep(100);
+          latch.countDown();
+        });
       }
       latch.await();
 
@@ -139,16 +136,14 @@ public class ShadowPausedSystemClockTest {
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {
       CountDownLatch latch = new CountDownLatch(2);
-      executor.submit(
-          () -> {
-            SystemClock.setCurrentTimeMillis(300);
-            latch.countDown();
-          });
-      executor.submit(
-          () -> {
-            SystemClock.setCurrentTimeMillis(200);
-            latch.countDown();
-          });
+      executor.submit(() -> {
+        SystemClock.setCurrentTimeMillis(300);
+        latch.countDown();
+      });
+      executor.submit(() -> {
+        SystemClock.setCurrentTimeMillis(200);
+        latch.countDown();
+      });
       latch.await();
       assertThat(SystemClock.elapsedRealtime()).isEqualTo(300);
       assertThat(SystemClock.uptimeMillis()).isEqualTo(300);

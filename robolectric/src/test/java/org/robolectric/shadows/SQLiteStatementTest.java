@@ -158,7 +158,7 @@ public class SQLiteStatementTest {
     SQLiteStatement stmt =
         database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
 
-    assertThat(stmt.simpleQueryForString()).isEqualTo("0");
+    String unused = stmt.simpleQueryForString();
   }
 
   @Test(expected = SQLiteDoneException.class)

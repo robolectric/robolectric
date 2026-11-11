@@ -1,5 +1,30 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "google/google-java-format",
+      "extractVersionTemplate": "^v(?\u003cversion\u003e.*)$",
+      "managerFilePatterns": [
+        "/^build-logic/convention/src/main/java/org/robolectric/gradle/SpotlessPlugin\\.kt$/"
+      ],
+      "matchStrings": [
+        "googleJavaFormat\\(\"(?\u003ccurrentValue\u003e.*)\"\\)"
+      ]
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "Kotlin/ktfmt",
+      "managerFilePatterns": [
+        "/^build-logic/convention/src/main/java/org/robolectric/gradle/SpotlessPlugin\\.kt$/"
+      ],
+      "matchStrings": [
+        "ktfmt\\(\"(?\u003ccurrentValue\u003e.*)\"\\)"
+      ]
+    }
+  ],
   "extends": [
     "config:recommended",
     ":disableDependencyDashboard",
@@ -7,8 +32,6 @@
   ],
   "ignoreDeps": [
     "com.google.android.gms:play-services-basement",
-    "org.apache.httpcomponents:httpclient",
-    "org.apache.httpcomponents:httpcore",
     "org.robolectric:nativeruntime-dist-compat",
     "org.junit.platform:junit-platform-launcher",
     "org.junit.jupiter:junit-jupiter-engine",
@@ -24,12 +47,14 @@
     },
     {
       "groupName": "Android Gradle Plugin",
-      "matchManagers": "gradle",
-      "matchPackageNames": [
+      "matchDepNames": [
+        "com.android.application",
+        "com.android.legacy-kapt",
         "com.android.library",
         "com.android.tools:common",
-        "com.android.tools.build:gradle*"
-      ]
+        "com.android.tools.build:gradle-api"
+      ],
+      "matchManagers": "gradle"
     },
     {
       "groupName": "AndroidX Test",

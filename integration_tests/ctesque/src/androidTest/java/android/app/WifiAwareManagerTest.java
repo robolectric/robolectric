@@ -40,12 +40,11 @@ public class WifiAwareManagerTest {
     WifiAwareManager applicationWifiAwareManager =
         (WifiAwareManager) application.getSystemService(Context.WIFI_AWARE_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WifiAwareManager activityWifiAwareManager =
-                (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
-            assertThat(applicationWifiAwareManager).isSameInstanceAs(activityWifiAwareManager);
-          });
+      scenario.onActivity(activity -> {
+        WifiAwareManager activityWifiAwareManager =
+            (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
+        assertThat(applicationWifiAwareManager).isSameInstanceAs(activityWifiAwareManager);
+      });
     }
   }
 
@@ -53,14 +52,13 @@ public class WifiAwareManagerTest {
   public void wifiAwareManager_activityInstance_isSameAsActivityInstance() {
     assumeTrue(hasWifiAwareManager);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WifiAwareManager activityWifiAwareManager =
-                (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
-            WifiAwareManager anotherActivityWifiAwareManager =
-                (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
-            assertThat(anotherActivityWifiAwareManager).isSameInstanceAs(activityWifiAwareManager);
-          });
+      scenario.onActivity(activity -> {
+        WifiAwareManager activityWifiAwareManager =
+            (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
+        WifiAwareManager anotherActivityWifiAwareManager =
+            (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
+        assertThat(anotherActivityWifiAwareManager).isSameInstanceAs(activityWifiAwareManager);
+      });
     }
   }
 
@@ -71,20 +69,19 @@ public class WifiAwareManagerTest {
         (WifiAwareManager) application.getSystemService(Context.WIFI_AWARE_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            WifiAwareManager activityWifiAwareManager =
-                (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
+      scenario.onActivity(activity -> {
+        WifiAwareManager activityWifiAwareManager =
+            (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
 
-            assertThat(activityWifiAwareManager).isNotNull();
+        assertThat(activityWifiAwareManager).isNotNull();
 
-            AwareResources applicationAwareResources =
-                applicationWifiAwareManager.getAvailableAwareResources();
-            AwareResources activityAwareResources =
-                activityWifiAwareManager.getAvailableAwareResources();
+        AwareResources applicationAwareResources =
+            applicationWifiAwareManager.getAvailableAwareResources();
+        AwareResources activityAwareResources =
+            activityWifiAwareManager.getAvailableAwareResources();
 
-            assertThat(activityAwareResources).isEqualTo(applicationAwareResources);
-          });
+        assertThat(activityAwareResources).isEqualTo(applicationAwareResources);
+      });
     }
   }
 }

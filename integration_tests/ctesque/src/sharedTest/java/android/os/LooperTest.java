@@ -35,15 +35,14 @@ public class LooperTest {
     CountDownLatch blockObtained = new CountDownLatch(1);
     CountDownLatch block = new CountDownLatch(1);
     // post a message that will block looper
-    handler.post(
-        () -> {
-          try {
-            blockObtained.countDown();
-            block.await();
-          } catch (InterruptedException e) {
-            // ignore
-          }
-        });
+    handler.post(() -> {
+      try {
+        blockObtained.countDown();
+        block.await();
+      } catch (InterruptedException e) {
+        // ignore
+      }
+    });
 
     try {
       blockObtained.await();

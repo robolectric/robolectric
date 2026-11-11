@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.os.Build;
 import android.service.quicksettings.Tile;
 import androidx.test.ext.junit.runners.AndroidJUnit4;

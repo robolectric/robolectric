@@ -1,0 +1,601 @@
+# Stages a Robolectric release on the Central Portal, checks it, and once a maintainer approves,
+# publishes it and pushes the release branch and tag. See "Performing a Release" in the wiki for
+# the manual steps this automates.
+#
+# Run it from the Actions tab, from `master` (the workflow always runs master's copy of itself), and
+# choose what to release:
+#
+# * "Point release": stages the next version of the newest `robolectric-X.Y.x` branch: the next
+#   beta (`X.Y-beta-N`) or `X.Y` until `X.Y` is released, then the next patch release (`X.Y.1`,
+#   `X.Y.2`...). Use the cherry-pick workflow to get fixes into that branch first.
+# * "Point release from a branch": the same for the release branch named in "branch", such as
+#   `robolectric-4.17.x` for `4.17.1` once 4.18 has its own branch.
+# * "New release line": stages the first version of the next release line from master. With
+#   `4.18-SNAPSHOT` in gradle.properties, that's `4.18-beta-1` (or `4.18` if "beta" is unchecked),
+#   for a new `robolectric-4.18.x` branch.
+#
+# The tests and the build use the code of the release branch (or master); the check project in
+# .github/release-check comes from master.
+#
+# The version comes from gradle.properties and the existing `robolectric-*` tags. The workflow runs
+# the tests, stages the signed artifacts on the Central Portal, and checks the staged artifacts
+# with a small project on Linux, macOS and Windows. Until then nothing is public: the version
+# commit only exists in the run, and the staged deployment can still be dropped.
+#
+# If the checks pass, the "Publish" job waits for approval in the `release` environment (Settings >
+# Environments, with the maintainers as required reviewers; without it the job would not wait).
+# The run summary shows what will be released. Approving it:
+#
+# 1. publishes the deployment to Maven Central,
+# 2. pushes the version commit ("Bump version to X.") to the release branch, creating it for a new
+#    release line, and the `robolectric-X` tag,
+# 3. creates a draft GitHub release with generated notes, to edit and publish,
+# 4. for a new release line, opens a PR that bumps master to the next snapshot version.
+#
+# Publishing comes first because it can't be undone. If a step fails, re-run the job: each step
+# skips what was already done, and the deployment is kept. If the checks fail, or the approval is
+# rejected, the deployment is dropped and nothing is pushed.
+#
+# Secrets: SONATYPE_LOGIN and SONATYPE_PASSWORD (a Central Portal user token, as for snapshots),
+# SIGNING_KEY_ID, SIGNING_PASSWORD and SIGNING_SECRET_KEY_RING (the base64-encoded legacy
+# `secring.gpg` described in the wiki).
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'What to release'
+        type: choice
+        options:
+          - Point release
+          - Point release from a branch
+          - New release line
+        default: Point release
+      branch:
+        description: 'For "Point release from a branch": the release branch, such as robolectric-4.17.x.'
+        type: string
+        default: ''
+      beta:
+        description: 'Release a beta (X.Y-beta-N) instead of X.Y. Ignored for patch releases.'
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Determine the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      branch: ${{ steps.version.outputs.branch }}
+      sha: ${{ steps.version.outputs.sha }}
+      new-branch: ${{ steps.version.outputs.new-branch }}
+      next-snapshot: ${{ steps.version.outputs.next-snapshot }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine the version
+        id: version
+        env:
+          RELEASE: ${{ inputs.release }}
+          BETA: ${{ inputs.beta }}
+          BRANCH: ${{ inputs.branch }}
+          REF_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        shell: python
+        run: |
+          import os
+          import re
+          import subprocess
+          import sys
+
+          release = os.environ["RELEASE"]
+          beta = os.environ["BETA"] == "true"
+
+
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+
+          def git(*args):
+            return subprocess.run(["git", *args], check=True, capture_output=True,
+                                  text=True).stdout.strip()
+
+
+          def tag_exists(tag):
+            return subprocess.run(["git", "rev-parse", "--quiet", "--verify", f"refs/tags/{tag}"],
+                                  capture_output=True).returncode == 0
+
+
+          def last(prefix):
+            """The highest N of the tags robolectric-<prefix>N, or 0."""
+            pattern = re.compile(re.escape(f"robolectric-{prefix}") + r"(\d+)")
+            numbers = [int(m[1]) for tag in git("tag", "--list").splitlines()
+                       if (m := pattern.fullmatch(tag))]
+            return max(numbers, default=0)
+
+
+          def branch_series(branch):
+            """(X, Y) for a robolectric-X.Y.x branch, otherwise None."""
+            match = re.fullmatch(r"robolectric-(\d+)\.(\d+)\.x", branch)
+            return (int(match[1]), int(match[2])) if match else None
+
+
+          if os.environ["REPOSITORY"] != "robolectric/robolectric":
+            fail("Releases are only made from robolectric/robolectric.")
+          if os.environ["REF_NAME"] != "master":
+            fail(f"Run this workflow from master, not {os.environ['REF_NAME']}. "
+                 "Choose the kind of release in the form instead.")
+
+          if release == "New release line":
+            current = re.search(r"^thisVersion=(.*)$", open("gradle.properties").read(), re.M)[1]
+            match = re.fullmatch(r"(\d+)\.(\d+)-SNAPSHOT", current)
+            if not match:
+              fail(f"master's gradle.properties has thisVersion={current}, expected X.Y-SNAPSHOT.")
+            series = f"{match[1]}.{match[2]}"
+            next_snapshot = f"{match[1]}.{int(match[2]) + 1}-SNAPSHOT"
+            branch = f"robolectric-{series}.x"
+            # Exits with 2 if the branch doesn't exist.
+            exists = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", branch],
+                                    capture_output=True).returncode
+            if exists == 0:
+              fail(f'{branch} already exists. Choose "Point release" to release its next version.')
+            if exists != 2:
+              fail(f"Couldn't check whether {branch} exists.")
+            new_branch = True
+            sha = git("rev-parse", "HEAD")
+          else:
+            branches = [line.strip().removeprefix("origin/") for line in
+                        git("branch", "-r", "--list", "origin/robolectric-*.x").splitlines()]
+            branches = sorted(filter(branch_series, branches), key=branch_series)
+            if not branches:
+              fail("There is no robolectric-X.Y.x release branch.")
+            if release == "Point release from a branch":
+              branch = os.environ["BRANCH"]
+              if not branch_series(branch):
+                fail(f'"{branch}" isn\'t a release branch name. '
+                     "Use robolectric-X.Y.x, such as robolectric-4.17.x.")
+              if branch not in branches:
+                fail(f'"{branch}" isn\'t a release branch. '
+                     f"The release branches are: {', '.join(branches)}.")
+            else:
+              # The newest release branch, as in the cherry-pick workflow.
+              branch = branches[-1]
+            series = "{}.{}".format(*branch_series(branch))
+            new_branch = False
+            next_snapshot = ""
+            sha = git("rev-parse", f"origin/{branch}")
+            # Each release pushes its tag to the branch, so the branch must have commits after it.
+            last_tag = subprocess.run(
+                ["git", "describe", "--tags", "--abbrev=0", "--match", f"robolectric-{series}",
+                 "--match", f"robolectric-{series}[.-]*", sha],
+                capture_output=True, text=True).stdout.strip()
+            if last_tag and git("rev-list", "--count", f"{last_tag}..{sha}") == "0":
+              fail(f"{branch} has no commits since {last_tag}. Cherry-pick the fixes into it first.")
+
+          if tag_exists(f"robolectric-{series}"):
+            if beta:
+              print(f"::warning::{series} is already released, so this is a patch release, not a beta.")
+            version = f"{series}.{last(f'{series}.') + 1}"
+          elif beta:
+            version = f"{series}-beta-{last(f'{series}-beta-') + 1}"
+          else:
+            version = series
+
+          if tag_exists(f"robolectric-{version}"):
+            fail(f"The tag robolectric-{version} already exists.")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+            output.write(f"version={version}\n")
+            output.write(f"branch={branch}\n")
+            output.write(f"sha={sha}\n")
+            output.write(f"new-branch={str(new_branch).lower()}\n")
+            output.write(f"next-snapshot={next_snapshot}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            summary.write(f"### Releasing Robolectric {version} from {branch} ({sha})\n")
+
+  tests:
+    name: Tests
+    needs: version
+    uses: ./.github/workflows/tests.yml
+    with:
+      ref: ${{ needs.version.outputs.sha }}
+
+  graphics-tests:
+    name: Graphics tests
+    needs: version
+    uses: ./.github/workflows/native_tests.yml
+    with:
+      ref: ${{ needs.version.outputs.sha }}
+
+  stage:
+    name: Stage on the Central Portal
+    needs: [version, tests, graphics-tests]
+    runs-on: ubuntu-latest
+    outputs:
+      deployment-id: ${{ steps.upload.outputs.deployment-id }}
+      tree: ${{ steps.set-version.outputs.tree }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.sha }}
+
+      # The tree of the built code, so the publish job can check that the version commit it pushes
+      # has exactly this code.
+      - name: Set the version
+        id: set-version
+        run: |
+          sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
+          git add gradle.properties
+          echo "tree=$(git write-tree)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Build the release from scratch.
+          cache-disabled: true
+
+      - name: Build and upload to the staging area
+        env:
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_SECRET_KEY_RING: ${{ secrets.SIGNING_SECRET_KEY_RING }}
+        run: |
+          set -euo pipefail
+          keyring="$RUNNER_TEMP/secring.gpg"
+          echo "$SIGNING_SECRET_KEY_RING" | base64 --decode > "$keyring"
+          ./gradlew publish --stacktrace \
+            "-Psigning.keyId=$SIGNING_KEY_ID" \
+            "-Psigning.password=$SIGNING_PASSWORD" \
+            "-Psigning.secretKeyRingFile=$keyring"
+          rm -f "$keyring"
+
+      - name: Move the upload to the Central Portal
+        id: upload
+        run: |
+          set -euo pipefail
+          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
+          staging=https://ossrh-staging-api.central.sonatype.com
+          portal=https://central.sonatype.com/api/v1/publisher
+          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+
+          repositories=$(api "$staging/manual/search/repositories?ip=any")
+          keys=$(jq -r '.repositories[] | select(.state == "open") | .key' <<< "$repositories")
+          if [[ $(grep -c . <<< "$keys") -ne 1 ]]; then
+            echo "$repositories"
+            echo "::error::Expected exactly one open staging repository. Drop stale ones on https://central.sonatype.com and re-run."
+            exit 1
+          fi
+          api -X POST "$staging/manual/upload/repository/$keys?publishing_type=user_managed"
+
+          id=""
+          for _ in $(seq 60); do
+            id=$(api "$staging/manual/search/repositories?ip=any" |
+              jq -r --arg key "$keys" '.repositories[] | select(.key == $key) | .portal_deployment_id // empty')
+            [[ -n "$id" ]] && break
+            sleep 10
+          done
+          [[ -n "$id" ]] || { echo "::error::The upload did not create a Central Portal deployment."; exit 1; }
+          echo "deployment-id=$id" >> "$GITHUB_OUTPUT"
+
+          for _ in $(seq 180); do
+            status=$(api -X POST "$portal/status?id=$id")
+            state=$(jq -r .deploymentState <<< "$status")
+            case "$state" in
+              VALIDATED) echo "Deployment $id is validated."; exit 0 ;;
+              FAILED) echo "$status" | jq .; echo "::error::Central Portal validation failed."; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::Deployment $id was not validated within 30 minutes (state: $state)."
+          exit 1
+
+  check-staged:
+    name: Check the staged artifacts (${{ matrix.os }})
+    needs: [version, stage]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-latest-x64, windows-latest]
+        include:
+          # An x64 JDK on an arm64 Mac runs under Rosetta 2 and loads the x86_64 native libraries.
+          - os: macos-latest-x64
+            runs-on: macos-latest
+            java-architecture: x64
+    runs-on: ${{ matrix.runs-on || matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+          # Empty, so the runner's architecture, except for the Rosetta 2 job.
+          architecture: ${{ matrix.java-architecture }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
+
+      # Arm's ubuntu-24.04-arm image omits the Android SDK that the x86_64 images include.
+      - name: Set up Android SDK
+        if: matrix.os == 'ubuntu-24.04-arm'
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36'
+
+      - name: Run the release check project against the staged version
+        shell: bash
+        env:
+          SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: ./gradlew -p .github/release-check test --stacktrace "-ProbolectricVersion=$VERSION"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-check-${{ matrix.os }}
+          path: .github/release-check/build/test-results/**/TEST-*.xml
+
+  summary:
+    name: Describe the release
+    needs: [version, stage, check-staged]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Describe what approving does
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          BRANCH: ${{ needs.version.outputs.branch }}
+          NEW_BRANCH: ${{ needs.version.outputs.new-branch }}
+          NEXT_SNAPSHOT: ${{ needs.version.outputs.next-snapshot }}
+          DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
+          SHA: ${{ needs.version.outputs.sha }}
+        run: |
+          {
+            echo "### Robolectric $VERSION is staged and checked"
+            echo
+            echo "Deployment \`$DEPLOYMENT_ID\` is validated on the [Central Portal](https://central.sonatype.com/publishing/deployments)."
+            echo "Nothing is public yet. Approving the \"Publish\" job will:"
+            echo
+            echo "1. Publish the deployment to Maven Central. This can't be undone."
+            if [[ "$NEW_BRANCH" == true ]]; then
+              echo "2. Create \`$BRANCH\` from $SHA with the commit \"Bump version to $VERSION.\", and push the tag \`robolectric-$VERSION\`."
+            else
+              echo "2. Push the commit \"Bump version to $VERSION.\" on top of \`$BRANCH\` ($SHA), and the tag \`robolectric-$VERSION\`."
+            fi
+            echo "3. Create a draft GitHub release for \`robolectric-$VERSION\` with generated notes."
+            if [[ "$NEW_BRANCH" == true ]]; then
+              echo "4. Open a PR that bumps master to $NEXT_SNAPSHOT."
+            fi
+            echo
+            echo "Rejecting it drops the deployment."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Publish
+    needs: [version, stage, check-staged, summary]
+    runs-on: ubuntu-latest
+    # Waits for a required reviewer to approve.
+    environment: release
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      started: ${{ steps.start.outputs.started }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BRANCH: ${{ needs.version.outputs.branch }}
+      NEW_BRANCH: ${{ needs.version.outputs.new-branch }}
+      NEXT_SNAPSHOT: ${{ needs.version.outputs.next-snapshot }}
+      SHA: ${{ needs.version.outputs.sha }}
+      TREE: ${{ needs.stage.outputs.tree }}
+      DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
+      TAG: robolectric-${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    # Each step checks whether it was already done, so the job can be re-run if a step fails.
+    steps:
+      # Tells drop-staged that the job was approved, so a failed attempt isn't dropped.
+      - name: Start
+        id: start
+        run: echo "started=true" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the deployment to Maven Central
+        env:
+          SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
+          portal=https://central.sonatype.com/api/v1/publisher
+          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          state() { api -X POST "$portal/status?id=$DEPLOYMENT_ID" | jq -r .deploymentState; }
+
+          state=$(state)
+          case "$state" in
+            VALIDATED) api -X POST "$portal/deployment/$DEPLOYMENT_ID" ;;
+            PUBLISHING|PUBLISHED) echo "Deployment $DEPLOYMENT_ID is already $state." ;;
+            *) echo "::error::Deployment $DEPLOYMENT_ID is $state, not VALIDATED."; exit 1 ;;
+          esac
+
+          # Publishing usually takes 10 to 30 minutes.
+          for _ in $(seq 360); do
+            state=$(state)
+            case "$state" in
+              PUBLISHED) echo "Published $VERSION to Maven Central." >> "$GITHUB_STEP_SUMMARY"; exit 0 ;;
+              FAILED) echo "::error::Publishing deployment $DEPLOYMENT_ID failed."; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::Deployment $DEPLOYMENT_ID was not published within an hour (state: $state). Re-run this job to keep waiting."
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.sha }}
+
+      - name: Push the version commit, the release branch and the tag
+        env:
+          ACTOR: ${{ github.actor }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*"; exit 1; }
+          git config user.name "$ACTOR"
+          git config user.email "$ACTOR_ID+$ACTOR@users.noreply.github.com"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            git fetch --depth 1 origin tag "$TAG"
+            [[ $(git rev-parse "$TAG^{tree}") == "$TREE" ]] || fail "$TAG already exists with different code."
+            echo "$TAG is already pushed."
+            exit 0
+          fi
+
+          sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
+          git add gradle.properties
+          [[ $(git write-tree) == "$TREE" ]] || fail "The version commit doesn't match the code that was built."
+          git commit -m "Bump version to $VERSION."
+          git tag -a -m "Version $VERSION" "$TAG"
+          # Fails without pushing anything if the branch moved during the release.
+          git push --atomic origin "HEAD:refs/heads/$BRANCH" "refs/tags/$TAG" ||
+            fail "Couldn't push $BRANCH and $TAG. If $BRANCH changed during the release, push the tag by hand."
+          echo "Pushed \`$TAG\` and \`$BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create a draft GitHub release
+        shell: python
+        run: |
+          import os
+          import re
+          import subprocess
+
+          version = os.environ["VERSION"]
+          tag = os.environ["TAG"]
+          repo = os.environ["GITHUB_REPOSITORY"]
+
+
+          def version_key(tag):
+            """Orders robolectric-X.Y[.Z][-beta-N] tags, with X.Y-beta-N before X.Y."""
+            match = re.fullmatch(r"robolectric-(\d+(?:\.\d+)+)(?:-beta-(\d+))?", tag)
+            if not match:
+              return None
+            numbers = tuple(int(n) for n in match[1].split("."))
+            return numbers, (0, int(match[2])) if match[2] else (1, 0)
+
+
+          def previous_tag():
+            """The tag the notes start from, as for earlier releases: the previous beta for
+            X.Y-beta-N, otherwise the latest X.Y or X.Y.Z before this version."""
+            match = re.fullmatch(r"(.*)-beta-(\d+)", version)
+            if match and int(match[2]) > 1:
+              return f"robolectric-{match[1]}-beta-{int(match[2]) - 1}"
+            refs = subprocess.run(
+                ["git", "ls-remote", "--tags", "--refs", "origin", "robolectric-*"],
+                check=True, capture_output=True, text=True).stdout
+            releases = [line.split("refs/tags/")[1] for line in refs.splitlines()]
+            releases = [t for t in releases if "-beta-" not in t and version_key(t)]
+            earlier = [t for t in releases if version_key(t) < version_key(tag)]
+            return max(earlier, key=version_key, default=None)
+
+
+          if subprocess.run(["gh", "release", "view", tag], capture_output=True).returncode == 0:
+            print(f"The release {tag} already exists.")
+          else:
+            create = ["gh", "release", "create", tag, "--draft", "--verify-tag",
+                      "--title", f"Robolectric {version}"]
+            if "-beta-" in version:
+              create.append("--prerelease")
+            # Without a start tag, GitHub picks an older release (the previous line's tags aren't
+            # on this branch), and the notes can exceed the 125,000 characters a release allows.
+            previous = previous_tag()
+            if previous is None:
+              subprocess.run(create + ["--generate-notes"], check=True)
+            elif subprocess.run(
+                create + ["--generate-notes", "--notes-start-tag", previous]).returncode != 0:
+              print(f"Couldn't generate the notes from {previous}; linking the changes instead.")
+              changes = f"https://github.com/{repo}/compare/{previous}...{tag}"
+              subprocess.run(create + ["--notes", f"**Full Changelog**: {changes}"], check=True)
+
+          url = subprocess.run(["gh", "release", "view", tag, "--json", "url", "-q", ".url"],
+                               check=True, capture_output=True, text=True).stdout.strip()
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            summary.write(f"Edit and publish the [draft release notes]({url}).\n")
+
+      - name: Open a PR to bump master to the next snapshot
+        if: needs.version.outputs.new-branch == 'true'
+        run: |
+          set -euo pipefail
+          bump=bump-version-$NEXT_SNAPSHOT
+          url=$(gh pr list --head "$bump" --base master --state open --json url -q '.[0].url // empty')
+          git fetch --depth 1 origin master
+          git checkout -B "$bump" FETCH_HEAD
+          if grep -qx "thisVersion=$NEXT_SNAPSHOT" gradle.properties; then
+            echo "master is already at $NEXT_SNAPSHOT."
+            exit 0
+          fi
+          if [[ -z "$url" ]]; then
+            sed -i "s/^thisVersion=.*/thisVersion=$NEXT_SNAPSHOT/" gradle.properties
+            git commit -am "Bump version to $NEXT_SNAPSHOT."
+            git push --force origin "$bump"
+            url=$(gh pr create --base master --head "$bump" --title "Bump version to $NEXT_SNAPSHOT" \
+              --body "$VERSION is released from $BRANCH, so master moves on to $NEXT_SNAPSHOT. Opened by the release workflow; checks don't run on PRs opened by workflows, and the tests run on master after it's merged.")
+          fi
+          echo "Merge the [PR that bumps master to $NEXT_SNAPSHOT]($url)." >> "$GITHUB_STEP_SUMMARY"
+
+  drop-staged:
+    name: Drop the staged deployment
+    needs: [stage, check-staged, publish]
+    # When the checks failed, or the publish job was rejected or cancelled before it started.
+    if: always() && needs.stage.result == 'success' && needs.publish.outputs.started != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Drop the deployment unless it was published
+        env:
+          DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
+          SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
+          portal=https://central.sonatype.com/api/v1/publisher
+          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          # In case it was published anyway.
+          state=$(api -X POST "$portal/status?id=$DEPLOYMENT_ID" | jq -r .deploymentState)
+          case "$state" in
+            VALIDATED|FAILED)
+              api -X DELETE "$portal/deployment/$DEPLOYMENT_ID"
+              echo "Dropped deployment $DEPLOYMENT_ID: the checks failed or the release wasn't approved." >> "$GITHUB_STEP_SUMMARY" ;;
+            *)
+              echo "Deployment $DEPLOYMENT_ID is $state, so it was not dropped." >> "$GITHUB_STEP_SUMMARY" ;;
+          esac

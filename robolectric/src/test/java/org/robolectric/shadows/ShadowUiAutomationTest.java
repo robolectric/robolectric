@@ -360,15 +360,14 @@ public class ShadowUiAutomationTest {
     UiAutomation uiAutomation = instrumentation.getUiAutomation();
     AtomicBoolean clicked = new AtomicBoolean(false);
     AtomicReference<ActivityController<TestActivity>> controller = new AtomicReference<>();
-    instrumentation.runOnMainSync(
-        () -> {
-          controller.set(Robolectric.buildActivity(TestActivity.class).setup());
-          Activity activity = controller.get().get();
-          Button button = new Button(activity);
-          button.setText("Instrumentation Button");
-          button.setOnClickListener(v -> clicked.set(true));
-          activity.setContentView(button);
-        });
+    instrumentation.runOnMainSync(() -> {
+      controller.set(Robolectric.buildActivity(TestActivity.class).setup());
+      Activity activity = controller.get().get();
+      Button button = new Button(activity);
+      button.setText("Instrumentation Button");
+      button.setOnClickListener(v -> clicked.set(true));
+      activity.setContentView(button);
+    });
     try {
       instrumentation.waitForIdleSync();
 

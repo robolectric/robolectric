@@ -61,9 +61,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
       # Initializes the CodeQL tools for scanning.
@@ -83,6 +83,13 @@ jobs:
       # CodeQL will assemble the project before performing the analysis.
       # We add this extra step to take advantage of GitHub Actions caches.
       - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Only the test jobs save the cache, to keep its entries within GitHub's 10 GB limit.
+          cache-read-only: true
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
 
       # If the analyze step fails for one of the languages you are analyzing with
       # "We were unable to automatically build your code", modify the matrix above

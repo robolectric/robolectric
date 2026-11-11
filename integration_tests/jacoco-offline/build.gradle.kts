@@ -1,3 +1,4 @@
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.robolectric.gradle.AndroidSdk
 
 plugins {
@@ -6,8 +7,8 @@ plugins {
 }
 
 val jacocoVersion = libs.versions.jacoco.get()
-val jacocoAnt: Configuration by configurations.getting
-val jacocoRuntime: Configuration by configurations.creating
+val jacocoAnt = configurations.named("jacocoAnt")
+val jacocoRuntime = configurations.register("jacocoRuntime")
 
 jacoco { toolVersion = jacocoVersion }
 
@@ -21,68 +22,71 @@ dependencies {
 }
 
 val unitTestTaskName = "test"
-val javaDir = layout.buildDirectory.dir("classes/java/main").get().asFile
-val kotlinDir = layout.buildDirectory.dir("classes/kotlin/main").get().asFile
 val jacocoInstrumentedClassesOutputDir =
-  layout.buildDirectory.dir("$jacocoVersion/classes/java/classes-instrumented").get().asFile
+  layout.buildDirectory.dir("$jacocoVersion/classes/java/classes-instrumented")
 
-// Make sure it's evaluated after the AGP evaluation.
-afterEvaluate {
-  tasks.classes.configure {
-    doLast {
-      logger.debug("[JaCoCo] Generating JaCoCo instrumented classes for the build.")
+val jacocoInstrument =
+  tasks.register<JacocoInstrumentTask>("jacocoInstrument") {
+    inputDirs.from(sourceSets.named("main").map { it.output.classesDirs })
+    jacocoAntClasspath.from(jacocoAnt)
+    outputDir.set(jacocoInstrumentedClassesOutputDir)
+  }
 
-      if (jacocoInstrumentedClassesOutputDir.exists()) {
-        logger.debug("[JaCoCo] Classes had been instrumented.")
-        return@doLast
-      }
+// Ensure jacocoInstrument runs when classes is called
+tasks.classes { finalizedBy(jacocoInstrument) }
 
-      ant.withGroovyBuilder {
-        "taskdef"(
-          "name" to "instrument",
-          "classname" to "org.jacoco.ant.InstrumentTask",
-          "classpath" to jacocoAnt.asPath,
-        )
-      }
+@CacheableTask
+abstract class JacocoInstrumentTask : DefaultTask() {
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  abstract val inputDirs: ConfigurableFileCollection
 
-      if (javaDir.exists()) {
+  @get:Classpath abstract val jacocoAntClasspath: ConfigurableFileCollection
+
+  @get:OutputDirectory abstract val outputDir: DirectoryProperty
+
+  @TaskAction
+  fun instrument() {
+    logger.debug("[JaCoCo] Generating JaCoCo instrumented classes for the build.")
+
+    val outputDirPath = outputDir.get().asFile.path
+
+    ant.withGroovyBuilder {
+      "taskdef"(
+        "name" to "instrument",
+        "classname" to "org.jacoco.ant.InstrumentTask",
+        "classpath" to jacocoAntClasspath.asPath,
+      )
+    }
+
+    inputDirs.files.forEach { inputDir ->
+      if (inputDir.exists()) {
         ant.withGroovyBuilder {
-          "instrument"("destdir" to jacocoInstrumentedClassesOutputDir.path) {
-            "fileset"("dir" to javaDir.path, "excludes" to "")
+          "instrument"("destdir" to outputDirPath) {
+            "fileset"("dir" to inputDir.path, "excludes" to "")
           }
         }
       } else {
-        logger.debug("[JaCoCo] Classes directory with path '{}' does not exist.", javaDir)
-      }
-
-      if (kotlinDir.exists()) {
-        ant.withGroovyBuilder {
-          "instrument"("destdir" to jacocoInstrumentedClassesOutputDir.path) {
-            "fileset"("dir" to kotlinDir.path, "excludes" to "")
-          }
-        }
-      } else {
-        logger.debug("[JaCoCo] Classes directory with path '{}' does not exist.", kotlinDir)
+        logger.debug("[JaCoCo] Classes directory with path '{}' does not exist.", inputDir)
       }
     }
   }
+}
 
-  val executionDataFilePath =
-    layout.buildDirectory.dir("jacoco").get().file("${unitTestTaskName}.exec").asFile.path
+val executionDataFilePath = layout.buildDirectory.file("jacoco/${unitTestTaskName}.exec")
 
-  // Put JaCoCo instrumented classes and JaCoCoRuntime at the beginning of the JVM classpath.
-  tasks.named<Test>(unitTestTaskName).configure {
-    doFirst {
-      // Disable JaCoCo on-the-fly from Gradle JaCoCo plugin.
-      extensions.configure<JacocoTaskExtension> { isEnabled = false }
+// Put JaCoCo instrumented classes and JaCoCoRuntime at the beginning of the JVM classpath.
+tasks.named<Test>(unitTestTaskName).configure {
+  // Disable JaCoCo on-the-fly from Gradle JaCoCo plugin.
+  extensions.configure<JacocoTaskExtension> { isEnabled = false }
 
-      logger.debug("[JaCoCo] Modifying classpath of tests JVM.")
+  logger.debug("[JaCoCo] Modifying classpath of tests JVM.")
 
-      systemProperty("jacoco-agent.destfile", executionDataFilePath)
+  systemProperty("jacoco-agent.destfile", executionDataFilePath.map { it.asFile.path })
 
-      classpath = files(jacocoInstrumentedClassesOutputDir.path) + classpath + jacocoRuntime
+  // Use the output of jacocoInstrument task.
+  // We prepend it to classpath so instrumented classes are loaded first.
+  classpath = files(jacocoInstrument.map { it.outputDir }, classpath, jacocoRuntime)
 
-      logger.debug("[JaCoCo] Final test JVM classpath is ${classpath.asPath}")
-    }
-  }
+  doFirst { logger.debug("[JaCoCo] Final test JVM classpath is ${classpath.asPath}") }
 }

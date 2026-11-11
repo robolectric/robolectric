@@ -67,9 +67,8 @@ public final class ShadowNotificationListenerServiceTest {
     ImmutableList<Notification> dummyNotifications =
         ImmutableList.of(
             createDummyNotification(), createDummyNotification(), createDummyNotification());
-    dummyNotifications.forEach(
-        notification ->
-            shadowService.addActiveNotification(DEFAULT_PACKAGE, DEFAULT_ID, notification));
+    dummyNotifications.forEach(notification ->
+        shadowService.addActiveNotification(DEFAULT_PACKAGE, DEFAULT_ID, notification));
 
     StatusBarNotification[] activeNotifications = service.getActiveNotifications();
 
@@ -158,9 +157,8 @@ public final class ShadowNotificationListenerServiceTest {
     ImmutableList<Notification> dummyNotifications =
         ImmutableList.of(
             createDummyNotification(), createDummyNotification(), createDummyNotification());
-    dummyNotifications.forEach(
-        notification ->
-            shadowService.addActiveNotification(DEFAULT_PACKAGE, DEFAULT_ID, notification));
+    dummyNotifications.forEach(notification ->
+        shadowService.addActiveNotification(DEFAULT_PACKAGE, DEFAULT_ID, notification));
 
     service.cancelAllNotifications();
 

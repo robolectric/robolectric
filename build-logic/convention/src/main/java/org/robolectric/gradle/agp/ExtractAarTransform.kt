@@ -16,7 +16,7 @@
 
 /*
  * This class comes from AGP internals:
- * https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dependency/ExtractAarTransform.kt;bpv=0
+ * https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dependency/ExtractAarTransform.kt
  */
 
 package org.robolectric.gradle.agp
@@ -109,11 +109,15 @@ internal class AarExtractor {
     ZipInputStream(aar.inputStream().buffered()).use { zipInputStream ->
       while (true) {
         val entry = zipInputStream.nextEntry ?: break
-        if (entry.isDirectory || entry.name.contains("../") || entry.name.isEmpty()) {
+        if (entry.isDirectory || !isValidZipEntryName(entry) || entry.name.isEmpty()) {
           continue
         }
         val path = FileUtils.toSystemDependentPath(choosePathInOutput(entry.name))
         val outputFile = File(outputDir, path)
+        if (!isValidZipEntryPath(outputFile, outputDir)) {
+          // Skip entries that resolve outside the output directory (zip-slip).
+          continue
+        }
         Files.createParentDirs(outputFile)
         Files.asByteSink(outputFile).writeFrom(zipInputStream)
       }

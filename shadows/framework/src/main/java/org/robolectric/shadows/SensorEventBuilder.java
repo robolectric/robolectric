@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import com.google.common.base.Preconditions;
