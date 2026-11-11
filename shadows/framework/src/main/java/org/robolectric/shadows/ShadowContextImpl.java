@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -370,23 +371,61 @@ public class ShadowContextImpl {
     return getShadowInstrumentation().stopService(name);
   }
 
-  @Implementation(minSdk = Q)
-  protected boolean bindService(
-      Intent service, int flags, Executor executor, ServiceConnection conn) {
-    return getShadowInstrumentation().bindService(service, flags, executor, conn);
+  // All of ContextImpl's public bindService, bindIsolatedService and bindServiceAsUser overloads
+  // call the private bindServiceCommon, so it is the only bind method that needs a shadow. Its
+  // signature changed in Q (instance names and executors) and U (long flags).
+  @Implementation(maxSdk = P)
+  protected boolean bindServiceCommon(
+      Intent service, ServiceConnection conn, int flags, Handler handler, UserHandle user) {
+    return bindService(service, conn, flags, handler, null);
   }
 
-  @Implementation
-  protected boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
-    validateServiceIntent(intent);
-    return getShadowInstrumentation().bindService(intent, serviceConnection, i);
+  @Implementation(minSdk = Q, maxSdk = TIRAMISU)
+  protected boolean bindServiceCommon(
+      Intent service,
+      ServiceConnection conn,
+      int flags,
+      String instanceName,
+      Handler handler,
+      Executor executor,
+      UserHandle user) {
+    return bindService(service, conn, flags, handler, executor);
   }
 
-  /** Binds to a service but ignores the given UserHandle. */
-  @Implementation
-  protected boolean bindServiceAsUser(
-      Intent intent, final ServiceConnection serviceConnection, int i, UserHandle userHandle) {
-    return bindService(intent, serviceConnection, i);
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean bindServiceCommon(
+      Intent service,
+      ServiceConnection conn,
+      long flags,
+      String instanceName,
+      Handler handler,
+      Executor executor,
+      UserHandle user) {
+    return bindService(service, conn, (int) flags, handler, executor);
+  }
+
+  // The relevant portions of bindServiceCommon, binding through ShadowInstrumentation instead of
+  // ActivityManager. The UserHandle is ignored.
+  private boolean bindService(
+      Intent service,
+      ServiceConnection conn,
+      int flags,
+      @Nullable Handler handler,
+      @Nullable Executor executor) {
+    if (conn == null) {
+      throw new IllegalArgumentException("connection is null");
+    }
+    if (handler != null && executor != null) {
+      throw new IllegalArgumentException("Handler and Executor both supplied");
+    }
+    validateServiceIntent(service);
+    if (executor != null) {
+      return getShadowInstrumentation().bindService(service, flags, executor, conn);
+    }
+    if (handler != null) {
+      return getShadowInstrumentation().bindService(service, flags, handler::post, conn);
+    }
+    return getShadowInstrumentation().bindService(service, conn, flags);
   }
 
   @Implementation
