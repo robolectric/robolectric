@@ -47,5 +47,9 @@ sourceSets { test { resources { srcDir(layout.buildDirectory.dir("generated/reso
 
 tasks.named("processTestResources") { dependsOn(bundleJars) }
 
-// A simulator never returns, so give each test class its own JVM.
-tasks.named<Test>("test") { forkEvery = 1 }
+tasks.named<Test>("test") {
+  // A simulator never returns, so give each test class its own JVM.
+  forkEvery = 1
+  // As the simulator Gradle plugin does. The test app binds to its own service.
+  systemProperty("robolectric.bindRealServices", "true")
+}

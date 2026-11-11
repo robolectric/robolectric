@@ -140,6 +140,16 @@ class SimulatorPluginTest {
       .contains("-Drobolectric.windowManager.useRequestedSize=true")
   }
 
+  @Test
+  fun simulate_bindsRealServices() {
+    val project = AndroidTestProject(tempFolder.root, extraBuildScript = PRINT_SIMULATE_JVM_ARGS)
+
+    val result = project.build("printSimulateJvmArgs")
+
+    // Apps and libraries that bind to their own services need the binder those services return.
+    assertThat(simulateJvmArgs(result)).contains("-Drobolectric.bindRealServices=true")
+  }
+
   private fun simulateJvmArgs(result: BuildResult): List<String> =
     result.output
       .lines()

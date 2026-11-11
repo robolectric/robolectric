@@ -90,6 +90,7 @@ class SimulatorPlugin : Plugin<Project> {
         "-Drobolectric.createActivityContexts=true",
         "-Drobolectric.useEmbeddedViewRoot=true",
         "-Drobolectric.windowManager.useRequestedSize=true",
+        "-Drobolectric.bindRealServices=true",
       )
 
     task.apply {
