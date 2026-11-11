@@ -2,5 +2,8 @@
     package="org.robolectric.integrationtests.simulator">
     <application android:label="Simulator Test App">
         <activity android:name=".MainActivity" />
+        <provider android:name=".StartupProvider"
+            android:authorities="org.robolectric.integrationtests.simulator.startup"
+            android:exported="false" />
     </application>
 </manifest>

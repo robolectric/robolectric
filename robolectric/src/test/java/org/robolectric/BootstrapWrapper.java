@@ -47,6 +47,11 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   }
 
   @Override
+  public void setInstallContentProviders(boolean installContentProviders) {
+    wrappedTestEnvironment.setInstallContentProviders(installContentProviders);
+  }
+
+  @Override
   public void changeConfig(Configuration config) {
     this.config = config;
   }
