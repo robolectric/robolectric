@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.GraphicsMode;
@@ -73,7 +74,11 @@ public class AppLoader implements Runnable {
             .put(Config.class, getBestConfig())
             .build();
 
-    this.sandbox.getTestEnvironment().setUpApplicationState("simulator", configuration, manifest);
+    AndroidTestEnvironment testEnvironment = (AndroidTestEnvironment) sandbox.getTestEnvironment();
+    // Android creates the manifest's content providers before Application.onCreate, and libraries
+    // such as androidx.startup and Firebase initialize themselves from one.
+    testEnvironment.setInstallContentProviders(true);
+    testEnvironment.setUpApplicationState("simulator", configuration, manifest);
 
     Application application = RuntimeEnvironment.getApplication();
 

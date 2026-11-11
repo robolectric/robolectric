@@ -14,6 +14,7 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
+import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -67,8 +68,11 @@ import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationIm
 import org.robolectric.plugins.StubSdk;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.testing.TestContentProvider1;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 @LooperMode(LEGACY)
@@ -229,6 +233,53 @@ public class AndroidTestEnvironmentTest {
 
     assertThat(applicationInfo.deviceProtectedDataDir).isNotNull();
     assertThat(new File(applicationInfo.deviceProtectedDataDir).isDirectory()).isTrue();
+  }
+
+  @Test
+  @Config(application = ProviderRecordingApplication.class)
+  public void setUpApplicationState_installContentProviders_installsThemBeforeOnCreate() {
+    bootstrapWrapper.setInstallContentProviders(true);
+    try {
+      bootstrapWrapper.callSetUpApplicationState();
+    } finally {
+      bootstrapWrapper.setInstallContentProviders(false);
+    }
+
+    Map<String, ContentProvider> providers = ProviderRecordingApplication.providersAtOnCreate;
+    assertThat(providers.keySet())
+        .containsAtLeast(
+            "org.robolectric.authority1",
+            "org.robolectric.authority2",
+            "org.robolectric.authority3",
+            "org.robolectric.authority4");
+    TestContentProvider1 provider =
+        (TestContentProvider1) providers.get("org.robolectric.authority1");
+    assertThat(provider.transcript).containsExactly("onCreate");
+    assertThat(provider.getContext()).isSameInstanceAs(RuntimeEnvironment.getApplication());
+    assertThat(providers.get("org.robolectric.authority4"))
+        .isSameInstanceAs(providers.get("org.robolectric.authority3"));
+  }
+
+  @Test
+  @Config(application = ProviderRecordingApplication.class)
+  public void setUpApplicationState_doesNotInstallContentProvidersByDefault() {
+    bootstrapWrapper.callSetUpApplicationState();
+
+    assertThat(ProviderRecordingApplication.providersAtOnCreate)
+        .doesNotContainKey("org.robolectric.authority1");
+  }
+
+  /** Records the content providers that are registered when {@link #onCreate} runs. */
+  public static class ProviderRecordingApplication extends Application {
+    static Map<String, ContentProvider> providersAtOnCreate;
+
+    @Override
+    public void onCreate() {
+      super.onCreate();
+      Map<String, ContentProvider> providers =
+          ReflectionHelpers.getStaticField(ShadowContentResolver.class, "providers");
+      providersAtOnCreate = new HashMap<>(providers);
+    }
   }
 
   @Test
