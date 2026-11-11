@@ -16,12 +16,15 @@ import android.os.SystemClock;
 import android.view.Choreographer;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.view.ViewRootImpl;
+import android.view.WindowManagerGlobal;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.awt.GraphicsEnvironment;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +45,7 @@ import org.robolectric.simulator.pluginapi.RemoteControl;
 import org.robolectric.simulator.pluginapi.ScreenRecorder;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsPublisher;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
 
 /** The main entry point for the Robolectric Simulator for use in existing Robolectric tests. */
@@ -83,6 +87,7 @@ public final class Simulator {
     Preconditions.checkState(ShadowLooper.looperMode() != Mode.LEGACY);
     ShadowView.setUseRealViewAnimations(true);
     ShadowView.setUseRealDrawTraversals(true);
+    relayoutExistingWindows();
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     ShadowLog.setCaptureLogsEnabled(false);
@@ -116,6 +121,20 @@ public final class Simulator {
 
     connectRemoteControl();
     loop();
+  }
+
+  /**
+   * Windows created before real draw traversals were enabled, such as by {@link
+   * Robolectric#setupActivity} before the simulator starts, have no drawable surface. Force them to
+   * relayout, which creates their surface, so they can be drawn and captured.
+   */
+  static void relayoutExistingWindows() {
+    List<ViewRootImpl> roots =
+        ReflectionHelpers.getField(WindowManagerGlobal.getInstance(), "mRoots");
+    for (ViewRootImpl viewRootImpl : new ArrayList<>(roots)) {
+      ReflectionHelpers.setField(viewRootImpl, "mForceNextWindowRelayout", true);
+      viewRootImpl.requestLayout();
+    }
   }
 
   /** Returns whether there is a display that a window can be shown on, like AWT decides it. */
