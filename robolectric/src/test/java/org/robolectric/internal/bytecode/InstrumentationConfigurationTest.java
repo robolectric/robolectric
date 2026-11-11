@@ -85,6 +85,20 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldNotAcquireClassesSharedWithTestFrameworks() {
+    assertThat(config.shouldAcquire("org.opentest4j.AssertionFailedError")).isFalse();
+    assertThat(config.shouldAcquire("org.robolectric.junit.jupiter.RobolectricExtension"))
+        .isFalse();
+    assertThat(config.shouldAcquire("org.robolectric.junit.jupiter.internal.Environments"))
+        .isFalse();
+    assertThat(config.shouldAcquire("org.robolectric.junit.jupiter.SomeTest")).isTrue();
+    assertThat(config.shouldAcquire("org.robolectric.junit.platform.RobolectricTestEngine"))
+        .isFalse();
+    assertThat(config.shouldAcquire("org.robolectric.junit.rules.ExpectedLogMessagesRule"))
+        .isTrue();
+  }
+
+  @Test
   public void shouldNotAcquireJdkPackages() {
     // jdk.net.LinuxSocketOptions loads libextnet, which may only be loaded by one class loader.
     assertThat(config.shouldAcquire("jdk.net.Sockets")).isFalse();
