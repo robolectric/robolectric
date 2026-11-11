@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -27,6 +28,9 @@ public interface ActivityReflector {
 
   @Accessor("mToken")
   IBinder getToken();
+
+  @Accessor("mShareableActivityToken")
+  IBinder getShareableActivityTokenField();
 
   // <= N_MR1
   void attach(
@@ -205,7 +209,7 @@ public interface ActivityReflector {
           null,
           null,
           null,
-          null);
+          new Binder());
     }
     Shadow.<ShadowActivityThread>extract(activityThread)
         .registerActivityLaunch(intent, activityInfo, realActivity, token);
@@ -275,6 +279,9 @@ public interface ActivityReflector {
 
   @Accessor("mLastNonConfigurationInstances")
   void setLastNonConfigurationInstances(Object nonConfigInstance);
+
+  @Accessor("mShareableActivityToken")
+  void setShareableActivityTokenField(IBinder shareableActivityToken);
 
   void setVoiceInteractor(
       @WithType("com.android.internal.app.IVoiceInteractor") Object voiceInteractor);

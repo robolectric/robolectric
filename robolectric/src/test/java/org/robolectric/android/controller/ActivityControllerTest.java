@@ -4,11 +4,13 @@ import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -19,6 +21,7 @@ import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
@@ -39,6 +42,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadows.ActivityReflector;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.util.Scheduler;
@@ -527,6 +531,32 @@ public class ActivityControllerTest {
     assertThat(transcript).containsExactly(expectedStringList.toArray());
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void shareableActivityToken_populatedAndPreservedAcrossRecreation() {
+    try (ActivityController<MyActivity> firstController =
+            Robolectric.buildActivity(MyActivity.class).setup();
+        ActivityController<MyActivity> secondController =
+            Robolectric.buildActivity(MyActivity.class).setup()) {
+      IBinder firstToken = shareableToken(firstController.get());
+      IBinder secondToken = shareableToken(secondController.get());
+
+      assertThat(firstToken).isNotNull();
+      assertThat(secondToken).isNotNull();
+      assertThat(firstToken).isNotEqualTo(secondToken);
+
+      firstController.recreate();
+      assertThat(shareableToken(firstController.get())).isSameInstanceAs(firstToken);
+
+      Configuration config =
+          new Configuration(
+              ApplicationProvider.getApplicationContext().getResources().getConfiguration());
+      config.fontScale *= 2;
+      firstController.configurationChange(config);
+      assertThat(shareableToken(firstController.get())).isSameInstanceAs(firstToken);
+    }
+  }
+
   private void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged(
       String secondExpected, String thirdExpected) {
     Configuration config =
@@ -726,5 +756,9 @@ public class ActivityControllerTest {
         nonRetainedFragment = getFragmentManager().findFragmentByTag("non-retained");
       }
     }
+  }
+
+  private static IBinder shareableToken(Activity activity) {
+    return reflector(ActivityReflector.class, activity).getShareableActivityTokenField();
   }
 }
