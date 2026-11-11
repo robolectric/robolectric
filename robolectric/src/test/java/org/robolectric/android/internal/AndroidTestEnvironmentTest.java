@@ -28,6 +28,7 @@ import android.os.LocaleList;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
+import com.google.common.truth.Correspondence;
 import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -70,6 +72,8 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.shadows.ShadowInstrumentation;
+import org.robolectric.shadows.ShadowLog;
+import org.robolectric.shadows.ShadowLog.LogItem;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.testing.TestContentProvider1;
 import org.robolectric.util.ReflectionHelpers;
@@ -426,6 +430,88 @@ public class AndroidTestEnvironmentTest {
     DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
     assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.0f);
     assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density);
+  }
+
+  @Test
+  @Config(application = CrashReportingApplication.class)
+  public void uncaughtException_crashReporterFromOnCreateReportsItAndDefaultHandlerLogsIt()
+      throws InterruptedException {
+    System.setProperty("robolectric.installDefaultUncaughtExceptionHandler", "true");
+    try {
+      bootstrapWrapper.callSetUpApplicationState();
+    } finally {
+      System.clearProperty("robolectric.installDefaultUncaughtExceptionHandler");
+    }
+    CrashReportingApplication application = ApplicationProvider.getApplicationContext();
+    RuntimeException crash = new RuntimeException("boom");
+
+    Thread worker =
+        new Thread(
+            () -> {
+              throw crash;
+            },
+            "worker");
+    worker.start();
+    worker.join();
+
+    assertThat(application.reportedCrashes).containsExactly(crash);
+    assertThat(ShadowLog.getLogsForTag("AndroidRuntime"))
+        .comparingElementsUsing(
+            Correspondence.<LogItem, String>transforming(item -> item.msg, "has message"))
+        .contains("FATAL EXCEPTION: worker");
+  }
+
+  @Test
+  public void setUpApplicationState_doesNotInstallAnUncaughtExceptionHandlerByDefault() {
+    Thread.UncaughtExceptionHandler original = Thread.getDefaultUncaughtExceptionHandler();
+    Thread.UncaughtExceptionHandler previous = (thread, throwable) -> {};
+    Thread.setDefaultUncaughtExceptionHandler(previous);
+    try {
+      bootstrapWrapper.callSetUpApplicationState();
+
+      assertThat(Thread.getDefaultUncaughtExceptionHandler()).isSameInstanceAs(previous);
+    } finally {
+      Thread.setDefaultUncaughtExceptionHandler(original);
+    }
+  }
+
+  @Test
+  public void resetState_restoresThePreviousUncaughtExceptionHandler() {
+    Thread.UncaughtExceptionHandler original = Thread.getDefaultUncaughtExceptionHandler();
+    Thread.UncaughtExceptionHandler previous = (thread, throwable) -> {};
+    Thread.setDefaultUncaughtExceptionHandler(previous);
+    System.setProperty("robolectric.installDefaultUncaughtExceptionHandler", "true");
+    try {
+      bootstrapWrapper.callSetUpApplicationState();
+      // A crash reporter that the app installs in front of the default handler.
+      Thread.UncaughtExceptionHandler installed = Thread.getDefaultUncaughtExceptionHandler();
+      Thread.setDefaultUncaughtExceptionHandler(installed::uncaughtException);
+
+      bootstrapWrapper.resetState();
+
+      assertThat(Thread.getDefaultUncaughtExceptionHandler()).isSameInstanceAs(previous);
+    } finally {
+      System.clearProperty("robolectric.installDefaultUncaughtExceptionHandler");
+      Thread.setDefaultUncaughtExceptionHandler(original);
+    }
+  }
+
+  /**
+   * Wraps the default uncaught exception handler in {@link #onCreate}, as crash reporters do, and
+   * passes each crash on to it.
+   */
+  public static class CrashReportingApplication extends Application {
+    final List<Throwable> reportedCrashes = new CopyOnWriteArrayList<>();
+
+    @Override
+    public void onCreate() {
+      super.onCreate();
+      Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+      Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+        reportedCrashes.add(throwable);
+        defaultHandler.uncaughtException(thread, throwable);
+      });
+    }
   }
 
   @LazyApplication(LazyLoad.ON)

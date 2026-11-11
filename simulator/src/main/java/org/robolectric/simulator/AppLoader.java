@@ -57,10 +57,11 @@ public class AppLoader implements Runnable {
   @Override
   public void run() {
     Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
-    // Android always has a default handler, and apps' crash reporters wrap it. Install it before
-    // the Application is created. A crash on another thread ends the simulator, like a crash on
-    // the main thread does.
-    SimulatorUncaughtExceptionHandler.installIfNone(() -> System.exit(1));
+    // Android always has a default uncaught exception handler, and apps' crash reporters wrap it.
+    // With robolectric.installDefaultUncaughtExceptionHandler, which the simulator Gradle plugin
+    // sets, AndroidTestEnvironment installs one that logs the crash and then hands it to this one,
+    // so a crash on another thread ends the simulator, like a crash on the main thread does.
+    Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> System.exit(1));
 
     AndroidManifest manifest = new AndroidManifest(null, null, null, null, "", this.apkPath);
 
