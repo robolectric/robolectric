@@ -15,17 +15,18 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.shadows.ShadowVirtualRefBasePtr.get;
-import static org.robolectric.shadows.ShadowVirtualRefBasePtr.put;
 
 import android.graphics.drawable.VectorDrawable;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.util.Arrays;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(value = VectorDrawable.class, minSdk = N)
 public class ShadowVectorDrawable extends ShadowDrawable {
+  // Groups and paths have no native state here. The tree pointer is never created, so VGroup and
+  // VFullPath only call into native code to merge XML attributes into their properties, and
+  // nothing can read those properties back. Registering a native object per node would keep every
+  // inflated vector drawable node alive forever, since nothing frees it.
   //  private static native long nCreateTree(long rootGroupPtr);
   //  private static native long nCreateTreeFromCopy(long treeToCopy, long rootGroupPtr);
   //  private static native void nSetRendererViewportSize(long rendererPtr, float viewportWidth,
@@ -38,78 +39,22 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   //                                  long colorFilterPtr, Rect bounds, boolean needsMirroring,
   // boolean canReuseCache);
 
-  private static final int STROKE_WIDTH_INDEX = 0;
-  private static final int STROKE_COLOR_INDEX = 1;
-  private static final int STROKE_ALPHA_INDEX = 2;
-  private static final int FILL_COLOR_INDEX = 3;
-  private static final int FILL_ALPHA_INDEX = 4;
-  private static final int TRIM_PATH_START_INDEX = 5;
-  private static final int TRIM_PATH_END_INDEX = 6;
-  private static final int TRIM_PATH_OFFSET_INDEX = 7;
-  private static final int STROKE_LINE_CAP_INDEX = 8;
-  private static final int STROKE_LINE_JOIN_INDEX = 9;
-  private static final int STROKE_MITER_LIMIT_INDEX = 10;
-  private static final int FILL_TYPE_INDEX = 11;
   private static final int TOTAL_PROPERTY_COUNT = 12;
-
-  private static class Path implements Cloneable {
-    float strokeWidth;
-    int strokeColor;
-    float strokeAlpha;
-    int fillColor;
-    float fillAlpha;
-    float trimPathStart;
-    float trimPathEnd;
-    float trimPathOffset;
-    int strokeLineCap;
-    int strokeLineJoin;
-    float strokeMiterLimit;
-    int fillType;
-
-    @Override
-    protected Object clone() {
-      try {
-        return super.clone();
-      } catch (CloneNotSupportedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  private static Path getPath(long pathPtr) {
-    return get(pathPtr, Path.class);
-  }
 
   @Implementation
   protected static long nCreateFullPath() {
-    return put(new Path());
+    return 0;
   }
 
   @Implementation
   protected static long nCreateFullPath(long nativeFullPathPtr) {
-    return put(getPath(nativeFullPathPtr).clone());
+    return 0;
   }
 
   @Implementation
   protected static boolean nGetFullPathProperties(long pathPtr, byte[] properties, int length) {
     if (length != TOTAL_PROPERTY_COUNT * 4) return false;
-
-    Path path = getPath(pathPtr);
-    ByteBuffer propertiesBB = ByteBuffer.wrap(properties);
-    propertiesBB.order(ByteOrder.nativeOrder());
-    propertiesBB.putFloat(STROKE_WIDTH_INDEX * 4, path.strokeWidth);
-    propertiesBB.putInt(STROKE_COLOR_INDEX * 4, path.strokeColor);
-    propertiesBB.putFloat(STROKE_ALPHA_INDEX * 4, path.strokeAlpha);
-    propertiesBB.putInt(FILL_COLOR_INDEX * 4, path.fillColor);
-    propertiesBB.putFloat(FILL_ALPHA_INDEX * 4, path.fillAlpha);
-    propertiesBB.putFloat(TRIM_PATH_START_INDEX * 4, path.trimPathStart);
-    propertiesBB.putFloat(TRIM_PATH_END_INDEX * 4, path.trimPathEnd);
-    propertiesBB.putFloat(TRIM_PATH_OFFSET_INDEX * 4, path.trimPathOffset);
-    propertiesBB.putInt(STROKE_LINE_CAP_INDEX * 4, path.strokeLineCap);
-    propertiesBB.putInt(STROKE_LINE_JOIN_INDEX * 4, path.strokeLineJoin);
-    propertiesBB.putFloat(STROKE_MITER_LIMIT_INDEX * 4, path.strokeMiterLimit);
-    propertiesBB.putInt(FILL_TYPE_INDEX * 4, path.fillType);
-
+    Arrays.fill(properties, 0, length, (byte) 0);
     return true;
   }
 
@@ -127,21 +72,7 @@ public class ShadowVectorDrawable extends ShadowDrawable {
       float strokeMiterLimit,
       int strokeLineCap,
       int strokeLineJoin,
-      int fillType) {
-    Path path = getPath(pathPtr);
-    path.strokeWidth = strokeWidth;
-    path.strokeColor = strokeColor;
-    path.strokeAlpha = strokeAlpha;
-    path.fillColor = fillColor;
-    path.fillAlpha = fillAlpha;
-    path.trimPathStart = trimPathStart;
-    path.trimPathEnd = trimPathEnd;
-    path.trimPathOffset = trimPathOffset;
-    path.strokeLineCap = strokeLineCap;
-    path.strokeLineJoin = strokeLineJoin;
-    path.strokeMiterLimit = strokeMiterLimit;
-    path.fillType = fillType;
-  }
+      int fillType) {}
 
   //  @Implementation
   //  public static void nUpdateFullPathFillGradient(long pathPtr, long fillGradientPtr) {
@@ -156,37 +87,14 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   //  private static native long nCreateClipPath();
   //  private static native long nCreateClipPath(long clipPathPtr);
 
-  static class Group implements Cloneable {
-    float rotation;
-    float pivotX;
-    float pivotY;
-    float scaleX;
-    float scaleY;
-    float translateX;
-    float translateY;
-
-    @Override
-    protected Object clone() {
-      try {
-        return super.clone();
-      } catch (CloneNotSupportedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  private static Group getGroup(long groupPtr) {
-    return get(groupPtr, Group.class);
-  }
-
   @Implementation
   protected static long nCreateGroup() {
-    return put(new Group());
+    return 0;
   }
 
   @Implementation
   protected static long nCreateGroup(long groupPtr) {
-    return put(getGroup(groupPtr).clone());
+    return 0;
   }
 
   //  public static void nSetName(long nodePtr, String name) {
@@ -195,14 +103,7 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   @Implementation
   protected static boolean nGetGroupProperties(long groupPtr, float[] properties, int length) {
     if (length != 7) return false;
-    Group group = getGroup(groupPtr);
-    properties[0] = group.rotation;
-    properties[1] = group.pivotX;
-    properties[2] = group.pivotY;
-    properties[3] = group.scaleX;
-    properties[4] = group.scaleY;
-    properties[5] = group.translateX;
-    properties[6] = group.translateY;
+    Arrays.fill(properties, 0, length, 0f);
     return true;
   }
 
@@ -215,16 +116,7 @@ public class ShadowVectorDrawable extends ShadowDrawable {
       float scaleX,
       float scaleY,
       float translateX,
-      float translateY) {
-    Group group = getGroup(groupPtr);
-    group.rotation = rotate;
-    group.pivotX = pivotX;
-    group.pivotY = pivotY;
-    group.scaleX = scaleX;
-    group.scaleY = scaleY;
-    group.translateX = translateX;
-    group.translateY = translateY;
-  }
+      float translateY) {}
 
   //  private static native void nAddChild(long groupPtr, long nodePtr);
   //  private static native void nSetPathString(long pathPtr, String pathString, int length);
