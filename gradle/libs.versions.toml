@@ -2,7 +2,7 @@
 robolectric-nativeruntime-dist-compat = "1.0.20"
 
 commons-logging = "1.2"
-xml-security = "1.5.8"
+xml-security = "2.2.6"
 
 # https://developer.android.com/studio/releases
 android-gradle = "9.5.1"
