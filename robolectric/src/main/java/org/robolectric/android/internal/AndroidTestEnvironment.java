@@ -55,6 +55,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -134,6 +135,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
   private final Locale initialLocale = Locale.getDefault();
   private boolean installContentProviders;
+  private boolean installedUncaughtExceptionHandler;
+  @Nullable private Thread.UncaughtExceptionHandler previousUncaughtExceptionHandler;
 
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
@@ -174,6 +177,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     clearEnvironment();
+    // Off by default, since many tests rely on uncaught exceptions reaching their handler as is.
+    // The simulator turns it on.
+    if (Boolean.getBoolean("robolectric.installDefaultUncaughtExceptionHandler")) {
+      installUncaughtExceptionHandler();
+    }
 
     // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
     // must be loaded upfront.
@@ -683,9 +691,34 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return !shadowLooper.isIdle();
   }
 
+  /**
+   * Installs a default uncaught exception handler like the one Android always has, so crash
+   * reporters that wrap it in Application.onCreate work. It is removed again after the test, along
+   * with any handler the app put in front of it.
+   */
+  private void installUncaughtExceptionHandler() {
+    if (installedUncaughtExceptionHandler) {
+      return;
+    }
+    previousUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    Thread.setDefaultUncaughtExceptionHandler(
+        new AndroidUncaughtExceptionHandler(previousUncaughtExceptionHandler));
+    installedUncaughtExceptionHandler = true;
+  }
+
+  private void restoreUncaughtExceptionHandler() {
+    if (!installedUncaughtExceptionHandler) {
+      return;
+    }
+    Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler);
+    previousUncaughtExceptionHandler = null;
+    installedUncaughtExceptionHandler = false;
+  }
+
   @Override
   public void resetState() {
     Locale.setDefault(initialLocale);
+    restoreUncaughtExceptionHandler();
     if (fakeMediaProvider != null) {
       fakeMediaProvider.shutdown();
       fakeMediaProvider = null;

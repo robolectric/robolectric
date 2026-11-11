@@ -91,6 +91,7 @@ class SimulatorPlugin : Plugin<Project> {
         "-Drobolectric.useEmbeddedViewRoot=true",
         "-Drobolectric.windowManager.useRequestedSize=true",
         "-Drobolectric.bindRealServices=true",
+        "-Drobolectric.installDefaultUncaughtExceptionHandler=true",
       )
 
     task.apply {
