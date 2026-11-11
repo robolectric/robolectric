@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,7 +20,9 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -63,6 +67,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.ResourcesMode;
@@ -1112,6 +1117,26 @@ public class ShadowViewTest {
 
     assertThat(globalClickListener.receivedEvent).isFalse();
     assertThat(globalLongClickListener.receivedEvent).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU, maxSdk = BAKLAVA)
+  @GraphicsMode(Mode.NATIVE)
+  public void setUseRealDrawTraversals_existingWindow_isDrawn() {
+    Activity activity = setupActivity(Activity.class);
+    activity.getWindow().getDecorView().setBackgroundColor(Color.BLUE);
+
+    try {
+      ShadowView.setUseRealDrawTraversals(true);
+      shadowOf(Looper.getMainLooper()).idle();
+
+      Bitmap screenshot =
+          InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+      assertThat(screenshot.getPixel(screenshot.getWidth() / 2, screenshot.getHeight() / 2))
+          .isEqualTo(Color.BLUE);
+    } finally {
+      ShadowView.setUseRealDrawTraversals(false);
+    }
   }
 
   @Test

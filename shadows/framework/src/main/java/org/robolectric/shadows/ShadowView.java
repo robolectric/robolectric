@@ -33,8 +33,10 @@ import android.view.MotionEvent;
 import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.ViewRootImpl;
 import android.view.ViewRootImpl.CalledFromWrongThreadException;
 import android.view.WindowId;
+import android.view.WindowManagerGlobal;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import com.google.common.annotations.Beta;
@@ -66,6 +68,7 @@ import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
+import org.robolectric.shadows.ShadowWindowManagerGlobal.WindowManagerGlobalReflector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -1167,12 +1170,34 @@ public class ShadowView {
   public static void setUseRealDrawTraversals(boolean value) {
     checkState(getApiLevel() >= TIRAMISU, "real drawing is only supported on APIs >= 33");
     checkState(useRealGraphics(), "real graphics must be enabled to use real drawing");
+    boolean wereEnabled = areRealDrawTraversalsEnabled();
     useRealDrawTraversals.set(value);
+    if (!wereEnabled && areRealDrawTraversalsEnabled()) {
+      relayoutWindows();
+    }
     if (!value && getApiLevel() >= CINNAMON_BUN) {
       Log.w(
           "ShadowView",
           "ignoring setUseRealDrawTraversals(false) since it cannot be turned off on SDK "
               + getApiLevel());
+    }
+  }
+
+  /**
+   * Forces the existing windows to relayout. A window that did its relayout without real draw
+   * traversals has no surface to draw into, as {@link ShadowViewRootImpl} only creates it with
+   * them, and nothing else would make it relayout again.
+   */
+  private static void relayoutWindows() {
+    for (View windowView :
+        new ArrayList<>(
+            reflector(WindowManagerGlobalReflector.class, WindowManagerGlobal.getInstance())
+                .getWindowViews())) {
+      ViewRootImpl viewRootImpl = windowView.getViewRootImpl();
+      if (viewRootImpl != null) {
+        reflector(ViewRootImplReflector.class, viewRootImpl).setForceNextWindowRelayout(true);
+        viewRootImpl.requestLayout();
+      }
     }
   }
 
