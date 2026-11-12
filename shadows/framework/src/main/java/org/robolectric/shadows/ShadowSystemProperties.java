@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
 import android.os.SystemProperties;
@@ -133,6 +134,11 @@ public class ShadowSystemProperties {
     // TODO: definitely put this into generated build.prop
     if (RuntimeEnvironment.getApiLevel() > VANILLA_ICE_CREAM) {
       buildProperties.setProperty("ro.vendor.api_level", "202404");
+    }
+    // Set at boot by derive_sdk (not in build.prop); required by Jetpack AppSearch for SDK 36+
+    // query features that check SdkExtensions.getExtensionVersion(TIRAMISU) >= 7.
+    if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
+      buildProperties.setProperty("build.version.extensions.t", "7");
     }
   }
 

@@ -46,6 +46,18 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
+  @Config(sdk = VERSION_CODES.BAKLAVA)
+  public void getAppSearchService_notNull() {
+    assertThat(ServiceManager.getService(Context.APP_SEARCH_SERVICE)).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = VANILLA_ICE_CREAM)
+  public void getAppSearchService_beforeBaklava_isNull() {
+    assertThat(ServiceManager.getService(Context.APP_SEARCH_SERVICE)).isNull();
+  }
+
+  @Test
   public void getService_available_shouldReturnNonNull() {
     assertThat(ServiceManager.getService(Context.INPUT_METHOD_SERVICE)).isNotNull();
   }

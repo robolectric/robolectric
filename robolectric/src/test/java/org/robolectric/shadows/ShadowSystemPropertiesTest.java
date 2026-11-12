@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.SystemProperties;
@@ -97,5 +99,17 @@ public class ShadowSystemPropertiesTest {
     assertThat(SystemProperties.get("newkey")).isEqualTo("val");
     ShadowSystemProperties.override("newkey", null);
     assertThat(SystemProperties.get("newkey")).isEqualTo("");
+  }
+
+  @Test
+  @Config(sdk = BAKLAVA)
+  public void defaultSdkExtensions_onBaklava_setsTExtension() {
+    assertThat(SystemProperties.getInt("build.version.extensions.t", 0)).isEqualTo(7);
+  }
+
+  @Test
+  @Config(sdk = VANILLA_ICE_CREAM)
+  public void defaultSdkExtensions_beforeBaklava_unset() {
+    assertThat(SystemProperties.getInt("build.version.extensions.t", 0)).isEqualTo(0);
   }
 }

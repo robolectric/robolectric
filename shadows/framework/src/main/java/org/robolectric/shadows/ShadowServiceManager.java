@@ -24,6 +24,7 @@ import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.ambientcontext.IAmbientContextManager;
 import android.app.appfunctions.IAppFunctionService;
+import android.app.appsearch.aidl.IAppSearchManager;
 import android.app.job.IJobScheduler;
 import android.app.ondeviceintelligence.IOnDeviceIntelligenceManager;
 import android.app.role.IRoleManager;
@@ -429,6 +430,12 @@ public class ShadowServiceManager {
           IRangingAdapter.class,
           BinderType.CONCRETE,
           new FakeRangingAdapter());
+      addBinderService(
+          binderServices,
+          Context.APP_SEARCH_SERVICE,
+          IAppSearchManager.class,
+          BinderType.CONCRETE,
+          new FakeAppSearchManager());
       addBinderService(binderServices, Context.APP_FUNCTION_SERVICE, IAppFunctionService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
