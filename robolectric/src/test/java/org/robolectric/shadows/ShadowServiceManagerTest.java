@@ -58,6 +58,12 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
+  @Config(sdk = VERSION_CODES.BAKLAVA)
+  public void getAppFunctionService_notNull() {
+    assertThat(ServiceManager.getService(Context.APP_FUNCTION_SERVICE)).isNotNull();
+  }
+
+  @Test
   public void getService_available_shouldReturnNonNull() {
     assertThat(ServiceManager.getService(Context.INPUT_METHOD_SERVICE)).isNotNull();
   }
