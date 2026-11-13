@@ -276,43 +276,74 @@ jobs:
 
       - name: Move the upload to the Central Portal
         id: upload
+        shell: python
         run: |
-          set -euo pipefail
-          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
-          staging=https://ossrh-staging-api.central.sonatype.com
-          portal=https://central.sonatype.com/api/v1/publisher
-          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          import base64
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
 
-          repositories=$(api "$staging/manual/search/repositories?ip=any")
-          keys=$(jq -r '.repositories[] | select(.state == "open") | .key' <<< "$repositories")
-          if [[ $(grep -c . <<< "$keys") -ne 1 ]]; then
-            echo "$repositories"
-            echo "::error::Expected exactly one open staging repository. Drop stale ones on https://central.sonatype.com and re-run."
-            exit 1
-          fi
-          api -X POST "$staging/manual/upload/repository/$keys?publishing_type=user_managed"
+          STAGING = "https://ossrh-staging-api.central.sonatype.com"
+          PORTAL = "https://central.sonatype.com/api/v1/publisher"
+          credentials = f"{os.environ['SONATYPE_LOGIN']}:{os.environ['SONATYPE_PASSWORD']}"
+          token = base64.b64encode(credentials.encode()).decode()
 
-          id=""
-          for _ in $(seq 60); do
-            id=$(api "$staging/manual/search/repositories?ip=any" |
-              jq -r --arg key "$keys" '.repositories[] | select(.key == $key) | .portal_deployment_id // empty')
-            [[ -n "$id" ]] && break
-            sleep 10
-          done
-          [[ -n "$id" ]] || { echo "::error::The upload did not create a Central Portal deployment."; exit 1; }
-          echo "deployment-id=$id" >> "$GITHUB_OUTPUT"
 
-          for _ in $(seq 180); do
-            status=$(api -X POST "$portal/status?id=$id")
-            state=$(jq -r .deploymentState <<< "$status")
-            case "$state" in
-              VALIDATED) echo "Deployment $id is validated."; exit 0 ;;
-              FAILED) echo "$status" | jq .; echo "::error::Central Portal validation failed."; exit 1 ;;
-            esac
-            sleep 10
-          done
-          echo "::error::Deployment $id was not validated within 30 minutes (state: $state)."
-          exit 1
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+
+          def api(method, url):
+            """Calls the API and returns the response body."""
+            request = urllib.request.Request(url, method=method, headers={"Authorization": f"Bearer {token}"})
+            try:
+              with urllib.request.urlopen(request, timeout=60) as response:
+                return response.read().decode()
+            except urllib.error.HTTPError as error:
+              fail(f"{method} {url} failed with HTTP {error.code}: {error.read().decode()}")
+
+
+          def staging_repositories():
+            return json.loads(api("GET", f"{STAGING}/manual/search/repositories?ip=any"))["repositories"]
+
+
+          repositories = staging_repositories()
+          keys = [repository["key"] for repository in repositories if repository["state"] == "open"]
+          if len(keys) != 1:
+            print(json.dumps(repositories, indent=2))
+            fail("Expected exactly one open staging repository. "
+                 "Drop stale ones on https://central.sonatype.com and re-run.")
+          key = keys[0]
+          api("POST", f"{STAGING}/manual/upload/repository/{key}?publishing_type=user_managed")
+
+          deployment_id = None
+          for _ in range(60):
+            for repository in staging_repositories():
+              if repository["key"] == key:
+                deployment_id = repository.get("portal_deployment_id")
+            if deployment_id:
+              break
+            time.sleep(10)
+          if not deployment_id:
+            fail("The upload did not create a Central Portal deployment.")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+            output.write(f"deployment-id={deployment_id}\n")
+
+          for _ in range(180):
+            status = json.loads(api("POST", f"{PORTAL}/status?id={deployment_id}"))
+            state = status["deploymentState"]
+            if state == "VALIDATED":
+              print(f"Deployment {deployment_id} is validated.")
+              sys.exit(0)
+            if state == "FAILED":
+              print(json.dumps(status, indent=2))
+              fail("Central Portal validation failed.")
+            time.sleep(10)
+          fail(f"Deployment {deployment_id} was not validated within 30 minutes (state: {state}).")
 
   check-staged:
     name: Check the staged artifacts (${{ matrix.os }})
