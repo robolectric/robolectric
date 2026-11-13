@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManager;
@@ -394,6 +395,180 @@ public class ActivityControllerTest {
     nightController.configurationChange();
 
     assertThat(nightController.get()).isSameInstanceAs(activity);
+  }
+
+  @Test
+  public void configurationChange_whenRecreated_showsTheNewActivity() {
+    ActivityController<MyActivity> configController =
+        Robolectric.buildActivity(MyActivity.class).setup();
+    MyActivity activity = configController.get();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    View decorView = configController.get().getWindow().getDecorView();
+    assertThat(configController.get()).isNotSameInstanceAs(activity);
+    assertThat(decorView.isAttachedToWindow()).isTrue();
+    assertThat(decorView.getWidth()).isGreaterThan(decorView.getHeight());
+  }
+
+  @Test
+  @Config(qualifiers = "port")
+  public void configurationChange_whenRecreatedActivityFinishes_doesNotShowIt() {
+    ActivityController<FinishingOnRecreationActivity> configController =
+        Robolectric.buildActivity(FinishingOnRecreationActivity.class).setup();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    assertThat(configController.get().isFinishing()).isTrue();
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isFalse();
+    assertThat(configController.get().resumed).isFalse();
+  }
+
+  @Test
+  @Config(qualifiers = "port")
+  public void configurationChange_whenActivityFinishesOnResume_doesNotShowIt() {
+    ActivityController<FinishingOnResumeActivity> configController =
+        Robolectric.buildActivity(FinishingOnResumeActivity.class).setup();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    assertThat(configController.get().isFinishing()).isTrue();
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isFalse();
+    assertThat(configController.get().receivedTopResumed).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O, qualifiers = "port")
+  public void configurationChange_whenStopped_defersRecreationUntilRestart() {
+    ActivityController<MyActivity> configController =
+        Robolectric.buildActivity(MyActivity.class).setup();
+    configController.pause().stop();
+    MyActivity activity = configController.get();
+    transcript.clear();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    assertThat(configController.get()).isSameInstanceAs(activity);
+    assertThat(transcript).isEmpty();
+
+    configController.restart();
+    assertThat(configController.get()).isNotSameInstanceAs(activity);
+    assertThat(configController.get().getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isFalse();
+    assertThat(transcript).doesNotContain("onResume");
+
+    configController.resume().visible();
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O, qualifiers = "port")
+  public void configurationChange_whenStoppedAndRecreatedActivityFinishes_doesNotResumeIt() {
+    ActivityController<FinishingOnRecreationActivity> configController =
+        Robolectric.buildActivity(FinishingOnRecreationActivity.class).setup();
+    configController.pause().stop();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange().restart();
+
+    assertThat(configController.get().isFinishing()).isTrue();
+    assertThat(configController.get().resumed).isFalse();
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isFalse();
+  }
+
+  @Test
+  @Config(maxSdk = VERSION_CODES.N_MR1, qualifiers = "port")
+  public void configurationChange_whenStopped_doesNotShowRecreatedActivity() {
+    ActivityController<MyActivity> configController =
+        Robolectric.buildActivity(MyActivity.class).setup();
+    configController.pause().stop();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isFalse();
+    assertThat(configController.get().isResumed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q, qualifiers = "port")
+  public void configurationChange_topResumedCallbackPrecedesWindowAttachment() {
+    ActivityController<TopResumedActivity> configController =
+        Robolectric.buildActivity(TopResumedActivity.class).setup();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    assertThat(configController.get().receivedTopResumed).isTrue();
+    assertThat(configController.get().attachedWhenTopResumed).isFalse();
+    assertThat(configController.get().getWindow().getDecorView().isAttachedToWindow()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q, qualifiers = "port")
+  public void configurationChange_whenNotTopResumed_doesNotReportTopResumed() {
+    ActivityController<TopResumedActivity> configController =
+        Robolectric.buildActivity(TopResumedActivity.class).setup().topActivityResumed(false);
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    assertThat(configController.get().receivedTopResumed).isFalse();
+  }
+
+  public static class FinishingOnRecreationActivity extends Activity {
+    boolean resumed;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState != null) {
+        finish();
+      }
+    }
+
+    @Override
+    protected void onResume() {
+      super.onResume();
+      resumed = true;
+    }
+  }
+
+  public static class TopResumedActivity extends Activity {
+    boolean receivedTopResumed;
+    boolean attachedWhenTopResumed;
+
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+      super.onTopResumedActivityChanged(isTopResumedActivity);
+      if (isTopResumedActivity) {
+        receivedTopResumed = true;
+        attachedWhenTopResumed = getWindow().getDecorView().isAttachedToWindow();
+      }
+    }
+  }
+
+  public static class FinishingOnResumeActivity extends TopResumedActivity {
+    boolean recreated;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      recreated = savedInstanceState != null;
+    }
+
+    @Override
+    protected void onResume() {
+      super.onResume();
+      if (recreated) {
+        finish();
+      }
+    }
   }
 
   @Test
