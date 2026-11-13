@@ -276,43 +276,79 @@ jobs:
 
       - name: Move the upload to the Central Portal
         id: upload
+        shell: python
         run: |
-          set -euo pipefail
-          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
-          staging=https://ossrh-staging-api.central.sonatype.com
-          portal=https://central.sonatype.com/api/v1/publisher
-          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          import base64
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
 
-          repositories=$(api "$staging/manual/search/repositories?ip=any")
-          keys=$(jq -r '.repositories[] | select(.state == "open") | .key' <<< "$repositories")
-          if [[ $(grep -c . <<< "$keys") -ne 1 ]]; then
-            echo "$repositories"
-            echo "::error::Expected exactly one open staging repository. Drop stale ones on https://central.sonatype.com and re-run."
-            exit 1
-          fi
-          api -X POST "$staging/manual/upload/repository/$keys?publishing_type=user_managed"
+          TOKEN = base64.b64encode(
+              f"{os.environ['SONATYPE_LOGIN']}:{os.environ['SONATYPE_PASSWORD']}".encode()).decode()
+          STAGING = "https://ossrh-staging-api.central.sonatype.com"
+          PORTAL = "https://central.sonatype.com/api/v1/publisher"
 
-          id=""
-          for _ in $(seq 60); do
-            id=$(api "$staging/manual/search/repositories?ip=any" |
-              jq -r --arg key "$keys" '.repositories[] | select(.key == $key) | .portal_deployment_id // empty')
-            [[ -n "$id" ]] && break
-            sleep 10
-          done
-          [[ -n "$id" ]] || { echo "::error::The upload did not create a Central Portal deployment."; exit 1; }
-          echo "deployment-id=$id" >> "$GITHUB_OUTPUT"
 
-          for _ in $(seq 180); do
-            status=$(api -X POST "$portal/status?id=$id")
-            state=$(jq -r .deploymentState <<< "$status")
-            case "$state" in
-              VALIDATED) echo "Deployment $id is validated."; exit 0 ;;
-              FAILED) echo "$status" | jq .; echo "::error::Central Portal validation failed."; exit 1 ;;
-            esac
-            sleep 10
-          done
-          echo "::error::Deployment $id was not validated within 30 minutes (state: $state)."
-          exit 1
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+
+          def api(method, url):
+            """Calls a Central Portal API and returns its JSON response, or its text if it isn't JSON."""
+            request = urllib.request.Request(url, method=method,
+                                             headers={"Authorization": f"Bearer {TOKEN}"})
+            try:
+              with urllib.request.urlopen(request, timeout=60) as response:
+                body = response.read().decode()
+            except urllib.error.HTTPError as error:
+              fail(f"{method} {url} failed with HTTP {error.code}: {error.read().decode()}")
+            try:
+              return json.loads(body)
+            except ValueError:
+              return body
+
+
+          def deployment_state(deployment_id):
+            return api("POST", f"{PORTAL}/status?id={deployment_id}")["deploymentState"]
+
+
+          repositories = api("GET", f"{STAGING}/manual/search/repositories?ip=any")["repositories"]
+          keys = [repository["key"] for repository in repositories if repository["state"] == "open"]
+          if len(keys) != 1:
+            print(json.dumps(repositories, indent=2))
+            fail("Expected exactly one open staging repository. "
+                 "Drop stale ones on https://central.sonatype.com and re-run.")
+          key = keys[0]
+          api("POST", f"{STAGING}/manual/upload/repository/{key}?publishing_type=user_managed")
+
+          deployment_id = None
+          for _ in range(60):
+            repositories = api("GET", f"{STAGING}/manual/search/repositories?ip=any")["repositories"]
+            deployment_id = next((repository.get("portal_deployment_id") for repository in repositories
+                                  if repository["key"] == key), None)
+            if deployment_id:
+              break
+            time.sleep(10)
+          if not deployment_id:
+            fail("The upload did not create a Central Portal deployment.")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+            output.write(f"deployment-id={deployment_id}\n")
+
+          for _ in range(180):
+            status = api("POST", f"{PORTAL}/status?id={deployment_id}")
+            state = status["deploymentState"]
+            if state == "VALIDATED":
+              print(f"Deployment {deployment_id} is validated.")
+              sys.exit(0)
+            if state == "FAILED":
+              print(json.dumps(status, indent=2))
+              fail("Central Portal validation failed.")
+            time.sleep(10)
+          fail(f"Deployment {deployment_id} was not validated within 30 minutes (state: {state}).")
 
   check-staged:
     name: Check the staged artifacts (${{ matrix.os }})
@@ -435,31 +471,67 @@ jobs:
         env:
           SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        shell: python
         run: |
-          set -euo pipefail
-          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
-          portal=https://central.sonatype.com/api/v1/publisher
-          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
-          state() { api -X POST "$portal/status?id=$DEPLOYMENT_ID" | jq -r .deploymentState; }
+          import base64
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
 
-          state=$(state)
-          case "$state" in
-            VALIDATED) api -X POST "$portal/deployment/$DEPLOYMENT_ID" ;;
-            PUBLISHING|PUBLISHED) echo "Deployment $DEPLOYMENT_ID is already $state." ;;
-            *) echo "::error::Deployment $DEPLOYMENT_ID is $state, not VALIDATED."; exit 1 ;;
-          esac
+          TOKEN = base64.b64encode(
+              f"{os.environ['SONATYPE_LOGIN']}:{os.environ['SONATYPE_PASSWORD']}".encode()).decode()
+          STAGING = "https://ossrh-staging-api.central.sonatype.com"
+          PORTAL = "https://central.sonatype.com/api/v1/publisher"
+
+
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+
+          def api(method, url):
+            """Calls a Central Portal API and returns its JSON response, or its text if it isn't JSON."""
+            request = urllib.request.Request(url, method=method,
+                                             headers={"Authorization": f"Bearer {TOKEN}"})
+            try:
+              with urllib.request.urlopen(request, timeout=60) as response:
+                body = response.read().decode()
+            except urllib.error.HTTPError as error:
+              fail(f"{method} {url} failed with HTTP {error.code}: {error.read().decode()}")
+            try:
+              return json.loads(body)
+            except ValueError:
+              return body
+
+
+          def deployment_state(deployment_id):
+            return api("POST", f"{PORTAL}/status?id={deployment_id}")["deploymentState"]
+
+
+          deployment_id = os.environ["DEPLOYMENT_ID"]
+          state = deployment_state(deployment_id)
+          if state == "VALIDATED":
+            api("POST", f"{PORTAL}/deployment/{deployment_id}")
+          elif state in ("PUBLISHING", "PUBLISHED"):
+            print(f"Deployment {deployment_id} is already {state}.")
+          else:
+            fail(f"Deployment {deployment_id} is {state}, not VALIDATED.")
 
           # Publishing usually takes 10 to 30 minutes.
-          for _ in $(seq 360); do
-            state=$(state)
-            case "$state" in
-              PUBLISHED) echo "Published $VERSION to Maven Central." >> "$GITHUB_STEP_SUMMARY"; exit 0 ;;
-              FAILED) echo "::error::Publishing deployment $DEPLOYMENT_ID failed."; exit 1 ;;
-            esac
-            sleep 10
-          done
-          echo "::error::Deployment $DEPLOYMENT_ID was not published within an hour (state: $state). Re-run this job to keep waiting."
-          exit 1
+          for _ in range(360):
+            state = deployment_state(deployment_id)
+            if state == "PUBLISHED":
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+                summary.write(f"Published {os.environ['VERSION']} to Maven Central.\n")
+              sys.exit(0)
+            if state == "FAILED":
+              fail(f"Publishing deployment {deployment_id} failed.")
+            time.sleep(10)
+          fail(f"Deployment {deployment_id} was not published within an hour (state: {state}). "
+               "Re-run this job to keep waiting.")
 
       - name: Checkout
         uses: actions/checkout@v7
@@ -470,28 +542,59 @@ jobs:
         env:
           ACTOR: ${{ github.actor }}
           ACTOR_ID: ${{ github.actor_id }}
+        shell: python
         run: |
-          set -euo pipefail
-          fail() { echo "::error::$*"; exit 1; }
-          git config user.name "$ACTOR"
-          git config user.email "$ACTOR_ID+$ACTOR@users.noreply.github.com"
+          import os
+          import re
+          import subprocess
+          import sys
 
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
-            git fetch --depth 1 origin tag "$TAG"
-            [[ $(git rev-parse "$TAG^{tree}") == "$TREE" ]] || fail "$TAG already exists with different code."
-            echo "$TAG is already pushed."
-            exit 0
-          fi
+          version = os.environ["VERSION"]
+          branch = os.environ["BRANCH"]
+          tag = os.environ["TAG"]
+          tree = os.environ["TREE"]
 
-          sed -i "s/^thisVersion=.*/thisVersion=$VERSION/" gradle.properties
-          git add gradle.properties
-          [[ $(git write-tree) == "$TREE" ]] || fail "The version commit doesn't match the code that was built."
-          git commit -m "Bump version to $VERSION."
-          git tag -a -m "Version $VERSION" "$TAG"
+
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+
+          def git(*args, check=True):
+            result = subprocess.run(["git", *args], capture_output=True, text=True)
+            if check and result.returncode != 0:
+              fail(f"git {' '.join(args)} failed: {result.stderr.strip()}")
+            return result
+
+
+          actor = os.environ["ACTOR"]
+          git("config", "user.name", actor)
+          git("config", "user.email", f"{os.environ['ACTOR_ID']}+{actor}@users.noreply.github.com")
+
+          if git("ls-remote", "--exit-code", "--tags", "origin", f"refs/tags/{tag}",
+                 check=False).returncode == 0:
+            git("fetch", "--depth", "1", "origin", "tag", tag)
+            if git("rev-parse", f"{tag}^{{tree}}").stdout.strip() != tree:
+              fail(f"{tag} already exists with different code.")
+            print(f"{tag} is already pushed.")
+            sys.exit(0)
+
+          with open("gradle.properties") as f:
+            properties = f.read()
+          with open("gradle.properties", "w") as f:
+            f.write(re.sub(r"^thisVersion=.*$", f"thisVersion={version}", properties, flags=re.M))
+          git("add", "gradle.properties")
+          if git("write-tree").stdout.strip() != tree:
+            fail("The version commit doesn't match the code that was built.")
+          git("commit", "-m", f"Bump version to {version}.")
+          git("tag", "-a", "-m", f"Version {version}", tag)
           # Fails without pushing anything if the branch moved during the release.
-          git push --atomic origin "HEAD:refs/heads/$BRANCH" "refs/tags/$TAG" ||
-            fail "Couldn't push $BRANCH and $TAG. If $BRANCH changed during the release, push the tag by hand."
-          echo "Pushed \`$TAG\` and \`$BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
+          if git("push", "--atomic", "origin", f"HEAD:refs/heads/{branch}", f"refs/tags/{tag}",
+                 check=False).returncode != 0:
+            fail(f"Couldn't push {branch} and {tag}. "
+                 f"If {branch} changed during the release, push the tag by hand.")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            summary.write(f"Pushed `{tag}` and `{branch}`.\n")
 
       - name: Create a draft GitHub release
         shell: python
@@ -554,24 +657,42 @@ jobs:
 
       - name: Open a PR to bump master to the next snapshot
         if: needs.version.outputs.new-branch == 'true'
+        shell: python
         run: |
-          set -euo pipefail
-          bump=bump-version-$NEXT_SNAPSHOT
-          url=$(gh pr list --head "$bump" --base master --state open --json url -q '.[0].url // empty')
-          git fetch --depth 1 origin master
-          git checkout -B "$bump" FETCH_HEAD
-          if grep -qx "thisVersion=$NEXT_SNAPSHOT" gradle.properties; then
-            echo "master is already at $NEXT_SNAPSHOT."
-            exit 0
-          fi
-          if [[ -z "$url" ]]; then
-            sed -i "s/^thisVersion=.*/thisVersion=$NEXT_SNAPSHOT/" gradle.properties
-            git commit -am "Bump version to $NEXT_SNAPSHOT."
-            git push --force origin "$bump"
-            url=$(gh pr create --base master --head "$bump" --title "Bump version to $NEXT_SNAPSHOT" \
-              --body "$VERSION is released from $BRANCH, so master moves on to $NEXT_SNAPSHOT. Opened by the release workflow; checks don't run on PRs opened by workflows, and the tests run on master after it's merged.")
-          fi
-          echo "Merge the [PR that bumps master to $NEXT_SNAPSHOT]($url)." >> "$GITHUB_STEP_SUMMARY"
+          import os
+          import re
+          import subprocess
+
+          version = os.environ["VERSION"]
+          next_snapshot = os.environ["NEXT_SNAPSHOT"]
+          bump = f"bump-version-{next_snapshot}"
+
+
+          def run(*args):
+            return subprocess.run(args, check=True, capture_output=True, text=True).stdout.strip()
+
+
+          url = run("gh", "pr", "list", "--head", bump, "--base", "master", "--state", "open",
+                    "--json", "url", "-q", ".[0].url // empty")
+          run("git", "fetch", "--depth", "1", "origin", "master")
+          run("git", "checkout", "-B", bump, "FETCH_HEAD")
+          with open("gradle.properties") as f:
+            properties = f.read()
+          if re.search(rf"^thisVersion={re.escape(next_snapshot)}$", properties, re.M):
+            print(f"master is already at {next_snapshot}.")
+            raise SystemExit
+          if not url:
+            with open("gradle.properties", "w") as f:
+              f.write(re.sub(r"^thisVersion=.*$", f"thisVersion={next_snapshot}", properties, flags=re.M))
+            run("git", "commit", "-am", f"Bump version to {next_snapshot}.")
+            run("git", "push", "--force", "origin", bump)
+            url = run("gh", "pr", "create", "--base", "master", "--head", bump,
+                      "--title", f"Bump version to {next_snapshot}",
+                      "--body", f"{version} is released from {os.environ['BRANCH']}, so master moves on "
+                      f"to {next_snapshot}. Opened by the release workflow; checks don't run on PRs opened "
+                      "by workflows, and the tests run on master after it's merged.")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            summary.write(f"Merge the [PR that bumps master to {next_snapshot}]({url}).\n")
 
   drop-staged:
     name: Drop the staged deployment
@@ -585,17 +706,53 @@ jobs:
           DEPLOYMENT_ID: ${{ needs.stage.outputs.deployment-id }}
           SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        shell: python
         run: |
-          set -euo pipefail
-          token=$(printf '%s:%s' "$SONATYPE_LOGIN" "$SONATYPE_PASSWORD" | base64 --wrap=0)
-          portal=https://central.sonatype.com/api/v1/publisher
-          api() { curl --fail-with-body --silent --show-error -H "Authorization: Bearer $token" "$@"; }
+          import base64
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+
+          TOKEN = base64.b64encode(
+              f"{os.environ['SONATYPE_LOGIN']}:{os.environ['SONATYPE_PASSWORD']}".encode()).decode()
+          STAGING = "https://ossrh-staging-api.central.sonatype.com"
+          PORTAL = "https://central.sonatype.com/api/v1/publisher"
+
+
+          def fail(message):
+            print(f"::error::{message}")
+            sys.exit(1)
+
+
+          def api(method, url):
+            """Calls a Central Portal API and returns its JSON response, or its text if it isn't JSON."""
+            request = urllib.request.Request(url, method=method,
+                                             headers={"Authorization": f"Bearer {TOKEN}"})
+            try:
+              with urllib.request.urlopen(request, timeout=60) as response:
+                body = response.read().decode()
+            except urllib.error.HTTPError as error:
+              fail(f"{method} {url} failed with HTTP {error.code}: {error.read().decode()}")
+            try:
+              return json.loads(body)
+            except ValueError:
+              return body
+
+
+          def deployment_state(deployment_id):
+            return api("POST", f"{PORTAL}/status?id={deployment_id}")["deploymentState"]
+
+
+          deployment_id = os.environ["DEPLOYMENT_ID"]
           # In case it was published anyway.
-          state=$(api -X POST "$portal/status?id=$DEPLOYMENT_ID" | jq -r .deploymentState)
-          case "$state" in
-            VALIDATED|FAILED)
-              api -X DELETE "$portal/deployment/$DEPLOYMENT_ID"
-              echo "Dropped deployment $DEPLOYMENT_ID: the checks failed or the release wasn't approved." >> "$GITHUB_STEP_SUMMARY" ;;
-            *)
-              echo "Deployment $DEPLOYMENT_ID is $state, so it was not dropped." >> "$GITHUB_STEP_SUMMARY" ;;
-          esac
+          state = deployment_state(deployment_id)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+            if state in ("VALIDATED", "FAILED"):
+              api("DELETE", f"{PORTAL}/deployment/{deployment_id}")
+              summary.write(f"Dropped deployment {deployment_id}: the checks failed or the release wasn't "
+                            "approved.\n")
+            else:
+              summary.write(f"Deployment {deployment_id} is {state}, so it was not dropped.\n")
