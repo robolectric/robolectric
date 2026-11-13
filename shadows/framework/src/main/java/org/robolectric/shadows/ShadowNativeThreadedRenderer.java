@@ -9,7 +9,6 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.media.Image;
-import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Surface;
 import android.view.ThreadedRenderer;
@@ -195,9 +194,8 @@ public class ShadowNativeThreadedRenderer {
       reflector(DisplayListCanvasReflector.class, canvas).drawRenderNode(renderNode);
       surface.unlockCanvasAndPost(canvas);
       Image nativeImage = imageReader.acquireNextImage();
-      Plane[] planes = nativeImage.getPlanes();
       Bitmap destBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
-      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(nativeImage, destBitmap);
       surface.release();
       // Return an immutable copy of the Bitmap, which is what this API expects.
       return destBitmap.copy(Config.HARDWARE, false);

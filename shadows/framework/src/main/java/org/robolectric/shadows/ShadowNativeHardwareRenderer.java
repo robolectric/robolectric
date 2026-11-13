@@ -22,7 +22,6 @@ import android.graphics.HardwareRenderer.PrepareSurfaceControlForWebviewCallback
 import android.graphics.PixelFormat;
 import android.graphics.RenderNode;
 import android.media.Image;
-import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Surface;
 import java.io.FileDescriptor;
@@ -552,9 +551,8 @@ public class ShadowNativeHardwareRenderer {
       renderer.setLightSourceAlpha(0, 0);
       renderer.createRenderRequest().syncAndDraw();
       Image nativeImage = imageReader.acquireNextImage();
-      Plane[] planes = nativeImage.getPlanes();
       Bitmap destBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
-      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(nativeImage, destBitmap);
       surface.release();
       // Return an immutable copy of the Bitmap, which is what this API expects.
       return destBitmap.copy(Config.HARDWARE, false);
