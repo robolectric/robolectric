@@ -348,7 +348,10 @@ public class ShadowUserManager {
     }
   }
 
-  /** Setter for {@link UserManager#isUserUnlocked()} */
+  /**
+   * Setter for {@link UserManager#isUserUnlocked()}. While locked, opening files, shared
+   * preferences and databases in credential protected storage fails.
+   */
   public void setUserUnlocked(boolean userUnlocked) {
     userManagerState.userUnlocked = userUnlocked;
   }
