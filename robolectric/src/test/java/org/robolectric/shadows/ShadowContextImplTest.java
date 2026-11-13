@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
@@ -17,16 +18,19 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
+import java.io.FileNotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -55,6 +59,37 @@ public class ShadowContextImplTest {
 
     // Data dirs of these two contexts must be different locations.
     assertThat(context.getDataDir()).isNotEqualTo(deviceProtectedStorageContext.getDataDir());
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void lockedUser_credentialProtectedStorageUnavailable() throws Exception {
+    UserManager userManager = context.getSystemService(UserManager.class);
+    Context credentialContext = context.createCredentialProtectedStorageContext();
+    Context deviceContext = context.createDeviceProtectedStorageContext();
+    context.getApplicationInfo().targetSdkVersion = O;
+    shadowOf(userManager).setUserUnlocked(false);
+
+    for (Context ctx : new Context[] {context, credentialContext}) {
+      assertThrows(
+          FileNotFoundException.class, () -> ctx.openFileOutput("f", Context.MODE_PRIVATE));
+      assertThrows(
+          SQLiteCantOpenDatabaseException.class,
+          () -> ctx.openOrCreateDatabase("d", Context.MODE_PRIVATE, null));
+    }
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> credentialContext.getSharedPreferences("p", Context.MODE_PRIVATE));
+
+    deviceContext.openFileOutput("f", Context.MODE_PRIVATE).close();
+    deviceContext.getSharedPreferences("p", Context.MODE_PRIVATE);
+    deviceContext.openOrCreateDatabase("d", Context.MODE_PRIVATE, null).close();
+
+    shadowOf(userManager).setUserUnlocked(true);
+    context.openFileOutput("f", Context.MODE_PRIVATE).close();
+    context.getSharedPreferences("p", Context.MODE_PRIVATE);
+    context.openOrCreateDatabase("d", Context.MODE_PRIVATE, null).close();
   }
 
   @Test
