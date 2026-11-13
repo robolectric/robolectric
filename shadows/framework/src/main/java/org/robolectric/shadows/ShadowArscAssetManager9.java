@@ -233,8 +233,6 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // static void NativeVerifySystemIdmaps(JNIEnv* /*env*/, jclass /*clazz*/) {
   @Implementation(minSdk = P, maxSdk = Q)
   protected static void nativeVerifySystemIdmaps() {
-    return;
-
     // todo: maybe implement?
     // switch (pid_t pid = fork()) {
     //   case -1:

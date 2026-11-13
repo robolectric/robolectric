@@ -526,7 +526,7 @@ public class ShadowViewTest {
 
     verifyNoMoreInteractions(listener);
 
-    ShadowSystemClock.advanceBy(Duration.ofMillis(1000));
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(1));
     shadowMainLooper().idle();
 
     verify(listener).onAnimationStart(animation);

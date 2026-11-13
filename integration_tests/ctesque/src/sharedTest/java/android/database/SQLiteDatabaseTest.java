@@ -107,7 +107,7 @@ public class SQLiteDatabaseTest {
         database.query("table_name", new String[] {"first_column"}, null, null, null, null, null)) {
       assertThat(data.getCount()).isEqualTo(1);
       data.moveToFirst();
-      assertThat(data.getBlob(0)).isEqualTo(null);
+      assertThat(data.getBlob(0)).isNull();
     }
   }
 

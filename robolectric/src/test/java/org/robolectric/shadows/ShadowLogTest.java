@@ -191,6 +191,10 @@ public class ShadowLogTest {
 
   @Test
   public void shouldLogToProvidedStream() {
+    logToProvidedStream();
+  }
+
+  private void logToProvidedStream() {
     final ByteArrayOutputStream bos = new ByteArrayOutputStream();
     PrintStream old = ShadowLog.stream;
     try {
@@ -425,7 +429,7 @@ public class ShadowLogTest {
     ShadowLog.setCaptureLogsEnabled(false);
     try {
       // verify logging to stream still works
-      shouldLogToProvidedStream();
+      logToProvidedStream();
       assertThrows(IllegalStateException.class, () -> ShadowLog.getLogs());
     } finally {
       ShadowLog.setCaptureLogsEnabled(true);

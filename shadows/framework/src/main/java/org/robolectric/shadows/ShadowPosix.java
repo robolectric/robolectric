@@ -32,7 +32,7 @@ public class ShadowPosix {
     if (path != null) {
       File file = new File(path);
       size = file.length();
-      modifiedTime = Duration.ofMillis(file.lastModified()).getSeconds();
+      modifiedTime = Duration.ofMillis(file.lastModified()).toSeconds();
     }
 
     return new StructStat(

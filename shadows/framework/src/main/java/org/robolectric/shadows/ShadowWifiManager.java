@@ -415,8 +415,8 @@ public class ShadowWifiManager {
 
   /**
    * Adds or updates a network which can later be retrieved with {@link #getWifiConfiguration(int)}
-   * method. A null {@param config}, or one with a networkId less than 0, or a networkId that had
-   * its updatePermission removed using the {@link #setUpdateNetworkPermission(int, boolean)} will
+   * method. A null {@code config}, or one with a networkId less than 0, or a networkId that had its
+   * updatePermission removed using the {@link #setUpdateNetworkPermission(int, boolean)} will
    * return -1, which indicates a failure to update.
    */
   @Implementation

@@ -1131,7 +1131,7 @@ public class ShadowTelephonyManager {
   /**
    * Sets the value returned by {@link TelephonyManager#getCarrierConfig()}.
    *
-   * @param carrierConfig
+   * @param carrierConfig the value returned by {@link TelephonyManager#getCarrierConfig()}
    */
   public void setCarrierConfig(PersistableBundle carrierConfig) {
     this.carrierConfig = carrierConfig;
@@ -1586,7 +1586,7 @@ public class ShadowTelephonyManager {
     if (!TextUtils.isEmpty(emergencyNumbers)) {
       // searches through the comma-separated list for a match,
       // return true if one is found.
-      for (String emergencyNum : emergencyNumbers.split(",")) {
+      for (String emergencyNum : emergencyNumbers.split(",", 0)) {
         // It is not possible to append additional digits to an emergency number to dial
         // the number in Brazil - it won't connect.
         if (useExactMatch || "BR".equalsIgnoreCase(defaultCountryIso)) {
@@ -1604,7 +1604,7 @@ public class ShadowTelephonyManager {
     }
 
     emergencyNumbers = ((slotId < 0) ? "112,911,000,08,110,118,119,999" : "112,911");
-    for (String emergencyNum : emergencyNumbers.split(",")) {
+    for (String emergencyNum : emergencyNumbers.split(",", 0)) {
       if (useExactMatch) {
         if (number.equals(emergencyNum)) {
           return true;

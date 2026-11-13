@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.io.ByteStreams;
+import java.nio.ByteBuffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -22,6 +24,54 @@ import org.robolectric.annotation.GraphicsMode.Mode;
 public class ShadowImageDecoderTest {
 
   private final Context context = RuntimeEnvironment.getApplication();
+
+  @Test
+  public void decodeBitmap_fromDirectByteBuffer_returnsBitmap() throws Exception {
+    byte[] imageBytes;
+    try (var input = context.getResources().openRawResource(R.drawable.an_image)) {
+      imageBytes = ByteStreams.toByteArray(input);
+    }
+
+    ByteBuffer buffer = ByteBuffer.allocateDirect(imageBytes.length + 2);
+    buffer.put((byte) 0);
+    buffer.put(imageBytes);
+    buffer.put((byte) 0);
+    buffer.flip();
+    buffer.position(1);
+    buffer.limit(imageBytes.length + 1);
+
+    Bitmap bitmap =
+        ImageDecoder.decodeBitmap(
+            ImageDecoder.createSource(buffer),
+            (imageDecoder, imageInfo, source) ->
+                assertThat(imageInfo.getMimeType()).isEqualTo("image/png"));
+
+    assertThat(bitmap).isNotNull();
+  }
+
+  @Test
+  public void decodeBitmap_fromByteBuffer_usesSameBytesForHeaderAndBitmap() throws Exception {
+    byte[] imageBytes;
+    try (var input = context.getResources().openRawResource(R.drawable.an_image)) {
+      imageBytes = ByteStreams.toByteArray(input);
+    }
+    ByteBuffer buffer = ByteBuffer.allocateDirect(imageBytes.length);
+    buffer.put(imageBytes).flip();
+    ShadowBitmapFactory.setAllowInvalidImageData(false);
+
+    Bitmap bitmap =
+        ImageDecoder.decodeBitmap(
+            ImageDecoder.createSource(buffer),
+            (imageDecoder, imageInfo, source) -> {
+              assertThat(imageInfo.getMimeType()).isEqualTo("image/png");
+              for (int i = 0; i < buffer.limit(); i++) {
+                buffer.put(i, (byte) 0);
+              }
+            });
+
+    assertThat(bitmap.getWidth()).isEqualTo(64);
+    assertThat(bitmap.getHeight()).isEqualTo(53);
+  }
 
   @Test
   public void mimeType_png_returnsPng() throws Exception {

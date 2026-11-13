@@ -71,11 +71,8 @@ public class ShadowUiAutomation {
       IS_FOCUSABLE.and(hasLayoutFlag(FLAG_NOT_TOUCH_MODAL).negate());
   private static final Predicate<Root> WATCH_TOUCH_OUTSIDE =
       IS_TOUCH_MODAL.negate().and(hasLayoutFlag(FLAG_WATCH_OUTSIDE_TOUCH));
-  private static final Predicate<Root> IS_VISIBLE =
-      root -> root.getRootView().getWidth() > 0 && root.getRootView().getHeight() > 0;
-  private static final Predicate<Root> IS_SHOWN =
-      root ->
-          root.getRootView().getWindowVisibility() == View.VISIBLE && root.getRootView().isShown();
+  private static final Predicate<Root> IS_VISIBLE = ShadowUiAutomation::isVisible;
+  private static final Predicate<Root> IS_SHOWN = ShadowUiAutomation::isShown;
 
   /**
    * Sets the animation scale, see {@link UiAutomation#setAnimationScale(float)}. Provides backwards
@@ -389,6 +386,14 @@ public class ShadowUiAutomation {
 
   private static Predicate<Root> hasLayoutFlag(int flag) {
     return root -> (root.params.flags & flag) == flag;
+  }
+
+  private static boolean isVisible(Root root) {
+    return root.getRootView().getWidth() > 0 && root.getRootView().getHeight() > 0;
+  }
+
+  private static boolean isShown(Root root) {
+    return root.getRootView().getWindowVisibility() == View.VISIBLE && root.getRootView().isShown();
   }
 
   private static final class Root {

@@ -64,7 +64,7 @@ public class ShadowBackdropFrameRenderer {
 
   // called from ShadowChoreographer to ensure choreographer is unpaused before this is executed
   static void reset() {
-    for (Object renderer : activeRenderers) {
+    for (Object renderer : List.copyOf(activeRenderers)) {
       reflector(BackdropFrameRendererReflector.class, renderer).releaseRenderer();
       // Explicitly quit the looper if in legacy looper mode - otherwise it will hang forever
       if (ConfigurationRegistry.get(LooperMode.Mode.class) == Mode.LEGACY) {

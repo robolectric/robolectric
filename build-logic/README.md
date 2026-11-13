@@ -42,23 +42,18 @@ parses those into `build/reports/errorprone/`:
 | `summary.txt` | Totals, the errors listed first, a count per check, then every issue |
 | `issues.json` | One object per issue — `check`, `severity`, `file`, `line`, `message` |
 
-Paths are relative to the repository root. `summary.txt` opens with the shape of
-the problem:
+Paths are relative to the repository root. For example, `summary.txt` can begin
+with:
 
 ```
-1410 Error Prone issue(s): 30 error(s), 1380 warning(s)
-
-Errors (these fail the build):
-
-  robolectric/src/test/java/org/robolectric/android/XmlResourceParserImplTest.java:297
-    [NullArgumentForNonNullParameter] Null is not permitted for parameter 'arg0' of method 'isEqualTo'.
-...
+1276 Error Prone issue(s): 0 error(s), 1276 warning(s)
 
 By check:
 
-  EffectivelyPrivate     346
+  EffectivelyPrivate     372
   MissingSummary         148
-  ReferenceEquality      110
+  ReferenceEquality      89
+  ...
 ```
 
 Only the errors fail a build; the warnings are reported so they can be triaged,

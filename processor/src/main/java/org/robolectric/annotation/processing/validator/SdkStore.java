@@ -192,7 +192,7 @@ public class SdkStore {
     Matcher matcher = pattern.matcher(cmd);
     if (matcher.find()) {
       String classpathString = matcher.group("cp");
-      String[] cp = classpathString.split(":");
+      String[] cp = classpathString.split(":", 0);
       for (String fileStr : cp) {
         try (JarFile jarFile = new JarFile(fileStr)) {
           ZipEntry entry = jarFile.getEntry("build.prop");
@@ -299,8 +299,7 @@ public class SdkStore {
      *
      * @param sdkClassName the framework class being shadowed
      * @param methodElement the {@code @Implementation} method declaration to check
-     * @param looseSignatures if true, also match any framework method with the same class, name,
-     *     return type, and arity of parameters.
+     * @param allowInDev whether to allow development-only SDK APIs
      * @return a string describing any problems with this method, or null if it checks out.
      */
     public String verifyMethod(

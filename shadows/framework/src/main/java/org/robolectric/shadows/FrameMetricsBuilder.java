@@ -35,7 +35,7 @@ public final class FrameMetricsBuilder {
    *
    * <p>If this is not called for a certain metric, that metric will be assumed to have the value 0.
    * The value of {@code frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)} will be equal to the
-   * sum of all non-boolean metrics and the value given to {@link this#setSyncDelayTimeNanos(long)}.
+   * sum of all non-boolean metrics and the value given to {@link #setSyncDelayTimeNanos(long)}.
    */
   public FrameMetricsBuilder setMetric(@Metric int metric, long value) {
     if (metric == FrameMetrics.FIRST_DRAW_FRAME) {

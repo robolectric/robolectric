@@ -39,7 +39,9 @@ public final class ShadowIsoDepTest {
   }
 
   @Test
+  @SuppressWarnings("JdkObsolete")
   public void transceiveResponseQueue() throws Exception {
+    // LinkedList permits null, which this test uses for a failed transceive response.
     Queue<byte[]> queue = new LinkedList<>();
     queue.add(new byte[] {1, 2});
     queue.add(new byte[] {3, 4});

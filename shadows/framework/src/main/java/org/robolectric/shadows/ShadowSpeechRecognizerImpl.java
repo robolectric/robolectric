@@ -19,7 +19,6 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -50,8 +49,6 @@ import org.robolectric.util.reflector.ForType;
     minSdk = VANILLA_ICE_CREAM)
 public class ShadowSpeechRecognizerImpl extends ShadowSpeechRecognizer {
   protected static final String CLASS_NAME = "android.speech.SpeechRecognizerImpl";
-
-  @RealObject SpeechRecognizer realSpeechRecognizer;
 
   @Override
   protected ShadowSpeechRecognizerDirectAccessors getDirectAccessors() {

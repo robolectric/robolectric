@@ -1,14 +1,14 @@
 package android.webkit;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -93,11 +93,7 @@ public class RoboCookieManager extends CookieManager {
       return null;
     }
 
-    try {
-      url = URLDecoder.decode(url, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    url = URLDecoder.decode(url, StandardCharsets.UTF_8);
 
     final List<Cookie> matchedCookies;
     if (url.startsWith(".")) {
@@ -164,7 +160,7 @@ public class RoboCookieManager extends CookieManager {
 
   public void removeExpiredCookie() {
     List<Cookie> expired = new ArrayList<>();
-    Date now = new Date();
+    Instant now = Instant.now();
 
     for (Cookie cookie : store) {
       if (cookie.isExpiredAt(now)) {
@@ -213,7 +209,7 @@ public class RoboCookieManager extends CookieManager {
 
   @Nullable
   private static Cookie parseCookie(String url, String cookieHeader) {
-    Date expiration = null;
+    Instant expiration = null;
     boolean isSecure = false;
 
     String[] fields = cookieHeader.split(";", 0);
@@ -229,7 +225,7 @@ public class RoboCookieManager extends CookieManager {
     }
 
     String hostname = getCookieHost(url);
-    if (expiration == null || expiration.compareTo(new Date()) >= 0) {
+    if (expiration == null || expiration.compareTo(Instant.now()) >= 0) {
       return new Cookie(hostname, isSecure, cookieValue, expiration);
     }
 
@@ -248,7 +244,7 @@ public class RoboCookieManager extends CookieManager {
     }
   }
 
-  private static Date getExpiration(String field) {
+  private static Instant getExpiration(String field) {
     int equalsIndex = field.indexOf("=");
 
     if (equalsIndex < 0) {
@@ -259,14 +255,14 @@ public class RoboCookieManager extends CookieManager {
 
     try {
       DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-      return dateFormat.parse(date);
+      return dateFormat.parse(date).toInstant();
     } catch (ParseException e) {
       // No-op. Try to inferFromValue additional date formats.
     }
 
     try {
       DateFormat dateFormat = new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss zzz");
-      return dateFormat.parse(date);
+      return dateFormat.parse(date).toInstant();
     } catch (ParseException e) {
       return null; // Was not parsed by any date formatter.
     }
@@ -275,11 +271,11 @@ public class RoboCookieManager extends CookieManager {
   private static class Cookie {
     private final String mName;
     private final String mValue;
-    private final Date mExpiration;
+    private final Instant mExpiration;
     private final String mHostname;
     private final boolean mIsSecure;
 
-    public Cookie(String hostname, boolean isSecure, String cookie, Date expiration) {
+    public Cookie(String hostname, boolean isSecure, String cookie, Instant expiration) {
       mHostname = hostname;
       mIsSecure = isSecure;
       mExpiration = expiration;
@@ -302,7 +298,7 @@ public class RoboCookieManager extends CookieManager {
       return mValue;
     }
 
-    public boolean isExpiredAt(Date date) {
+    public boolean isExpiredAt(Instant date) {
       return mExpiration != null && mExpiration.compareTo(date) < 0;
     }
 

@@ -122,18 +122,18 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
 
         fixes.add(Optional.of(SuggestedFix.replace(start, end, "")));
       }
-      return super.visitStartElement(startElementTree, aVoid);
+      return super.visitStartElement(startElementTree, null);
     }
 
     @Override
     public Void visitEndElement(EndElementTree endElementTree, Void aVoid) {
-      return super.visitEndElement(endElementTree, aVoid);
+      return super.visitEndElement(endElementTree, null);
     }
 
     @Override
     public Void visitText(TextTree textTree, Void aVoid) {
       System.out.println("textTree = " + textTree);
-      return super.visitText(textTree, aVoid);
+      return super.visitText(textTree, null);
     }
 
     @Override
@@ -152,8 +152,8 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
             }
           };
       DCReference reference = (DCReference) referenceTree;
-      nonRecursiveScanner.scan(reference.qualifierExpression, sink);
-      nonRecursiveScanner.scan(reference.paramTypes, sink);
+      nonRecursiveScanner.scan(reference.qualifierExpression, null);
+      nonRecursiveScanner.scan(reference.paramTypes, null);
       return null;
     }
   }
@@ -178,7 +178,7 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
       if (implementationMethodMatcher.matches(methodTree, state)) {
         processImplementationMethod(methodTree);
       }
-      return super.visitMethod(methodTree, aVoid);
+      return super.visitMethod(methodTree, null);
     }
 
     private void processImplementationMethod(MethodTree methodTree) {
