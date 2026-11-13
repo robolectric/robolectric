@@ -123,6 +123,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private final int apiLevel;
 
   private boolean loggingInitialized = false;
+  private boolean useMonitoringInstrumentation = true;
   private FakeMediaProvider fakeMediaProvider;
   private final Path sdkJarPath;
   private final ShadowProvider[] shadowProviders;
@@ -257,7 +258,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     Instrumentation instrumentation = createInstrumentation();
-    InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
+    if (useMonitoringInstrumentation) {
+      InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
+    }
     Supplier<Application> applicationSupplier = createApplicationSupplier(appManifest, config);
     RuntimeEnvironment.setApplicationSupplier(applicationSupplier);
 
@@ -559,7 +562,14 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   protected Instrumentation pickInstrumentation() {
-    return new RoboMonitoringInstrumentation();
+    return useMonitoringInstrumentation
+        ? new RoboMonitoringInstrumentation()
+        : new SimulatorInstrumentation();
+  }
+
+  /** Sets whether to use the AndroidX monitoring instrumentation. */
+  public void setUseMonitoringInstrumentation(boolean useMonitoringInstrumentation) {
+    this.useMonitoringInstrumentation = useMonitoringInstrumentation;
   }
 
   private Instrumentation createInstrumentation() {
@@ -619,7 +629,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // ApplicationProvider.getApplicationContext() get called in between here and the end of this
     // method, we don't accidentally trigger application loading with stale references
     RuntimeEnvironment.setApplicationSupplier(null);
-    InstrumentationRegistry.registerInstance(null, new Bundle());
+    if (useMonitoringInstrumentation) {
+      InstrumentationRegistry.registerInstance(null, new Bundle());
+    }
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.systemContext = null;

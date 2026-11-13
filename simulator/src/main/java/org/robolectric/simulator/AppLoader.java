@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.GraphicsMode;
@@ -73,6 +74,10 @@ public class AppLoader implements Runnable {
             .put(Config.class, getBestConfig())
             .build();
 
+    if (sandbox.getTestEnvironment() instanceof AndroidTestEnvironment) {
+      ((AndroidTestEnvironment) sandbox.getTestEnvironment())
+          .setUseMonitoringInstrumentation(isAndroidXTestMonitorAvailable());
+    }
     this.sandbox.getTestEnvironment().setUpApplicationState("simulator", configuration, manifest);
 
     Application application = RuntimeEnvironment.getApplication();
@@ -130,5 +135,17 @@ public class AppLoader implements Runnable {
       // Fall back to the first launcher below.
     }
     return launchers.get(0).activityInfo;
+  }
+
+  private static boolean isAndroidXTestMonitorAvailable() {
+    try {
+      Class.forName(
+          "androidx.test.platform.app.InstrumentationRegistry",
+          false,
+          AppLoader.class.getClassLoader());
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
   }
 }
