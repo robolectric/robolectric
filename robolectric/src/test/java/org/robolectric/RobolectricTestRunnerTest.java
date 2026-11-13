@@ -322,6 +322,7 @@ public class RobolectricTestRunnerTest {
             "finished: assumptionViolationWithUnexecutedRunnables");
   }
 
+
   /////////////////////////////
 
   /** To simulate failures. */
@@ -530,6 +531,7 @@ public class RobolectricTestRunnerTest {
       throw new AssumptionViolatedException("assumption violated");
     }
   }
+
 
   /** Ignore the value of --Drobolectric.enabledSdks */
   public static class AllEnabledSdkPicker extends DefaultSdkPicker {
