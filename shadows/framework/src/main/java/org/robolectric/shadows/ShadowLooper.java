@@ -49,7 +49,10 @@ public abstract class ShadowLooper {
     return shadowLooper(getMainLooper());
   }
 
-  // TODO: should probably remove this
+  /**
+   * @deprecated Use {@code shadowOf({@link Looper#getMainLooper()})} instead.
+   */
+  @Deprecated
   public static ShadowLooper shadowMainLooper() {
     return shadowLooper(getMainLooper());
   }
