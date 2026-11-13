@@ -20,7 +20,7 @@ import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link CursorWindow} that is backed by native code */
 @Implements(value = CursorWindow.class, isInAndroidSdk = false, callNativeMethodsByDefault = true)
-public class ShadowNativeCursorWindow extends ShadowCursorWindow {
+public class ShadowNativeCursorWindow {
 
   @ReflectorObject CursorWindowReflector cursorWindowReflector;
 

@@ -12,7 +12,6 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.SQLiteMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowCursorWindow;
 import org.robolectric.shadows.ShadowNativeCursorWindow;
 
 /** Unit tests for the SQLite mode of tests, which is always native. */
@@ -27,7 +26,7 @@ public class SQLiteModeConfigurerClassTest {
   @Test
   public void shouldUseNativeShadows() {
     try (CursorWindow cursorWindow = new CursorWindow("1")) {
-      ShadowCursorWindow shadow = Shadow.extract(cursorWindow);
+      ShadowNativeCursorWindow shadow = Shadow.extract(cursorWindow);
       assertThat(shadow).isInstanceOf(ShadowNativeCursorWindow.class);
     }
   }
@@ -36,7 +35,7 @@ public class SQLiteModeConfigurerClassTest {
   @Config(shadows = MyShadowCursorWindow.class)
   public void shouldPreferCustomShadows() {
     try (CursorWindow cursorWindow = new CursorWindow("2")) {
-      ShadowCursorWindow shadow = Shadow.extract(cursorWindow);
+      ShadowNativeCursorWindow shadow = Shadow.extract(cursorWindow);
       assertThat(shadow).isInstanceOf(MyShadowCursorWindow.class);
     }
   }
