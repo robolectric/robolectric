@@ -20,7 +20,7 @@ your module's `build.gradle`/`build.gradle.kts` file:
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
-testImplementation("org.robolectric:robolectric:4.17")
+testImplementation("org.robolectric:robolectric:4.18")
 testImplementation("androidx.test.ext:junit:1.3.0")
 ```
 
