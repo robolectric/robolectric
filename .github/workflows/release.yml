@@ -30,7 +30,8 @@
 # 2. pushes the version commit ("Bump version to X.") to the release branch, creating it for a new
 #    release line, and the `robolectric-X` tag,
 # 3. creates a draft GitHub release with generated notes, to edit and publish,
-# 4. for a new release line, opens a PR that bumps master to the next snapshot version.
+# 4. for a new release line, opens a PR that bumps master to the next snapshot version,
+# 5. for a non-beta release newer than the README's version, opens a PR that updates the README.
 #
 # Publishing comes first because it can't be undone. If a step fails, re-run the job: each step
 # skips what was already done, and the deployment is kept. If the checks fail, or the approval is
@@ -399,6 +400,9 @@ jobs:
             if [[ "$NEW_BRANCH" == true ]]; then
               echo "4. Open a PR that bumps master to $NEXT_SNAPSHOT."
             fi
+            if [[ "$VERSION" != *-beta-* ]]; then
+              echo "5. Open a PR that updates the README to $VERSION, unless it already shows a newer version."
+            fi
             echo
             echo "Rejecting it drops the deployment."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -572,6 +576,59 @@ jobs:
               --body "$VERSION is released from $BRANCH, so master moves on to $NEXT_SNAPSHOT. Opened by the release workflow; checks don't run on PRs opened by workflows, and the tests run on master after it's merged.")
           fi
           echo "Merge the [PR that bumps master to $NEXT_SNAPSHOT]($url)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open a PR to update the README to the release
+        if: ${{ !contains(needs.version.outputs.version, '-beta-') }}
+        shell: python
+        run: |
+          import os
+          import re
+          import subprocess
+          import textwrap
+
+          version = os.environ["VERSION"]
+          branch = f"update-readme-{version}"
+
+
+          def run(*args):
+            return subprocess.run(args, check=True, capture_output=True, text=True).stdout.strip()
+
+
+          def summarize(line):
+            with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              summary.write(line + "\n")
+
+
+          run("git", "fetch", "--depth", "1", "origin", "master")
+          run("git", "checkout", "-B", branch, "FETCH_HEAD")
+          with open("README.md") as f:
+            readme = f.read()
+          # The release example, not the -SNAPSHOT one.
+          pattern = re.compile(r'(org\.robolectric:robolectric:)([\d.]+)"')
+          match = pattern.search(readme)
+          if not match:
+            print("::warning::Couldn't find the Robolectric version in the README; update it by hand.")
+            raise SystemExit
+          current = match[2]
+          # A patch release of an older line, such as 4.17.1 after 4.18, leaves the README alone.
+          if tuple(map(int, current.split("."))) >= tuple(map(int, version.split("."))):
+            print(f"The README already shows {current}.")
+            raise SystemExit
+
+          url = run("gh", "pr", "list", "--head", branch, "--base", "master", "--state", "open",
+                    "--json", "url", "-q", ".[0].url // empty")
+          if not url:
+            with open("README.md", "w") as f:
+              f.write(readme[:match.start(2)] + version + readme[match.end(2):])
+            title = f"Update the README to Robolectric {version}"
+            body = (f"Robolectric {version} is released, so point the dependency example in the "
+                    f"README at it instead of {current}.")
+            run("git", "commit", "-am", title, "-m", textwrap.fill(body, 72))
+            run("git", "push", "--force", "origin", branch)
+            url = run("gh", "pr", "create", "--base", "master", "--head", branch, "--title", title,
+                      "--body", body + " Opened by the release workflow; checks don't run on PRs "
+                      "opened by workflows.")
+          summarize(f"Merge the [PR that updates the README to {version}]({url}).")
 
   drop-staged:
     name: Drop the staged deployment
