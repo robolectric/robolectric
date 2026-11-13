@@ -3,7 +3,11 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.view.View;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Ordering;
 import java.time.Duration;
@@ -11,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 
 @RunWith(AndroidJUnit4.class)
@@ -78,5 +83,51 @@ public class ShadowValueAnimatorTest {
     animator.start();
     // this would time out without the duration scale being set to zero
     shadowMainLooper().runToEndOfTasks();
+  }
+
+  @Test
+  public void viewPropertyAnimator_attachedView_listenerCalled() {
+    Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+    View view = new View(activity);
+    activity.setContentView(view);
+    CountingListener listener = new CountingListener();
+
+    view.animate().setStartDelay(500).alpha(0.5f).setDuration(250).setListener(listener);
+    shadowMainLooper().idleFor(Duration.ofSeconds(1));
+
+    assertThat(listener.starts).isEqualTo(1);
+    assertThat(listener.ends).isEqualTo(1);
+    assertThat(view.getAlpha()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void viewPropertyAnimator_detachedView_startsOnceAttached() {
+    Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+    View view = new View(activity);
+    CountingListener listener = new CountingListener();
+
+    view.animate().alpha(0.5f).setDuration(250).setListener(listener);
+    shadowMainLooper().idleFor(Duration.ofSeconds(1));
+    assertThat(listener.starts).isEqualTo(0);
+
+    activity.setContentView(view);
+    shadowMainLooper().idleFor(Duration.ofSeconds(1));
+    assertThat(listener.starts).isEqualTo(1);
+    assertThat(listener.ends).isEqualTo(1);
+  }
+
+  private static class CountingListener extends AnimatorListenerAdapter {
+    int starts;
+    int ends;
+
+    @Override
+    public void onAnimationStart(Animator animation) {
+      starts++;
+    }
+
+    @Override
+    public void onAnimationEnd(Animator animation) {
+      ends++;
+    }
   }
 }
