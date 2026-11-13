@@ -98,6 +98,20 @@ public class TimeZoneCapabilitiesBuilder {
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public TimeZoneCapabilitiesBuilder
+      setConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability(
+          @CapabilityState int value) {
+    if (hasMethod(
+        "setConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability", int.class)) {
+      ReflectionHelpers.callInstanceMethod(
+          builder,
+          "setConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability",
+          ClassParameter.from(int.class, value));
+    }
+    return this;
+  }
+
   public static boolean hasMethod(String methodName, Class<?>... parameterTypes) {
     try {
       TimeZoneCapabilities.Builder.class.getMethod(methodName, parameterTypes);
