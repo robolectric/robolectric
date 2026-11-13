@@ -23,15 +23,22 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.database.DatabaseErrorHandler;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
+import android.os.UserManager;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +63,9 @@ import org.robolectric.util.reflector.Static;
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
+
+  private static final String LOCKED_STORAGE_MESSAGE =
+      "Credential protected storage is unavailable while the user is locked: ";
 
   @RealObject private Context realContextImpl;
 
@@ -413,6 +423,39 @@ public class ShadowContextImpl {
     reflector(ContextImplReflector.class, realContextImpl).startActivity(intent, options);
   }
 
+  /**
+   * Fails with {@link FileNotFoundException} when writing to credential protected storage while the
+   * user is locked, see {@link ShadowUserManager#setUserUnlocked(boolean)}.
+   */
+  @Implementation
+  protected FileOutputStream openFileOutput(String name, int mode) throws FileNotFoundException {
+    if (isCredentialStorageLocked()) {
+      throw new FileNotFoundException(LOCKED_STORAGE_MESSAGE + name);
+    }
+    return reflector(ContextImplReflector.class, realContextImpl).openFileOutput(name, mode);
+  }
+
+  /**
+   * Fails with {@link SQLiteCantOpenDatabaseException} when opening a database in credential
+   * protected storage while the user is locked, see {@link
+   * ShadowUserManager#setUserUnlocked(boolean)}.
+   */
+  @Implementation
+  protected SQLiteDatabase openOrCreateDatabase(
+      String name, int mode, CursorFactory factory, DatabaseErrorHandler errorHandler) {
+    if (isCredentialStorageLocked()) {
+      throw new SQLiteCantOpenDatabaseException(LOCKED_STORAGE_MESSAGE + name);
+    }
+    return reflector(ContextImplReflector.class, realContextImpl)
+        .openOrCreateDatabase(name, mode, factory, errorHandler);
+  }
+
+  private boolean isCredentialStorageLocked() {
+    return RuntimeEnvironment.getApiLevel() >= N
+        && !realContextImpl.isDeviceProtectedStorage()
+        && !realContextImpl.getSystemService(UserManager.class).isUserUnlocked();
+  }
+
   /** Set the user id returned by {@link #getUserId()}. */
   public void setUserId(int userId) {
     this.userId = userId;
@@ -482,6 +525,12 @@ public class ShadowContextImpl {
 
   @Implementation
   protected SharedPreferences getSharedPreferences(String name, int mode) {
+    // Like AOSP, only credential protected contexts of apps targeting O or later fail.
+    if (realContextImpl.isCredentialProtectedStorage()
+        && realContextImpl.getApplicationInfo().targetSdkVersion >= O
+        && isCredentialStorageLocked()) {
+      throw new IllegalStateException(LOCKED_STORAGE_MESSAGE + name);
+    }
     // Windows does not allow colons in file names, which may be used in shared preference
     // names. URL-encode any colons in Windows.
     if (!Strings.isNullOrEmpty(name) && File.separatorChar == '\\') {
@@ -520,6 +569,13 @@ public class ShadowContextImpl {
 
     @Direct
     SharedPreferences getSharedPreferences(String name, int mode);
+
+    @Direct
+    SQLiteDatabase openOrCreateDatabase(
+        String name, int mode, CursorFactory factory, DatabaseErrorHandler errorHandler);
+
+    @Direct
+    FileOutputStream openFileOutput(String name, int mode) throws FileNotFoundException;
 
     @Accessor("mClassLoader")
     void setClassLoader(ClassLoader classLoader);
