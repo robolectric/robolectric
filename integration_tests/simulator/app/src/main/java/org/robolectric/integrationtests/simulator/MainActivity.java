@@ -8,12 +8,14 @@ import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.KeyEvent;
 import android.widget.LinearLayout;
 
 /**
  * An activity that is used for Robolectric simulator integration tests. The screen is blue if the
  * app's content provider was created at startup and the activity bound to the app's {@link
- * ColorService}, which supplies the blue, and red otherwise.
+ * ColorService}, which supplies the blue, and red otherwise. Tapping it turns it green, and
+ * pressing the space key turns it yellow.
  */
 public class MainActivity extends Activity {
   private final ServiceConnection connection =
@@ -37,6 +39,7 @@ public class MainActivity extends Activity {
     layout = new LinearLayout(this);
     layout.setId(android.R.id.content);
     layout.setBackgroundColor(Color.RED);
+    layout.setOnClickListener(v -> layout.setBackgroundColor(Color.GREEN));
     setContentView(layout);
     bindService(new Intent(this, ColorService.class), connection, Context.BIND_AUTO_CREATE);
   }
@@ -45,5 +48,14 @@ public class MainActivity extends Activity {
   protected void onDestroy() {
     unbindService(connection);
     super.onDestroy();
+  }
+
+  @Override
+  public boolean onKeyUp(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_SPACE) {
+      layout.setBackgroundColor(Color.YELLOW);
+      return true;
+    }
+    return super.onKeyUp(keyCode, event);
   }
 }
