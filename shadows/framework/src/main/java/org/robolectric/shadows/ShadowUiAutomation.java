@@ -380,6 +380,8 @@ public class ShadowUiAutomation {
       ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
       startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
       startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
+      // A paused activity is still visible, such as one below a dialog or transparent activity.
+      startedActivities.addAll(monitor.getActivitiesInStage(Stage.PAUSED));
     });
 
     return startedActivities.stream()

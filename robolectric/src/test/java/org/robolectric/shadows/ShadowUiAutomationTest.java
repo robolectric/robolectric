@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
@@ -18,6 +20,7 @@ import android.provider.Settings;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
@@ -311,6 +314,49 @@ public class ShadowUiAutomationTest {
       assertThat(root.findAccessibilityNodeInfosByText("Non-focusable Overlay")).isEmpty();
 
       activity.getWindowManager().removeViewImmediate(overlayView);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void takeScreenshot_pausedActivity_isDrawn() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      View content = new View(controller.get());
+      content.setBackgroundColor(Color.RED);
+      controller.get().setContentView(content);
+      ShadowLooper.idleMainLooper();
+
+      // A paused activity is still visible, such as one below a dialog or transparent activity.
+      controller.pause();
+      ShadowLooper.idleMainLooper();
+      Bitmap screenshot = uiAutomation.takeScreenshot();
+
+      assertThat(screenshot.getPixel(screenshot.getWidth() / 2, screenshot.getHeight() / 2))
+          .isEqualTo(Color.RED);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void takeScreenshot_stoppedActivity_isNotDrawn() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      View content = new View(controller.get());
+      content.setBackgroundColor(Color.RED);
+      controller.get().setContentView(content);
+      ShadowLooper.idleMainLooper();
+
+      controller.pause().stop();
+      ShadowLooper.idleMainLooper();
+      Bitmap screenshot = uiAutomation.takeScreenshot();
+
+      assertThat(screenshot.getPixel(screenshot.getWidth() / 2, screenshot.getHeight() / 2))
+          .isNotEqualTo(Color.RED);
     }
   }
 
