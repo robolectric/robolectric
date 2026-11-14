@@ -3,7 +3,6 @@ package org.robolectric.simulator;
 import android.graphics.Bitmap;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import javax.swing.JPanel;
@@ -17,13 +16,12 @@ public class SimulatorPanel extends JPanel {
     setFocusable(true); // Required for keyboard focus.
     setFocusTraversalKeysEnabled(false); // Send tab keys to the simulator.
 
-    if (!GraphicsEnvironment.isHeadless()) {
-      addKeyListener(new KeyboardHandler());
-      MouseHandler mouseHandler = new MouseHandler();
-      addMouseListener(mouseHandler);
-      addMouseMotionListener(mouseHandler);
-      addMouseWheelListener(mouseHandler);
-    }
+    // The handlers only post Android input events, so a headless simulator can be driven too.
+    addKeyListener(new KeyboardHandler());
+    MouseHandler mouseHandler = new MouseHandler();
+    addMouseListener(mouseHandler);
+    addMouseMotionListener(mouseHandler);
+    addMouseWheelListener(mouseHandler);
   }
 
   @Override
