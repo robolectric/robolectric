@@ -2,6 +2,7 @@
     package="org.robolectric.integrationtests.simulator">
     <application android:label="Simulator Test App">
         <activity android:name=".MainActivity" />
+        <service android:name=".ColorService" android:exported="false" />
         <provider android:name=".StartupProvider"
             android:authorities="org.robolectric.integrationtests.simulator.startup"
             android:exported="false" />

@@ -122,6 +122,7 @@ public class ShadowInstrumentation {
   // This will default to False in the future to correctly mirror real Android behavior.
   private boolean unbindServiceCallsOnServiceDisconnected = true;
   @Nullable private UiAutomation uiAutomation;
+  private final RealBoundServices realBoundServices = new RealBoundServices();
 
   @Implementation(minSdk = P)
   protected Activity startActivitySync(Intent intent, Bundle options) {
@@ -655,16 +656,18 @@ public class ShadowInstrumentation {
 
   protected boolean bindService(
       Intent intent, int flags, Executor executor, ServiceConnection serviceConnection) {
-    return bindService(intent, serviceConnection, new ExecutorServiceCallbackScheduler(executor));
+    return bindService(
+        intent, flags, serviceConnection, new ExecutorServiceCallbackScheduler(executor));
   }
 
   protected boolean bindService(
       final Intent intent, final ServiceConnection serviceConnection, int flags) {
-    return bindService(intent, serviceConnection, new HandlerCallbackScheduler());
+    return bindService(intent, flags, serviceConnection, new HandlerCallbackScheduler());
   }
 
   private boolean bindService(
       final Intent intent,
+      int flags,
       final ServiceConnection serviceConnection,
       ServiceCallbackScheduler serviceCallbackScheduler) {
     boundServiceConnections.add(serviceConnection);
@@ -682,6 +685,14 @@ public class ShadowInstrumentation {
       return false;
     }
     startedServices.add(filterComparison);
+    if (RealBoundServices.isEnabled()
+        && !serviceConnectionDataForIntent.containsKey(filterComparison)
+        && defaultServiceConnectionData.componentNameForBindService == null
+        && defaultServiceConnectionData.binderForBindService == null
+        && realBoundServices.tryBind(
+            intent, flags, serviceConnection, serviceCallbackScheduler::schedule)) {
+      return true;
+    }
     Runnable onServiceConnectedRunnable =
         () -> {
           serviceConnectionDataForServiceConnection.put(
@@ -715,6 +726,9 @@ public class ShadowInstrumentation {
 
     unboundServiceConnections.add(serviceConnection);
     boundServiceConnections.remove(serviceConnection);
+    if (realBoundServices.unbind(serviceConnection)) {
+      return;
+    }
     Handler handler = new Handler(Looper.getMainLooper());
     handler.post(() -> {
       final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
