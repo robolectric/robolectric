@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.Configurer;
@@ -21,13 +22,23 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   protected ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader) {
-    this(packagePropertiesLoader, () -> new Config.Builder().build());
+    this(packagePropertiesLoader, new GlobalConfigProvider[0]);
   }
 
+  /**
+   * Uses the highest-priority {@link GlobalConfigProvider} service, if there is one, for the global
+   * configuration.
+   */
+  @Inject
   public ConfigConfigurer(
-      PackagePropertiesLoader packagePropertiesLoader, GlobalConfigProvider defaultConfigProvider) {
+      PackagePropertiesLoader packagePropertiesLoader,
+      GlobalConfigProvider[] globalConfigProviders) {
     this.packagePropertiesLoader = packagePropertiesLoader;
-    this.defaultConfig = Config.Builder.defaults().overlay(defaultConfigProvider.get()).build();
+    Config globalConfig =
+        globalConfigProviders.length > 0
+            ? globalConfigProviders[0].get()
+            : new Config.Builder().build();
+    this.defaultConfig = Config.Builder.defaults().overlay(globalConfig).build();
   }
 
   @Override
