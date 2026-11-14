@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -35,7 +36,9 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
 import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.Direct.DirectFormat;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
 @Implements(
@@ -425,12 +428,20 @@ public class ShadowNativeHardwareRenderer {
 
   @Implementation(minSdk = R)
   protected static void nAddObserver(long nativeProxy, long nativeObserver) {
-    // currently not supported
+    // Observers are only hooked up from SDK 37. On earlier SDKs HWUI does not report frame metrics
+    // in Robolectric, because the host Surface leaves the frame numbers it compares uninitialized.
+    // A 0 observer comes from InputEventReceiver, whose natives Robolectric does not implement, and
+    // HWUI would crash using it.
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN && nativeObserver != 0) {
+      reflector(HardwareRendererReflector.class).nAddObserver(nativeProxy, nativeObserver);
+    }
   }
 
   @Implementation(minSdk = R)
   protected static void nRemoveObserver(long nativeProxy, long nativeObserver) {
-    // currently not supported
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN && nativeObserver != 0) {
+      reflector(HardwareRendererReflector.class).nRemoveObserver(nativeProxy, nativeObserver);
+    }
   }
 
   @Implementation(maxSdk = TIRAMISU)
@@ -595,6 +606,14 @@ public class ShadowNativeHardwareRenderer {
     int syncAndDrawFrame(FrameInfo frameInfo);
 
     void forceDrawNextFrame();
+
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    void nAddObserver(long nativeProxy, long nativeObserver);
+
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    void nRemoveObserver(long nativeProxy, long nativeObserver);
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */

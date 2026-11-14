@@ -46,6 +46,7 @@ public class ShadowNativeHardwareRendererObserver {
   @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nCreateObserver(
       WeakReference<HardwareRendererObserver> observer, boolean waitForPresentTime) {
+    DefaultNativeRuntimeLoader.injectAndLoad();
     HardwareRendererObserver hardwareRendererObserver = observer.get();
     ShadowNativeHardwareRendererObserver shadowNativeHardwareRendererObserver =
         Shadow.extract(hardwareRendererObserver);
