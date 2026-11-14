@@ -105,6 +105,11 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldNotAcquireJavaxXmlStream() {
+    assertThat(config.shouldAcquire("javax.xml.stream.XMLInputFactory")).isFalse();
+  }
+
+  @Test
   public void shouldInstrumentCustomClasses() {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
     String notInstrumentName = "com.whatever.DoNotInstrumentMe";
