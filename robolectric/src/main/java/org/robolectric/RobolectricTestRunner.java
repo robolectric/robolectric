@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -20,7 +19,6 @@ import java.util.ServiceLoader;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Priority;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -132,10 +130,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
     super(testClass, injector);
-
-    if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
-      DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
-    }
 
     this.sandboxManager = injector.getInstance(SandboxManager.class);
     this.sdkPicker = injector.getInstance(SdkPicker.class);
@@ -495,18 +489,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @SuppressWarnings("InlineMeSuggester")
   protected Config buildGlobalConfig() {
     return new Config.Builder().build();
-  }
-
-  @AutoService(GlobalConfigProvider.class)
-  @Priority(Integer.MIN_VALUE)
-  @Deprecated
-  public static class DeprecatedTestRunnerDefaultConfigProvider implements GlobalConfigProvider {
-    static Config globalConfig = new Config.Builder().build();
-
-    @Override
-    public Config get() {
-      return globalConfig;
-    }
   }
 
   @Override
