@@ -10,6 +10,8 @@ dependencies {
   testImplementation(libs.conscrypt.openjdk.uber)
   testImplementation(libs.junit4)
   testImplementation(libs.okhttp)
+  testImplementation(libs.okhttp.mockwebserver)
+  testImplementation(libs.okhttp.tls)
   testImplementation(libs.truth)
   testImplementation(platform(libs.okhttp.bom))
 }
