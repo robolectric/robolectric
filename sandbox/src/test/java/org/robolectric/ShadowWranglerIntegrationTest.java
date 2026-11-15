@@ -531,7 +531,7 @@ public class ShadowWranglerIntegrationTest {
   public void classesWithInstrumentedShadowsDontDoubleInitialize() {
     // if we didn't reject private shadow methods, __staticInitializer__ on the shadow
     // would be executed twice.
-    new AClassWithStaticInitializer();
+    assertThat(new AClassWithStaticInitializer()).isNotNull();
     assertThat(ShadowOfAClassWithStaticInitializer.initCount).isEqualTo(1);
     assertThat(AClassWithStaticInitializer.initCount).isEqualTo(1);
   }
@@ -558,7 +558,7 @@ public class ShadowWranglerIntegrationTest {
   @Test
   @SandboxConfig(shadows = Shadow22OfAClassWithBrokenStaticInitializer.class)
   public void staticInitializerShadowMethodsObeySameRules() {
-    new AClassWithBrokenStaticInitializer();
+    assertThat(new AClassWithBrokenStaticInitializer()).isNotNull();
   }
 
   @Instrument

@@ -80,7 +80,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   static {
     // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
     // classloader.
-    new SecureRandom();
+    var unused = new SecureRandom();
     // Fixes an issue using AWT-backed graphics shadows when using X11 forwarding.
     System.setProperty("java.awt.headless", "true");
     // Fixes a performance regression in caused by the addition of RSA modulus

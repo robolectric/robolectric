@@ -347,9 +347,9 @@ public class ShadowViewTest {
 
   @Test
   public void shouldSupportAllConstructors() {
-    new View(context);
-    new View(context, null);
-    new View(context, null, 0);
+    assertThat(new View(context)).isNotNull();
+    assertThat(new View(context, null)).isNotNull();
+    assertThat(new View(context, null, 0)).isNotNull();
   }
 
   @Test

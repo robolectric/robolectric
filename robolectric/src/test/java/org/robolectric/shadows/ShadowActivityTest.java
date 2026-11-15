@@ -484,16 +484,17 @@ public class ShadowActivityTest {
         Robolectric.setupActivity(DialogLifeCycleActivity.class);
     final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
-    new Dialog(activity) {
-      {
-        activity.dialog = this;
-      }
+    var unused =
+        new Dialog(activity) {
+          {
+            activity.dialog = this;
+          }
 
-      @Override
-      public void show() {
-        dialogWasShown.set(true);
-      }
-    };
+          @Override
+          public void show() {
+            dialogWasShown.set(true);
+          }
+        };
 
     activity.showDialog(1);
 
@@ -508,16 +509,17 @@ public class ShadowActivityTest {
         Robolectric.setupActivity(DialogLifeCycleActivity.class);
     final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
-    new Dialog(activity) {
-      {
-        activity.dialog = this;
-      }
+    var unused =
+        new Dialog(activity) {
+          {
+            activity.dialog = this;
+          }
 
-      @Override
-      public void show() {
-        dialogWasShown.set(true);
-      }
-    };
+          @Override
+          public void show() {
+            dialogWasShown.set(true);
+          }
+        };
 
     activity.showDialog(1, new Bundle());
 

@@ -64,12 +64,14 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
         2 * SAMPLE_RATE_IN_HZ * 6 * AudioFormat.getBytesPerSample(AUDIO_ENCODING_FORMAT);
 
     // Ensure the constructor doesn't throw an exception.
-    new AudioTrack(
-        new AudioAttributes.Builder().build(),
-        format,
-        bufferSizeBytes,
-        AudioTrack.MODE_STREAM,
-        AudioManager.AUDIO_SESSION_ID_GENERATE);
+    assertThat(
+            new AudioTrack(
+                new AudioAttributes.Builder().build(),
+                format,
+                bufferSizeBytes,
+                AudioTrack.MODE_STREAM,
+                AudioManager.AUDIO_SESSION_ID_GENERATE))
+        .isNotNull();
   }
 
   @Test

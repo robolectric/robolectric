@@ -644,7 +644,7 @@ public class ShadowLocationManager {
       looper = Looper.myLooper();
       if (looper == null) {
         // forces appropriate exception
-        new Handler();
+        var unused = new Handler();
       }
     }
     requestLocationUpdatesInternal(
@@ -665,7 +665,7 @@ public class ShadowLocationManager {
       looper = Looper.myLooper();
       if (looper == null) {
         // forces appropriate exception
-        new Handler();
+        var unused = new Handler();
       }
     }
     requestLocationUpdatesInternal(
@@ -712,7 +712,7 @@ public class ShadowLocationManager {
       looper = Looper.myLooper();
       if (looper == null) {
         // forces appropriate exception
-        new Handler();
+        var unused = new Handler();
       }
     }
     requestLocationUpdatesInternal(
@@ -751,7 +751,7 @@ public class ShadowLocationManager {
       looper = Looper.myLooper();
       if (looper == null) {
         // forces appropriate exception
-        new Handler();
+        var unused = new Handler();
       }
     }
     requestLocationUpdatesInternal(
@@ -819,7 +819,7 @@ public class ShadowLocationManager {
       looper = Looper.myLooper();
       if (looper == null) {
         // forces appropriate exception
-        new Handler();
+        var unused = new Handler();
       }
     }
     requestLocationUpdatesInternal(
