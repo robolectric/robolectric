@@ -1,0 +1,47 @@
+name: Error Prone
+
+on:
+  push:
+    branches: [ master, google ]
+    paths-ignore:
+      - '**.md'
+
+  pull_request:
+    branches: [ master, google ]
+    paths-ignore:
+      - '**.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  errorprone:
+    name: Error Prone
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Only the test jobs save the cache, to keep its entries within GitHub's 10 GB limit.
+          cache-read-only: true
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
+
+      - name: Run Error Prone
+        run: ./gradlew assemble testClasses compileDebugUnitTestJavaWithJavac --stacktrace
