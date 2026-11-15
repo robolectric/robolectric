@@ -77,17 +77,17 @@ public final class ShadowServiceManagerTest {
 
   @Test
   @Config(sdk = R)
-  public void waitForService_unavailable_shouldKeepNull() throws Exception {
+  public void waitForService_unavailable_shouldKeepWaiting() throws Exception {
     AtomicReference<IBinder> binder = new AtomicReference<>();
-    ExecutorService e = Executors.newFixedThreadPool(1);
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
 
-    e.execute(() -> {
-      binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
-    });
-    e.shutdown();
-    e.awaitTermination(10, SECONDS);
+    Thread waiter = startWaitingForService(binder);
+    awaitWaiting(waiter);
+    assertThat(binder.get()).isNull();
 
+    waiter.interrupt();
+    waiter.join(SECONDS.toMillis(10));
+    assertThat(waiter.isAlive()).isFalse();
     assertThat(binder.get()).isNull();
   }
 
@@ -95,16 +95,14 @@ public final class ShadowServiceManagerTest {
   @Config(sdk = R)
   public void waitForService_availableLater_shouldReturnNonNull() throws Exception {
     AtomicReference<IBinder> binder = new AtomicReference<>();
-    ExecutorService e = Executors.newFixedThreadPool(1);
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
 
-    e.execute(() -> {
-      binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
-    });
+    Thread waiter = startWaitingForService(binder);
+    awaitWaiting(waiter);
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, true);
-    e.shutdown();
-    e.awaitTermination(10, SECONDS);
+    waiter.join(SECONDS.toMillis(10));
 
+    assertThat(waiter.isAlive()).isFalse();
     assertThat(binder.get()).isNotNull();
   }
 
@@ -204,5 +202,22 @@ public final class ShadowServiceManagerTest {
 
   interface IStubbedInterface extends IInterface {
     void reportCalled() throws RemoteException;
+  }
+
+  private static Thread startWaitingForService(AtomicReference<IBinder> binder) {
+    Thread waiter =
+        new Thread(() -> binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE)));
+    waiter.start();
+    return waiter;
+  }
+
+  /** Waits until the thread is blocked waiting for the service to become available. */
+  private static void awaitWaiting(Thread waiter) throws InterruptedException {
+    long deadline = System.nanoTime() + SECONDS.toNanos(10);
+    while (waiter.getState() != Thread.State.WAITING) {
+      assertThat(waiter.isAlive()).isTrue();
+      assertThat(System.nanoTime()).isLessThan(deadline);
+      Thread.sleep(1);
+    }
   }
 }
