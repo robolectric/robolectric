@@ -48,7 +48,7 @@ abstract class ProvideBuildClasspathTask : DefaultTask() {
 
     internal fun configure(
       project: Project,
-      taskProvider: TaskProvider<ProvideBuildClasspathTask>,
+      taskProvider: TaskProvider<out ProvideBuildClasspathTask>,
     ) {
       taskProvider.configure {
         val usePreinstrumentedJars =

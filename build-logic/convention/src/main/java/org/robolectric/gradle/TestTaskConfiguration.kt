@@ -1,5 +1,9 @@
 package org.robolectric.gradle
 
+import java.io.File
+import java.util.zip.ZipFile
+import org.gradle.api.GradleException
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -37,7 +41,32 @@ fun Test.configureTestTask() {
     ),
   )
   jvmArgumentProviders.add(DefaultJvmArgumentsProvider())
+
+  // Without robolectric-deps.properties on the classpath, Robolectric downloads the SDK jars from
+  // Maven Central in every test JVM instead of using the ones Gradle resolved, which gets CI rate
+  // limited. Fail instead, for example when an AGP update changes how the file gets there.
+  doFirst { requireRobolectricDeps(classpath) }
 }
+
+private fun requireRobolectricDeps(classpath: FileCollection) {
+  val found =
+    classpath.files.any { entry ->
+      when {
+        entry.isDirectory -> File(entry, ROBOLECTRIC_DEPS).isFile
+        entry.isFile && entry.name.endsWith(".jar") ->
+          ZipFile(entry).use { it.getEntry(ROBOLECTRIC_DEPS) != null }
+        else -> false
+      }
+    }
+  if (!found) {
+    throw GradleException(
+      "$ROBOLECTRIC_DEPS is not on the test classpath, so Robolectric would download the SDK " +
+        "jars instead of using the ones Gradle resolved",
+    )
+  }
+}
+
+private const val ROBOLECTRIC_DEPS = "robolectric-deps.properties"
 
 private class RobolectricJvmArgumentsProvider(
   @get:Input private val robolectricPropertiesProvider: Provider<Map<String, String>>,
