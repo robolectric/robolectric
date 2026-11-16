@@ -479,9 +479,6 @@ public class ShadowWrangler implements ClassHandler {
         }
       }
 
-      if (foundMethod != null) {
-        foundMethod.setAccessible(true);
-      }
       return foundMethod;
     }
   }
@@ -498,6 +495,10 @@ public class ShadowWrangler implements ClassHandler {
     final String[] classNames;
 
     ShadowMethod(Method method) {
+      // Make the method accessible once, while the ShadowMethods index is built under the
+      // ClassValueMap's lock, rather than on every lookup. The Method is shared across threads, so
+      // calling setAccessible from find() was an unsynchronized write that ThreadSanitizer reports.
+      method.setAccessible(true);
       this.method = method;
       this.parameterTypes = method.getParameterTypes();
       String[] classNames = null;
