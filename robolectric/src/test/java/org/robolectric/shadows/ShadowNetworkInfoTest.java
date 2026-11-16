@@ -25,4 +25,14 @@ public class ShadowNetworkInfoTest {
     shadowOf(networkInfo).setExtraInfo("some_extra_info");
     assertThat(networkInfo.getExtraInfo()).isEqualTo("some_extra_info");
   }
+
+  @Test
+  public void isRoaming_shouldReturnTheSetValue() {
+    NetworkInfo networkInfo = Shadow.newInstanceOf(NetworkInfo.class);
+    shadowOf(networkInfo).setRoaming(true);
+    assertThat(networkInfo.isRoaming()).isTrue();
+
+    shadowOf(networkInfo).setRoaming(false);
+    assertThat(networkInfo.isRoaming()).isFalse();
+  }
 }

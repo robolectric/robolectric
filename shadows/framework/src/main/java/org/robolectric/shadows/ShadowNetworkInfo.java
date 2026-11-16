@@ -17,6 +17,7 @@ public class ShadowNetworkInfo {
   private int connectionType;
   private int connectionSubType;
   private NetworkInfo.DetailedState detailedState;
+  private boolean isRoaming;
 
   @RealObject private NetworkInfo realNetworkInfo;
 
@@ -98,6 +99,17 @@ public class ShadowNetworkInfo {
   @Implementation
   protected boolean isAvailable() {
     return isAvailable;
+  }
+
+  @Implementation
+  protected boolean isRoaming() {
+    return isRoaming;
+  }
+
+  /** Sets the return value of {@link NetworkInfo#isRoaming()}. */
+  @Implementation
+  public void setRoaming(boolean isRoaming) {
+    this.isRoaming = isRoaming;
   }
 
   /**
