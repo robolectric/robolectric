@@ -75,6 +75,22 @@ public class ShadowFingerprintManagerTest {
   }
 
   @Test
+  public void authenticate_error() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
+    AuthenticationCallback mockCallback = mock(AuthenticationCallback.class);
+    manager.authenticate(null, null, 0, mockCallback, null);
+
+    shadowFingerprintManager.authenticationError(1, "error");
+
+    verify(mockCallback).onAuthenticationError(1, "error");
+  }
+
+  @Test
   public void hasEnrolledFingerprints() {
     FingerprintManager manager =
         (FingerprintManager)
