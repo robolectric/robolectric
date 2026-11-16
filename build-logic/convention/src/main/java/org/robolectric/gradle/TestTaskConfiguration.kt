@@ -32,7 +32,10 @@ fun Test.configureTestTask() {
   minHeapSize = "2g"
   maxHeapSize = "12g"
 
-  System.getenv("GRADLE_MAX_PARALLEL_FORKS")?.toIntOrNull()?.let { maxParallelForks = it }
+  val maxForks = System.getenv("GRADLE_MAX_PARALLEL_FORKS")?.toIntOrNull()
+  if (maxForks != null) {
+    maxParallelForks = maxForks
+  }
 
   // Runs the tests on another JDK than Gradle's, such as an x64 JDK under Rosetta 2.
   System.getenv("TEST_JAVA_HOME")
