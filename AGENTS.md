@@ -101,7 +101,11 @@ builds with Gradle.
   `@Implementation(minSdk = ..., maxSdk = ...)`, using `Build.VERSION_CODES`
   constants. Framework signatures often change between SDKs, so check the method
   in several `android-all` jars before choosing parameter types.
-- Reach hidden APIs through `@ForType` reflectors or `ReflectionHelpers`.
+- Reach hidden APIs through `@ForType` reflectors rather than
+  `ReflectionHelpers`. Reflectors are faster: they look up each `Method` and
+  `Field` once and cache it, while `ReflectionHelpers` repeats the lookup on
+  every call. Annotate a reflector method with `@Direct` to call the real
+  framework implementation instead of the shadow.
 - Shadow a hidden class with
   `@Implements(className = "...", isInAndroidSdk = false)`. For parameter or
   return types missing from older SDKs, or not visible to the shadow (such as
