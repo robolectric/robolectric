@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.extract;
@@ -23,6 +24,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewRootImpl;
@@ -72,6 +74,7 @@ public class ActivityController<T extends Activity>
   private static final int CONFIG_WINDOW_CONFIGURATION = 0x20000000;
 
   private org.robolectric.shadows.ActivityReflector activityReflector;
+  private IBinder shareableActivityToken;
   private LifecycleState currentState = LifecycleState.INITIAL;
 
   public static <T extends Activity> ActivityController<T> of(
@@ -117,6 +120,13 @@ public class ActivityController<T extends Activity>
     ShadowActivity shadowActivity = Shadow.extract(component);
     shadowActivity.callAttach(
         getIntent(), activityOptions, lastNonConfigurationInstances, overrideConfig);
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      if (shareableActivityToken == null) {
+        shareableActivityToken = activityReflector.getShareableActivityTokenField();
+      } else {
+        activityReflector.setShareableActivityTokenField(shareableActivityToken);
+      }
+    }
     shadowActivity.attachController(this);
     attached = true;
     return this;

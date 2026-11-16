@@ -23,7 +23,8 @@ import android.app.IUiModeManager;
 import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.ambientcontext.IAmbientContextManager;
-import android.app.appfunctions.IAppFunctionService;
+import android.app.appfunctions.IAppFunctionManager;
+import android.app.appsearch.aidl.IAppSearchManager;
 import android.app.job.IJobScheduler;
 import android.app.ondeviceintelligence.IOnDeviceIntelligenceManager;
 import android.app.role.IRoleManager;
@@ -136,7 +137,7 @@ public class ShadowServiceManager {
   protected static final Map<String, BinderService> binderServices = buildBinderServicesMap();
 
   @GuardedBy("ShadowServiceManager.class")
-  private static final Set<String> unavailableServices = buildUnavailableServices();
+  private static final Set<String> unavailableServices = new HashSet<>();
 
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> declaredServices = new HashSet<>();
@@ -426,7 +427,13 @@ public class ShadowServiceManager {
           IRangingAdapter.class,
           BinderType.CONCRETE,
           new FakeRangingAdapter());
-      addBinderService(binderServices, Context.APP_FUNCTION_SERVICE, IAppFunctionService.class);
+      addBinderService(
+          binderServices,
+          Context.APP_SEARCH_SERVICE,
+          IAppSearchManager.class,
+          BinderType.CONCRETE,
+          new FakeAppSearchManager());
+      addBinderService(binderServices, Context.APP_FUNCTION_SERVICE, IAppFunctionManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
       addBinderService(binderServices, "npu", "android.npumanager.INpuManagerService");
@@ -436,14 +443,6 @@ public class ShadowServiceManager {
           "android.service.personalcontext.IPersonalContextManager");
     }
     return binderServices;
-  }
-
-  private static Set<String> buildUnavailableServices() {
-    HashSet<String> unavailableServices = new HashSet<>();
-    // TODO: Enable AppFunctionService once the affected tests that rely on it being unavailable are
-    // fixed.
-    unavailableServices.add(Context.APP_FUNCTION_SERVICE);
-    return unavailableServices;
   }
 
   protected static void addBinderService(
@@ -631,7 +630,6 @@ public class ShadowServiceManager {
   @Resetter
   public static synchronized void reset() {
     unavailableServices.clear();
-    unavailableServices.addAll(buildUnavailableServices());
     declaredServices.clear();
     for (BinderService service : binderServices.values()) {
       service.reset();

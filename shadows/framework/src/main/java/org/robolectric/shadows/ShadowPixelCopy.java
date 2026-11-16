@@ -55,7 +55,7 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (ShadowView.areRealDrawTraversalsEnabled()) {
+    if (ShadowView.areRealDrawTraversalsEnabled() && hasRealSurface(source)) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
       reflector(PixelCopyReflector.class).request(source, dest, listener, listenerThread);
@@ -72,7 +72,7 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (ShadowView.areRealDrawTraversalsEnabled()) {
+    if (ShadowView.areRealDrawTraversalsEnabled() && hasRealSurface(source)) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
       reflector(PixelCopyReflector.class).request(source, srcRect, dest, listener, listenerThread);
@@ -168,6 +168,20 @@ public class ShadowPixelCopy {
         request.getDestinationBitmap(),
         legacyListener,
         new Handler(Looper.getMainLooper()));
+  }
+
+  /**
+   * Returns true if the given SurfaceView's holder provides a Surface whose content is produced by
+   * real draw traversals.
+   */
+  private static boolean hasRealSurface(SurfaceView source) {
+    Surface surface = source.getHolder().getSurface();
+    if (surface == null) {
+      return false;
+    }
+    Object shadowSurface = Shadow.extract(surface);
+    return shadowSurface instanceof ShadowNativeSurface
+        && ((ShadowNativeSurface) shadowSurface).getContainerImageReader() != null;
   }
 
   private static View findViewForSurface(Surface source) {
