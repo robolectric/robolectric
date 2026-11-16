@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Filter.Order;
@@ -300,18 +301,36 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public Duration getNextScheduledTaskTime() {
-    try (TestLooperManagerCompat testLooperManagerCompat =
-        TestLooperManagerCompat.acquire(realLooper)) {
-      Long nextWhen = testLooperManagerCompat.peekWhen();
-      return nextWhen == null
-          ? Duration.ZERO
-          : Duration.ofMillis(ShadowPausedMessageQueue.convertWhenToScheduledTime(nextWhen));
-    }
+    return getScheduledTaskTime(TestLooperManagerCompat::peekWhen);
   }
 
   @Override
   public Duration getLastScheduledTaskTime() {
-    return shadowQueue().getLastScheduledTaskTime();
+    return getScheduledTaskTime(TestLooperManagerCompat::peekTailWhen);
+  }
+
+  private Duration getScheduledTaskTime(Function<TestLooperManagerCompat, Long> peekWhenFn) {
+    if (Thread.currentThread() == realLooper.getThread()) {
+      return getScheduledTaskTimeOnLooperThread(peekWhenFn);
+    }
+    // Execute on the looper's thread so TestLooperManagerCompat can inspect the queue safely
+    // without racing with active message dispatch or attempting to acquire a second
+    // TestLooperManager for an already-paused looper.
+    Duration result =
+        looperControlService.executeControlTask(
+            () -> getScheduledTaskTimeOnLooperThread(peekWhenFn));
+    return result == null ? Duration.ZERO : result;
+  }
+
+  private Duration getScheduledTaskTimeOnLooperThread(
+      Function<TestLooperManagerCompat, Long> peekWhenFn) {
+    try (TestLooperManagerCompat testLooperManagerCompat =
+        TestLooperManagerCompat.acquire(realLooper)) {
+      Long when = peekWhenFn.apply(testLooperManagerCompat);
+      return when == null
+          ? Duration.ZERO
+          : Duration.ofMillis(ShadowPausedMessageQueue.convertWhenToScheduledTime(when));
+    }
   }
 
   @Resetter

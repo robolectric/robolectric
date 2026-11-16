@@ -24,6 +24,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
@@ -163,6 +165,12 @@ final class LooperControlService {
 
   void executeControlTask(Runnable runnable) {
     executeControlTask(runnable, true);
+  }
+
+  <T> T executeControlTask(Supplier<T> supplier) {
+    AtomicReference<T> result = new AtomicReference<>();
+    executeControlTask(() -> result.set(supplier.get()));
+    return result.get();
   }
 
   void executeControlTask(Runnable runnable, boolean cancelable) {
