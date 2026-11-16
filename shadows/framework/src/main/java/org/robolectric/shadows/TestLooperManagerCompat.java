@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadows.ShadowPausedMessageQueue.convertWhenToScheduledTime;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
@@ -15,6 +14,7 @@ import javax.annotation.Nullable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -139,9 +139,18 @@ final class TestLooperManagerCompat implements AutoCloseable {
     }
   }
 
-  public Long peekTailWhen() {
-    if (delegate != null && getApiLevel() > BAKLAVA) {
-      return reflector(TestLooperManagerReflector.class, delegate).peekTailWhen();
+  @Nullable
+  Long peekTailWhen() {
+    if (getApiLevel() > BAKLAVA) {
+      // TestLooperManager does not yet expose a public API for the last message's when, so fall
+      // back to the hidden MessageQueue#peekLastMessageForTest() method.
+      Message msg =
+          reflector(LegacyMessageQueueReflector.class, getQueue()).peekLastMessageForTest();
+      // DeliQueue's peekLastMessageForTest() does not filter out sync barriers (target == null).
+      if (msg == null || msg.getTarget() == null) {
+        return null;
+      }
+      return shadowOfMsg(msg).getWhen();
     } else {
       return legacyPeekTailWhen(getQueue());
     }
@@ -155,6 +164,7 @@ final class TestLooperManagerCompat implements AutoCloseable {
     }
   }
 
+  @Nullable
   private static Long legacyPeekTailWhen(MessageQueue queue) {
     LegacyMessageQueueReflector queueReflector =
         reflector(LegacyMessageQueueReflector.class, queue);
@@ -164,17 +174,15 @@ final class TestLooperManagerCompat implements AutoCloseable {
       Message next = queueReflector.getMessages();
       while (next != null) {
         if (next.getTarget() != null) {
-          lastWhen = shadowOfMsg(next).getWhen();
+          long when = shadowOfMsg(next).getWhen();
+          if (lastWhen == null || when > lastWhen) {
+            lastWhen = when;
+          }
         }
         next = shadowOfMsg(next).internalGetNext();
       }
     }
-    return lastWhen == null ? null : convertWhenToScheduledTime(lastWhen);
-  }
-
-  @ForType(TestLooperManager.class)
-  private interface TestLooperManagerReflector {
-    Long peekTailWhen();
+    return lastWhen;
   }
 
   @ForType(MessageQueue.class)
@@ -196,5 +204,9 @@ final class TestLooperManagerCompat implements AutoCloseable {
 
     @Accessor("mMessages")
     void setMessages(Message nextMsg);
+
+    // Only available on > Baklava; used until TestLooperManager exposes a public equivalent.
+    @Direct
+    Message peekLastMessageForTest();
   }
 }

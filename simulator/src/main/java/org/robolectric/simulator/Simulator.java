@@ -133,18 +133,44 @@ public final class Simulator {
     Choreographer.getInstance().postFrameCallback(new SimulatorFrameCallback());
     AtomicBoolean running = new AtomicBoolean(true);
     Runtime.getRuntime().addShutdownHook(new Thread(() -> running.set(false)));
+    // Advance ShadowSystemClock by all elapsed wall-clock time, including the time idle() spends
+    // rendering and capturing frames. Otherwise the clock falls behind by each frame's render
+    // time, and poll() waits a full vsync interval after every frame instead of overlapping it.
+    long lastSystemTime = System.nanoTime();
     while (running.get()) {
-      long currentSystemTime = System.nanoTime();
+      // Find the next simulated time at which the main looper has work: the earlier of its next
+      // delayed message and the next Choreographer vsync. Either is 0 when nothing is scheduled,
+      // so only take the minimum when both are set. (SimulatorFrameCallback re-posts itself every
+      // frame, so a vsync is normally always scheduled.)
       long nextTaskTime = shadowLooper.getNextScheduledTaskTime().toMillis();
       long nextVsyncTime = ShadowChoreographer.getNextVsyncTime();
       long timeoutTime =
           nextTaskTime == 0 || nextVsyncTime == 0
               ? max(nextTaskTime, nextVsyncTime)
               : min(nextTaskTime, nextVsyncTime);
+
+      // Sleep in real time until that work is due, or until another thread (such as input from
+      // the UI or a remote control) posts a message to the main looper. poll(0) waits forever, so
+      // pass 0 only when nothing is scheduled, and at least 1 ms when the deadline has passed.
       shadowLooper.poll(timeoutTime == 0 ? 0 : max(1, timeoutTime - SystemClock.uptimeMillis()));
-      ShadowSystemClock.advanceBy(Duration.ofNanos(System.nanoTime() - currentSystemTime));
+
+      // Advance the simulated clock by the real time spent sleeping, so that everything scheduled
+      // up to now (including the vsync, if it was what woke us) is due.
+      long afterPollTime = System.nanoTime();
+      ShadowSystemClock.advanceBy(Duration.ofNanos(afterPollTime - lastSystemTime));
+      lastSystemTime = afterPollTime;
+
+      // Run everything that is due: posted messages and, if the vsync came due, a Choreographer
+      // frame, which lays out, draws, and captures the screen. Then tell the remote control that a
+      // cycle finished.
       shadowLooper.idle();
       remoteControl.onCycle(SystemClock.uptimeNanos());
+
+      // Advance the simulated clock by the real time idle() took (mostly rendering), so the next
+      // timeout is measured from now rather than from before the frame was rendered.
+      long afterIdleTime = System.nanoTime();
+      ShadowSystemClock.advanceBy(Duration.ofNanos(afterIdleTime - lastSystemTime));
+      lastSystemTime = afterIdleTime;
     }
   }
 

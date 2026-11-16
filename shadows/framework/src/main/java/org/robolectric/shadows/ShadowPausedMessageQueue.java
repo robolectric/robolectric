@@ -13,7 +13,6 @@ import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -241,31 +240,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     updateListener();
   }
 
-  Duration getLastScheduledTaskTime() {
-    if (getApiLevel() > BAKLAVA) {
-      Message msg = reflector(MessageQueueReflector.class, realQueue).peekLastMessageForTest();
-      if (msg == null) {
-        return Duration.ZERO;
-      }
-      return Duration.ofMillis(convertWhenToScheduledTime(shadowOfMsg(msg).getWhen()));
-    } else {
-      long when = 0;
-      synchronized (realQueue) {
-        Message next = getMessages();
-        if (next == null) {
-          return Duration.ZERO;
-        }
-        while (next != null) {
-          if (next.getTarget() != null) {
-            when = shadowOfMsg(next).getWhen();
-          }
-          next = shadowOfMsg(next).internalGetNext();
-        }
-      }
-      return Duration.ofMillis(convertWhenToScheduledTime(when));
-    }
-  }
-
   static long convertWhenToScheduledTime(long when) {
     // in some situations, when can be 0 or less than uptimeMillis. Always floor it to at least
     // convertWhenToUptime
@@ -421,9 +395,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     // only available on > Baklava
     @Direct
     void resetForTest();
-
-    @Direct
-    Message peekLastMessageForTest();
 
     @Direct
     Long peekWhenForTest();

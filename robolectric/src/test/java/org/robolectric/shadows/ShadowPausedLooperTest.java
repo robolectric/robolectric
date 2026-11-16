@@ -400,6 +400,65 @@ public class ShadowPausedLooperTest {
     mainHandler.postDelayed(() -> {}, 100);
     assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis())
         .isEqualTo(SystemClock.uptimeMillis() + 200);
+    shadowMainLooper().idleFor(Duration.ofMillis(200));
+    assertThat(shadowMainLooper().getLastScheduledTaskTime()).isEqualTo(Duration.ZERO);
+  }
+
+  @Test
+  public void getLastScheduledTime_onlySyncBarrier_returnsZero() {
+    int barrier = getMainLooper().getQueue().postSyncBarrier();
+    try {
+      assertThat(shadowMainLooper().getLastScheduledTaskTime()).isEqualTo(Duration.ZERO);
+    } finally {
+      getMainLooper().getQueue().removeSyncBarrier(barrier);
+    }
+  }
+
+  @Test
+  public void scheduledTimes_pausedBackgroundLooper() {
+    Looper looper = handlerThread.getLooper();
+    shadowOf(looper).pause();
+    Handler handler = new Handler(looper);
+    long now = SystemClock.uptimeMillis();
+    handler.postAtTime(() -> {}, now + 200);
+    handler.postAtTime(() -> {}, now + 100);
+
+    assertThat(shadowOf(looper).getNextScheduledTaskTime()).isEqualTo(Duration.ofMillis(now + 100));
+    assertThat(shadowOf(looper).getLastScheduledTaskTime()).isEqualTo(Duration.ofMillis(now + 200));
+  }
+
+  /**
+   * Verifies that querying {@link ShadowLooper#getLastScheduledTaskTime()} from the test thread
+   * while an unpaused background looper is actively dispatching and recycling messages does not
+   * race with message dispatch or return a corrupted timestamp.
+   */
+  @Test
+  public void getLastScheduledTime_concurrentUnpausedBackgroundLooper() {
+    Looper looper = handlerThread.getLooper();
+    Handler handler = new Handler(looper);
+    long expectedLastTime = SystemClock.uptimeMillis() + 100_000;
+    handler.postAtTime(() -> {}, expectedLastTime);
+
+    AtomicBoolean running = new AtomicBoolean(true);
+    Runnable selfReposting =
+        new Runnable() {
+          @Override
+          public void run() {
+            if (running.get()) {
+              handler.post(this);
+            }
+          }
+        };
+    handler.post(selfReposting);
+    try {
+      for (int i = 0; i < 200; i++) {
+        assertThat(shadowOf(looper).getLastScheduledTaskTime())
+            .isEqualTo(Duration.ofMillis(expectedLastTime));
+      }
+    } finally {
+      running.set(false);
+      shadowOf(looper).idle();
+    }
   }
 
   @Before
