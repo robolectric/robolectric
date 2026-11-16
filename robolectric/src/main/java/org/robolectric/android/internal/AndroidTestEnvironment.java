@@ -327,6 +327,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     final ActivityThreadReflector activityThreadReflector =
         reflector(ActivityThreadReflector.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
+    // A lazily created application is created after setup returns, so use the setting from now.
+    final boolean installContentProviders = this.installContentProviders;
 
     return Suppliers.memoize(() ->
         PerfStatsCollector.getInstance()
@@ -338,7 +340,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
                         config,
                         shadowActivityThread,
                         activityThreadReflector,
-                        activityThread.getInstrumentation())));
+                        activityThread.getInstrumentation(),
+                        installContentProviders)));
   }
 
   private Application installAndCreateApplication(
@@ -346,7 +349,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       Config config,
       ShadowActivityThread shadowActivityThread,
       ActivityThreadReflector activityThreadReflector,
-      Instrumentation androidInstrumentation) {
+      Instrumentation androidInstrumentation,
+      boolean installContentProviders) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
 
     // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
