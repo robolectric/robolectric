@@ -312,9 +312,52 @@ class MavenDependencyResolverTest {
     }
   }
 
-  private fun createFetcher(repositoryDir: File) =
+  @Test
+  fun localArtifactUrl_fallsBackToTheNextRepository() {
+    mavenArtifactFetcher =
+      createFetcher(localRepositoryDir, listOf(EMPTY_REPOSITORY_URL, REPOSITORY_URL))
+    TestMavenDependencyResolver().getLocalArtifactUrl(successCases[0])
+    assertThat(mavenArtifactFetcher.numRequests).isEqualTo(8)
+    checkJarArtifact(MavenJarArtifact(successCases[0]))
+  }
+
+  @Test
+  fun localArtifactUrl_failsWhenNoRepositoryHasTheArtifact() {
+    mavenArtifactFetcher =
+      createFetcher(localRepositoryDir, listOf(EMPTY_REPOSITORY_URL, EMPTY_REPOSITORY_URL))
+    Assert.assertThrows(AssertionError::class.java) {
+      TestMavenDependencyResolver().getLocalArtifactUrl(successCases[0])
+    }
+    assertThat(mavenArtifactFetcher.numRequests).isEqualTo(8)
+    assertThat(File(localRepositoryDir, MavenJarArtifact(successCases[0]).jarPath()).exists())
+      .isFalse()
+  }
+
+  @Test
+  fun repositoryUrls_mavenCentralFallsBackToGoogleMirror() {
+    val mirror = "https://maven-central.storage-download.googleapis.com/maven2"
+    assertThat(MavenDependencyResolver.repositoryUrls("https://repo1.maven.org/maven2", null))
+      .containsExactly("https://repo1.maven.org/maven2", mirror)
+      .inOrder()
+    assertThat(MavenDependencyResolver.repositoryUrls("https://repo1.maven.org/maven2/", ""))
+      .containsExactly("https://repo1.maven.org/maven2/", mirror)
+      .inOrder()
+  }
+
+  @Test
+  fun repositoryUrls_customRepositoryOrCredentialsAreUsedAlone() {
+    assertThat(MavenDependencyResolver.repositoryUrls("https://maven.example.com/repo", null))
+      .containsExactly("https://maven.example.com/repo")
+    assertThat(MavenDependencyResolver.repositoryUrls("https://repo1.maven.org/maven2", "user"))
+      .containsExactly("https://repo1.maven.org/maven2")
+  }
+
+  private fun createFetcher(
+    repositoryDir: File,
+    repositoryUrls: List<String> = listOf(REPOSITORY_URL),
+  ) =
     TestMavenArtifactFetcher(
-      REPOSITORY_URL,
+      repositoryUrls,
       REPOSITORY_USERNAME,
       REPOSITORY_PASSWORD,
       PROXY_HOST,
@@ -345,7 +388,7 @@ class MavenDependencyResolverTest {
 
   @Suppress("LongParameterList")
   internal class TestMavenArtifactFetcher(
-    repositoryUrl: String?,
+    repositoryUrls: List<String>,
     repositoryUserName: String?,
     repositoryPassword: String?,
     proxyHost: String?,
@@ -354,7 +397,7 @@ class MavenDependencyResolverTest {
     private val executorService: ExecutorService,
   ) :
     MavenArtifactFetcher(
-      repositoryUrl,
+      repositoryUrls,
       repositoryUserName,
       repositoryPassword,
       proxyHost,
@@ -389,6 +432,7 @@ class MavenDependencyResolverTest {
   companion object {
     private var REPOSITORY_DIR: File
     private var REPOSITORY_URL: String
+    private var EMPTY_REPOSITORY_URL: String
     private const val REPOSITORY_USERNAME = "username"
     private const val REPOSITORY_PASSWORD = "password"
     private const val PROXY_HOST = "123.4.5.678"
@@ -406,6 +450,9 @@ class MavenDependencyResolverTest {
         REPOSITORY_DIR = Files.createTempDir()
         REPOSITORY_DIR.deleteOnExit()
         REPOSITORY_URL = REPOSITORY_DIR.toURI().toURL().toString()
+        val emptyRepositoryDir = Files.createTempDir()
+        emptyRepositoryDir.deleteOnExit()
+        EMPTY_REPOSITORY_URL = emptyRepositoryDir.toURI().toURL().toString()
         for (dependencyJar in successCases) {
           addTestArtifact(dependencyJar)
         }
