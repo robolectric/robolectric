@@ -92,8 +92,24 @@ public class ShadowFingerprintManager {
   }
 
   /**
-   * Success or failure can be simulated with a subsequent call to {@link #authenticationSucceeds()}
-   * or {@link #authenticationFails()}.
+   * Simulates an authentication error by calling {@link
+   * AuthenticationCallback#onAuthenticationError(int, CharSequence)}. An authentication request
+   * must have been issued and not cancelled.
+   *
+   * @param errorCode the error code to send to the callback
+   * @param errorMessage the error message to send to the callback
+   */
+  public void authenticationError(int errorCode, CharSequence errorMessage) {
+    if (pendingCallback == null) {
+      throw new IllegalStateException("No active fingerprint authentication request.");
+    }
+
+    pendingCallback.onAuthenticationError(errorCode, errorMessage);
+  }
+
+  /**
+   * Authentication results can be simulated with a subsequent call to {@link
+   * #authenticationSucceeds()}, {@link #authenticationFails()}, or {@link #authenticationError}.
    */
   @Implementation
   protected void authenticate(
