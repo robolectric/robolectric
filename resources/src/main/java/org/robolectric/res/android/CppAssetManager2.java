@@ -1148,19 +1148,19 @@ public class CppAssetManager2 {
             return null;
           }
         }
-        Entry new_entry_ = new_entry[i] = new Entry(map_entry.value);
-        new_entry_.cookie = cookie;
-        new_entry_.key = new_key.get();
-        new_entry_.key_pool = null;
-        new_entry_.type_pool = null;
-        new_entry_.style = resid;
-        final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
+        Entry newEntry = new_entry[i] = new Entry(map_entry.value);
+        newEntry.cookie = cookie;
+        newEntry.key = new_key.get();
+        newEntry.key_pool = null;
+        newEntry.type_pool = null;
+        newEntry.style = resid;
+        final Ref<Res_value> valueRef = new Ref<>(newEntry.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
-        new_entry_.value = valueRef.get();
+        newEntry.value = valueRef.get();
         if (err != NO_ERROR) {
           System.err.printf(
               "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
-              new_entry_.value.dataType, new_entry_.value.data, new_key.get());
+              newEntry.value.dataType, newEntry.value.data, new_key.get());
           return null;
         }
         // ++new_entry;
@@ -1226,19 +1226,19 @@ public class CppAssetManager2 {
       if (child_key <= parent_entry.key) {
         // Use the child key if it comes before the parent
         // or is equal to the parent (overrides).
-        Entry new_entry_ = new_entry[newEntryIndex] = new Entry(map_entry.value);
-        new_entry_.cookie = cookie;
-        new_entry_.key = child_key;
-        new_entry_.key_pool = null;
-        new_entry_.type_pool = null;
-        new_entry_.style = resid;
-        final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
+        Entry newEntry = new_entry[newEntryIndex] = new Entry(map_entry.value);
+        newEntry.cookie = cookie;
+        newEntry.key = child_key;
+        newEntry.key_pool = null;
+        newEntry.type_pool = null;
+        newEntry.style = resid;
+        final Ref<Res_value> valueRef = new Ref<>(newEntry.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
-        new_entry_.value = valueRef.get();
+        newEntry.value = valueRef.get();
         if (err != NO_ERROR) {
           System.err.printf(
               "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
-              new_entry_.value.dataType, new_entry_.value.data, child_key);
+              newEntry.value.dataType, newEntry.value.data, child_key);
           return null;
         }
 
@@ -1271,19 +1271,19 @@ public class CppAssetManager2 {
           return null;
         }
       }
-      Entry new_entry_ = new_entry[newEntryIndex] = new Entry(map_entry.value);
-      new_entry_.cookie = cookie;
-      new_entry_.key = new_key.get();
-      new_entry_.key_pool = null;
-      new_entry_.type_pool = null;
-      new_entry_.style = resid;
-      final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
+      Entry newEntry = new_entry[newEntryIndex] = new Entry(map_entry.value);
+      newEntry.cookie = cookie;
+      newEntry.key = new_key.get();
+      newEntry.key_pool = null;
+      newEntry.type_pool = null;
+      newEntry.style = resid;
+      final Ref<Res_value> valueRef = new Ref<>(newEntry.value);
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
-      new_entry_.value = valueRef.get();
+      newEntry.value = valueRef.get();
       if (err != NO_ERROR) {
         System.err.printf(
             "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
-            new_entry_.value.dataType, new_entry_.value.data, new_key.get());
+            newEntry.value.dataType, newEntry.value.data, new_key.get());
         return null;
       }
       // ++map_entry;
@@ -1582,9 +1582,9 @@ public class CppAssetManager2 {
       //     for (auto bag_iter = reverse_bag_iterator(end(bag)); bag_iter != bag_iter_end;
       // ++bag_iter) {
       for (int i = bag.entries.length - 1; i >= 0; i--) {
-        ResolvedBag.Entry bag_iter = bag.entries[i];
+        ResolvedBag.Entry bagIter = bag.entries[i];
         //   final int attr_resid = bag_iter.key;
-        final int attr_resid = bag_iter == null ? 0 : bag_iter.key;
+        final int attr_resid = bagIter == null ? 0 : bagIter.key;
 
         // If the resource ID passed in is not a style, the key can be some other identifier that is
         // not
@@ -1651,9 +1651,9 @@ public class CppAssetManager2 {
             // Initialize the entry with its immutable bag value when the attribute is first added.
             entry = last_type.entries[entry_idx] = new ThemeEntry();
           }
-          entry.cookie = bag_iter.cookie;
+          entry.cookie = bagIter.cookie;
           entry.type_spec_flags |= bag.type_spec_flags;
-          entry.value = bag_iter.value;
+          entry.value = bagIter.value;
         }
       }
       return true;
