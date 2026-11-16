@@ -1,7 +1,7 @@
 [versions]
 robolectric-nativeruntime-dist-compat = "1.0.20"
 
-commons-logging = "1.2"
+commons-logging = "1.4.0"
 xml-security = "4.0.4"
 
 # https://developer.android.com/studio/releases
