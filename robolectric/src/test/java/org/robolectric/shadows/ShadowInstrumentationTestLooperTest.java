@@ -11,6 +11,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.SystemClock;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -162,5 +163,31 @@ public class ShadowInstrumentationTestLooperTest {
 
     // Restore main looper and main thread to avoid error at tear down
     ShadowPausedLooper.resetLoopers();
+  }
+
+  @Test
+  public void getLastScheduledTaskTime_unpausedMainLooper() {
+    ShadowLooper shadowMainLooper = shadowOf(Looper.getMainLooper());
+    Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    assertThat(shadowMainLooper.getLastScheduledTaskTime()).isEqualTo(Duration.ZERO);
+    long expectedTime = SystemClock.uptimeMillis() + 200;
+    mainHandler.postAtTime(() -> {}, expectedTime);
+    mainHandler.postAtTime(() -> {}, expectedTime - 100);
+    assertThat(shadowMainLooper.getLastScheduledTaskTime())
+        .isEqualTo(Duration.ofMillis(expectedTime));
+  }
+
+  @Test
+  public void getLastScheduledTaskTime_pausedMainLooper() {
+    ShadowLooper shadowMainLooper = shadowOf(Looper.getMainLooper());
+    Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    shadowMainLooper.pause();
+    long expectedTime = SystemClock.uptimeMillis() + 200;
+    mainHandler.postAtTime(() -> {}, expectedTime);
+    mainHandler.postAtTime(() -> {}, expectedTime - 100);
+    assertThat(shadowMainLooper.getLastScheduledTaskTime())
+        .isEqualTo(Duration.ofMillis(expectedTime));
   }
 }
