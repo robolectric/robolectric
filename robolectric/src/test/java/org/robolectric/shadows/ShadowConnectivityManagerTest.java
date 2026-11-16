@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Rule;
@@ -328,6 +329,21 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void getNetworkCallbacks_shouldHaveEmptyDefault() {
     assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).isEmpty();
+  }
+
+  @Test
+  public void getNetworkCallbacks_isReadOnlyViewOfRegisteredCallbacks() {
+    Set<ConnectivityManager.NetworkCallback> callbacks =
+        shadowOf(connectivityManager).getNetworkCallbacks();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    assertThat(callbacks).containsExactly(callback);
+    assertThrows(UnsupportedOperationException.class, () -> callbacks.add(createSimpleCallback()));
+    assertThrows(UnsupportedOperationException.class, () -> callbacks.remove(callback));
+
+    connectivityManager.unregisterNetworkCallback(callback);
+    assertThat(callbacks).isEmpty();
   }
 
   private static ConnectivityManager.NetworkCallback createSimpleCallback() {
