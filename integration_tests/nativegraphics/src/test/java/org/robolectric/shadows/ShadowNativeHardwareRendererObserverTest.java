@@ -5,9 +5,11 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.HardwareRenderer;
 import android.graphics.HardwareRendererObserver;
 import android.graphics.HardwareRendererObserver.OnFrameMetricsAvailableListener;
 import android.os.Handler;
@@ -23,6 +25,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 
 @Config(minSdk = R)
 @RunWith(RobolectricTestRunner.class)
@@ -48,10 +51,9 @@ public class ShadowNativeHardwareRendererObserverTest {
     OnFrameMetricsAvailableListener listener = dropCount -> framesReported.incrementAndGet();
     Object observer =
         createObserver(listener, new long[frameStatsCount()], new Handler(Looper.getMainLooper()));
-    ReflectionHelpers.callInstanceMethod(
-        ReflectionHelpers.callInstanceMethod(view, "getThreadedRenderer"),
-        "addObserver",
-        ClassParameter.from(HardwareRendererObserver.class, (HardwareRendererObserver) observer));
+    HardwareRenderer renderer = reflector(ViewReflector.class, view).getThreadedRenderer();
+    reflector(HardwareRendererReflector.class, renderer)
+        .addObserver((HardwareRendererObserver) observer);
 
     view.invalidate();
     shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(100));
@@ -86,5 +88,15 @@ public class ShadowNativeHardwareRendererObserverTest {
           ClassParameter.from(long[].class, frameMetrics),
           ClassParameter.from(Handler.class, handler));
     }
+  }
+
+  @ForType(View.class)
+  interface ViewReflector {
+    HardwareRenderer getThreadedRenderer();
+  }
+
+  @ForType(HardwareRenderer.class)
+  interface HardwareRendererReflector {
+    void addObserver(HardwareRendererObserver observer);
   }
 }
