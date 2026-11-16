@@ -76,8 +76,11 @@ private fun requireRobolectricDeps(classpath: FileCollection) {
 
 private const val ROBOLECTRIC_DEPS = "robolectric-deps.properties"
 
+// The input is public so that Kotlin generates the annotated getter, which Gradle reads to find the
+// task's inputs. With a private property the annotation is dropped, and changing a robolectric.*
+// system property neither reruns the tests nor misses the build cache.
 private class RobolectricJvmArgumentsProvider(
-  @get:Input private val robolectricPropertiesProvider: Provider<Map<String, String>>,
+  @get:Input val robolectricPropertiesProvider: Provider<Map<String, String>>,
   @get:Internal private val logger: Logger,
 ) : CommandLineArgumentProvider {
   override fun asArguments(): Iterable<String> {
