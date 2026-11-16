@@ -895,7 +895,9 @@ public abstract class Asset {
 
       // compute new position within chunk
       newPosn = handleSeek(offset, whence, mOffset, mLength);
-      if (newPosn == -1L) return newPosn;
+      if (newPosn == -1L) {
+        return newPosn;
+      }
 
       actualOffset = mStart + newPosn;
 
