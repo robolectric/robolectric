@@ -1,6 +1,8 @@
 package org.robolectric.internal.dependency;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import java.io.File;
@@ -43,6 +45,15 @@ import org.xml.sax.SAXException;
 public class MavenDependencyResolver implements DependencyResolver {
 
   private static final Interner<String> DOWNLOAD_LOCKS = Interners.newWeakInterner();
+
+  private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2";
+
+  /**
+   * Google's mirror of Maven Central, which serves the same files. Maven Central rate limits
+   * downloads with 429 responses, for example when many CI jobs download the SDK jars at once.
+   */
+  private static final String MAVEN_CENTRAL_GOOGLE_MIRROR_URL =
+      "https://maven-central.storage-download.googleapis.com/maven2";
 
   private final MavenArtifactFetcher mavenArtifactFetcher;
   private final File localRepositoryDir;
@@ -193,13 +204,31 @@ public class MavenDependencyResolver implements DependencyResolver {
       File localRepositoryDir,
       ExecutorService executorService) {
     return new MavenArtifactFetcher(
-        repositoryUrl,
+        repositoryUrls(repositoryUrl, repositoryUserName),
         repositoryUserName,
         repositoryPassword,
         proxyHost,
         proxyPort,
         localRepositoryDir,
         executorService);
+  }
+
+  /**
+   * Returns the repositories to fetch from. Maven Central falls back to Google's mirror of it. Any
+   * other repository, or one with credentials, which shouldn't be sent to another host, is used
+   * alone.
+   */
+  @VisibleForTesting
+  static ImmutableList<String> repositoryUrls(String repositoryUrl, String repositoryUserName) {
+    if (Strings.isNullOrEmpty(repositoryUserName)
+        && stripTrailingSlash(repositoryUrl).equals(MAVEN_CENTRAL_URL)) {
+      return ImmutableList.of(repositoryUrl, MAVEN_CENTRAL_GOOGLE_MIRROR_URL);
+    }
+    return ImmutableList.of(repositoryUrl);
+  }
+
+  private static String stripTrailingSlash(String url) {
+    return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
   }
 
   protected ExecutorService createExecutorService() {
