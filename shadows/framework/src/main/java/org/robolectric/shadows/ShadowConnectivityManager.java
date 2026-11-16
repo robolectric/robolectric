@@ -18,6 +18,7 @@ import android.net.ProxyInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -146,8 +147,12 @@ public class ShadowConnectivityManager {
     ShadowConnectivityManager.strictUnregistration = strictUnregistration;
   }
 
+  /**
+   * Returns a read-only view of the registered network callbacks. Register and unregister callbacks
+   * through {@link ConnectivityManager} instead of modifying this set.
+   */
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
-    return networkCallbacks.keySet();
+    return Collections.unmodifiableSet(networkCallbacks.keySet());
   }
 
   public Set<PendingIntent> getNetworkCallbackPendingIntents() {
