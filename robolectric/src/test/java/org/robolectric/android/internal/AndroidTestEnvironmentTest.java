@@ -241,13 +241,29 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   @Config(application = ProviderRecordingApplication.class)
+  @LazyApplication(LazyLoad.OFF)
   public void setUpApplicationState_installContentProviders_installsThemBeforeOnCreate() {
+    checkInstallsContentProvidersBeforeOnCreate();
+  }
+
+  @Test
+  @Config(application = ProviderRecordingApplication.class)
+  @LazyApplication(LazyLoad.ON)
+  public void
+      setUpApplicationState_installContentProviders_lazyApplication_installsThemBeforeOnCreate() {
+    checkInstallsContentProvidersBeforeOnCreate();
+  }
+
+  private void checkInstallsContentProvidersBeforeOnCreate() {
+    ProviderRecordingApplication.providersAtOnCreate = null;
     bootstrapWrapper.setInstallContentProviders(true);
     try {
       bootstrapWrapper.callSetUpApplicationState();
     } finally {
       bootstrapWrapper.setInstallContentProviders(false);
     }
+    // Creates the application if it is lazy, after the setting was turned off again.
+    Application application = RuntimeEnvironment.getApplication();
 
     Map<String, ContentProvider> providers = ProviderRecordingApplication.providersAtOnCreate;
     assertThat(providers.keySet())
@@ -259,15 +275,29 @@ public class AndroidTestEnvironmentTest {
     TestContentProvider1 provider =
         (TestContentProvider1) providers.get("org.robolectric.authority1");
     assertThat(provider.transcript).containsExactly("onCreate");
-    assertThat(provider.getContext()).isSameInstanceAs(RuntimeEnvironment.getApplication());
+    assertThat(provider.getContext()).isSameInstanceAs(application);
     assertThat(providers.get("org.robolectric.authority4"))
         .isSameInstanceAs(providers.get("org.robolectric.authority3"));
   }
 
   @Test
   @Config(application = ProviderRecordingApplication.class)
+  @LazyApplication(LazyLoad.OFF)
   public void setUpApplicationState_doesNotInstallContentProvidersByDefault() {
+    checkDoesNotInstallContentProvidersByDefault();
+  }
+
+  @Test
+  @Config(application = ProviderRecordingApplication.class)
+  @LazyApplication(LazyLoad.ON)
+  public void setUpApplicationState_lazyApplication_doesNotInstallContentProvidersByDefault() {
+    checkDoesNotInstallContentProvidersByDefault();
+  }
+
+  private void checkDoesNotInstallContentProvidersByDefault() {
+    ProviderRecordingApplication.providersAtOnCreate = null;
     bootstrapWrapper.callSetUpApplicationState();
+    RuntimeEnvironment.getApplication();
 
     assertThat(ProviderRecordingApplication.providersAtOnCreate)
         .doesNotContainKey("org.robolectric.authority1");
