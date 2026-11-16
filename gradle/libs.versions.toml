@@ -43,7 +43,7 @@ kctfork = "0.14.0"
 kotlinx-coroutines = '1.11.0'
 
 # https://github.com/cashapp/molecule/releases
-molecule = "2.1.0"
+molecule = "2.2.0"
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
 spotless-gradle = "8.11.0"
