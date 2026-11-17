@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.Intent;
-import android.os.Build;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import org.robolectric.annotation.Implementation;
@@ -9,7 +8,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
-@Implements(value = TileService.class, minSdk = Build.VERSION_CODES.N)
+@Implements(TileService.class)
 public class ShadowTileService {
 
   private Tile tile;

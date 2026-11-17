@@ -1277,7 +1277,7 @@ public class ShadowPackageManager {
     ShadowPackageManager.canRequestPackageInstalls = canRequestPackageInstalls;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(
       Intent intent, int flags, UserHandle userHandle) {
     return null;

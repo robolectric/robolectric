@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -258,7 +257,7 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  @Implementation(minSdk = N, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected void __constructor__(Context context, boolean parentInstance) {
     init(context);
   }
@@ -429,7 +428,7 @@ public class ShadowDevicePolicyManager {
   /**
    * @see #getDeviceOwnerComponentOnAnyUser()
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected ComponentName getDeviceOwnerComponentOnAnyUser() {
     return deviceOwner;
   }
@@ -437,7 +436,7 @@ public class ShadowDevicePolicyManager {
   /**
    * @see #setDeviceOwner(ComponentName)
    */
-  @Implementation(minSdk = N)
+  @Implementation
   public boolean isDeviceManaged() {
     return getDeviceOwner() != null;
   }
@@ -499,7 +498,7 @@ public class ShadowDevicePolicyManager {
    *
    * @see DevicePolicyManager#getDeviceOwner()
    */
-  @Implementation(minSdk = N, maxSdk = S_V2)
+  @Implementation(maxSdk = S_V2)
   public boolean setDeviceOwner(ComponentName admin) {
     setActiveAdmin(admin);
     deviceOwner = admin;
@@ -649,7 +648,7 @@ public class ShadowDevicePolicyManager {
    * <p>The API can only be called by profile owner since Android N and can be called by both of
    * profile owner and device owner since Android O.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected void setOrganizationName(ComponentName admin, @Nullable CharSequence name) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       enforceDeviceOwnerOrProfileOwner(admin);
@@ -664,7 +663,7 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected String[] setPackagesSuspended(
       ComponentName admin, String[] packageNames, boolean suspended) {
     if (admin != null) {
@@ -693,7 +692,7 @@ public class ShadowDevicePolicyManager {
     return packagesFailedToSuspend.toArray(new String[0]);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isPackageSuspended(ComponentName admin, String packageName)
       throws NameNotFoundException {
     if (admin != null) {
@@ -706,7 +705,7 @@ public class ShadowDevicePolicyManager {
     return suspendedPackages.contains(packageName);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void setOrganizationColor(ComponentName admin, int color) {
     enforceProfileOwner(admin);
     organizationColor = color;
@@ -722,7 +721,7 @@ public class ShadowDevicePolicyManager {
    * too to make testing of {@link #setOrganizationName(ComponentName, CharSequence)} easier for
    * device owner cases.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   @Nullable
   protected CharSequence getOrganizationName(ComponentName admin) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -734,7 +733,7 @@ public class ShadowDevicePolicyManager {
     return organizationName;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getOrganizationColor(ComponentName admin) {
     enforceProfileOwner(admin);
     return organizationColor;
@@ -1370,7 +1369,7 @@ public class ShadowDevicePolicyManager {
    * Returns the provisioning state set in {@link #setUserProvisioningState(int)}, or {@link
    * DevicePolicyManager#STATE_USER_UNMANAGED} if none is set.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getUserProvisioningState() {
     return getUserProvisioningStateForUser(Process.myUserHandle().getIdentifier());
   }
@@ -1532,26 +1531,26 @@ public class ShadowDevicePolicyManager {
     return context.bindServiceAsUser(serviceIntent, conn, flags, targetUser);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void setShortSupportMessage(ComponentName admin, @Nullable CharSequence message) {
     enforceActiveAdmin(admin);
     shortSupportMessageMap.put(admin, message);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   @Nullable
   protected CharSequence getShortSupportMessage(ComponentName admin) {
     enforceActiveAdmin(admin);
     return shortSupportMessageMap.get(admin);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void setLongSupportMessage(ComponentName admin, @Nullable CharSequence message) {
     enforceActiveAdmin(admin);
     longSupportMessageMap.put(admin, message);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   @Nullable
   protected CharSequence getLongSupportMessage(ComponentName admin) {
     enforceActiveAdmin(admin);

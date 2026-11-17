@@ -135,7 +135,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getDeviceOwnerComponentOnAnyUserShouldReturnDeviceOwnerComponentName() {
     // GIVEN a test component which is the device owner app of the device
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -164,7 +163,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isDeviceManagedShouldReturnTrueWhenThereIsADeviceOwner() {
     // GIVEN a test component is the device owner app of the device
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -175,7 +173,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isDeviceManagedShouldReturnFalseWhenThereIsNoDeviceOwner() {
     // WHEN DevicePolicyManager#isDeviceManaged is called without a device owner
     // THEN the method should return false
@@ -991,7 +988,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setOrganizationNameShouldWorkForPoSinceN() {
     // GIVEN the caller is the profile owner
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -1006,7 +1002,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setOrganizationNameShouldClearNameWithEmptyNameForPoSinceN() {
     // GIVEN the caller is the profile owner
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -1054,7 +1049,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setOrganizationColorShouldWorkForPoSinceN() {
     // GIVEN the caller is the profile owner
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -1068,7 +1062,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getOrganizationColorShouldReturnDefaultColorIfNothingSet() {
     // GIVEN the caller is the profile owner
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -1079,7 +1072,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setOrganizationColorShouldNotWorkForDo() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1802,7 +1794,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setPackagesSuspended_suspendsPossible() {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
     shadowOf(packageManager).addPackage("installed");
@@ -1813,7 +1804,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setPackagesSuspended_activateActive() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
     shadowOf(packageManager).addPackage("package");
@@ -1826,7 +1816,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setPackagesSuspended_cycleSuspension() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
     shadowOf(packageManager).addPackage("package");
@@ -1838,7 +1827,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setPackagesSuspended_failForNeitherOwnerNorDelegated() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1865,7 +1853,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setPackagesSuspended_failForNeitherOwnerNorDelegatedAdminIsNull() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1941,7 +1928,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isPackagesSuspended_defaultsFalse() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
     shadowOf(packageManager).addPackage("package");
@@ -1950,7 +1936,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isPackagesSuspended_trueForSuspended() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
     shadowOf(packageManager).addPackage("package");
@@ -1961,7 +1946,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isPackagesSuspended_notInstalledPackage() {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
@@ -1974,7 +1958,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isLinkedUser() {
     assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_UNMANAGED);
 
@@ -2480,7 +2463,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setShortSupportMessage_notActiveAdmin_throwsSecurityException() {
     try {
       devicePolicyManager.setShortSupportMessage(testComponent, "TEST SHORT SUPPORT MESSAGE");
@@ -2490,7 +2472,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setShortSupportMessage_messageSet() {
     final CharSequence testMessage = "TEST SHORT SUPPORT MESSAGE";
     shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
@@ -2506,7 +2487,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getShortSupportMessage_notActiveAdmin_throwsSecurityException() {
     try {
       devicePolicyManager.getShortSupportMessage(testComponent);
@@ -2516,7 +2496,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setLongSupportMessage_notActivieAdmin_throwsSecurityException() {
     try {
       devicePolicyManager.setLongSupportMessage(testComponent, "TEST LONG SUPPORT MESSAGE");
@@ -2526,7 +2505,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setLongSupportMessage_messageSet() {
     final CharSequence testMessage = "TEST LONG SUPPORT MESSAGE";
     shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
@@ -2542,7 +2520,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getLongSupportMessage_notActiveAdmin_throwsSecurityException() {
     try {
       devicePolicyManager.getLongSupportMessage(testComponent);
@@ -2660,7 +2637,6 @@ public final class ShadowDevicePolicyManagerTest {
         .isFalse();
   }
 
-  @Config(minSdk = N)
   @Test
   public void isWorkProfileProvisioningFinalized_defaultValue_returnFalse() {
     UserHandle userHandle = UserHandle.SYSTEM;
@@ -2694,7 +2670,6 @@ public final class ShadowDevicePolicyManagerTest {
         .isEqualTo(STATE_USER_SETUP_FINALIZED);
   }
 
-  @Config(minSdk = N)
   @Test
   public void getUserProvisioningStateForUser_defaultValue_shouldReturnUnmanagedState() {
     assertThat(
@@ -2703,7 +2678,6 @@ public final class ShadowDevicePolicyManagerTest {
         .isEqualTo(STATE_USER_UNMANAGED);
   }
 
-  @Config(minSdk = N)
   @Test
   public void getUserProvisioningState_returnsSetUserProvisioningState() {
     assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_UNMANAGED);

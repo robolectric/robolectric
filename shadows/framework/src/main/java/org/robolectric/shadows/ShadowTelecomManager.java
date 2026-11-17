@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -730,7 +729,7 @@ public class ShadowTelecomManager {
   /**
    * Returns the intent set by {@link ShadowTelecomManager#setManageBlockNumbersIntent(Intent)} ()}
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected Intent createManageBlockedNumbersIntent() {
     return manageBlockNumbersIntent;
   }

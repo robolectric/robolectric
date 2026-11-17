@@ -9,10 +9,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** A Shadow SoundTriggerManager in Android O+. */
-@Implements(
-    className = "android.media.soundtrigger.SoundTriggerManager",
-    minSdk = VERSION_CODES.N,
-    isInAndroidSdk = false)
+@Implements(className = "android.media.soundtrigger.SoundTriggerManager", isInAndroidSdk = false)
 public final class ShadowSoundTriggerManager {
   private SoundTrigger.ModuleProperties moduleProperties = null;
 

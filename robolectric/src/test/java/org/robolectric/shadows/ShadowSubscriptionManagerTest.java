@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -45,7 +44,6 @@ import org.robolectric.util.reflector.ForType;
 
 /** Test for {@link ShadowSubscriptionManager}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = N)
 public class ShadowSubscriptionManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 

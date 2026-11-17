@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioPort.ROLE_SINK;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
@@ -288,7 +287,6 @@ public class ShadowMediaPlayerTest {
     assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
   }
 
-  @Config(minSdk = N)
   @Test
   public void testSetDataSourceAssetFileDescriptorDataSource() throws IOException {
     Application context = ApplicationProvider.getApplicationContext();

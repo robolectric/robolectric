@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -25,7 +24,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
 import android.os.PersistableBundle;
@@ -356,7 +354,7 @@ public class ShadowUserManager {
     userManagerState.userUnlocked = userUnlocked;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isUserUnlocked() {
     return userManagerState.userUnlocked;
   }
@@ -364,7 +362,7 @@ public class ShadowUserManager {
   /**
    * @see #setUserState(UserHandle, UserState)
    */
-  @Implementation(minSdk = 24)
+  @Implementation
   protected boolean isUserUnlocked(UserHandle handle) {
     checkPermissions();
     UserState state = userManagerState.userState.get(handle.getIdentifier());
@@ -410,7 +408,7 @@ public class ShadowUserManager {
    * @see #addProfile(int, int, String, int)
    * @see #addUser(int, String, int)
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isManagedProfile(int userHandle) {
     if (userManagerState.enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException(
@@ -966,7 +964,7 @@ public class ShadowUserManager {
    * <p>This method checks whether the user handle corresponds to a managed profile, and then query
    * its state. When quiet, the user is not running.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isQuietModeEnabled(UserHandle userHandle) {
     // Return false if this is not a managed profile (this is the OS's behavior).
     if (!isManagedProfileWithoutPermission(userHandle)) {
@@ -1039,7 +1037,7 @@ public class ShadowUserManager {
     userManagerState.profileIsLocked.put(profileHandle.getIdentifier(), isLocked);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected long[] getSerialNumbersOfUsers(boolean excludeDying) {
     return getUsers().stream()
         .map(userInfo -> getUserSerialNumber(userInfo.getUserHandle().getIdentifier()))
@@ -1071,7 +1069,7 @@ public class ShadowUserManager {
             : UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected String getSeedAccountName() {
     return userManagerState.seedAccountName;
   }
@@ -1081,7 +1079,7 @@ public class ShadowUserManager {
     userManagerState.seedAccountName = seedAccountName;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected String getSeedAccountType() {
     return userManagerState.seedAccountType;
   }
@@ -1091,7 +1089,7 @@ public class ShadowUserManager {
     userManagerState.seedAccountType = seedAccountType;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected PersistableBundle getSeedAccountOptions() {
     return userManagerState.seedAccountOptions;
   }
@@ -1101,7 +1099,7 @@ public class ShadowUserManager {
     userManagerState.seedAccountOptions = seedAccountOptions;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected void clearSeedAccountData() {
     userManagerState.seedAccountName = null;
     userManagerState.seedAccountType = null;
@@ -1143,7 +1141,7 @@ public class ShadowUserManager {
         : UserManager.REMOVE_RESULT_ERROR_UNKNOWN;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected static boolean supportsMultipleUsers() {
     return userManagerState.isMultiUserSupported;
   }
@@ -1215,7 +1213,7 @@ public class ShadowUserManager {
   /**
    * Returns {@code true} by default, or the value specified via {@link #setCanSwitchUser(boolean)}.
    */
-  @Implementation(minSdk = N, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   protected boolean canSwitchUsers() {
     return getUserSwitchability() == UserManager.SWITCHABILITY_STATUS_OK;
   }

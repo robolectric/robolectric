@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
@@ -84,13 +83,13 @@ public class ShadowWindow {
     return backgroundDrawable;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void addOnFrameMetricsAvailableListener(
       Window.OnFrameMetricsAvailableListener listener, Handler handler) {
     onFrameMetricsAvailableListeners.add(listener);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void removeOnFrameMetricsAvailableListener(
       Window.OnFrameMetricsAvailableListener listener) {
     if (!onFrameMetricsAvailableListeners.remove(listener)) {

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -139,7 +138,6 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void reportOnFrameMetricsAvailable_notifiesListeners() throws Exception {
     ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
 
@@ -162,7 +160,6 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void reportOnFrameMetricsAvailable_nonZeroDropCount_notifiesListeners() throws Exception {
     ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
     activityController.setup();
@@ -181,7 +178,6 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void reportOnFrameMetricsAvailable_listenerRemoved_doesntNotifyListener()
       throws Exception {
     ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
@@ -204,7 +200,6 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void reportOnFrameMetricsAvailable_noListener_doesntCrash() throws Exception {
     Window window = ShadowWindow.create(ApplicationProvider.getApplicationContext());
 

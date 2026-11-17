@@ -201,7 +201,7 @@ public class ShadowAudioTrack {
     }
   }
 
-  @Implementation(minSdk = N, maxSdk = P)
+  @Implementation(maxSdk = P)
   protected static int native_get_FCC_8() {
     // Return the value hard-coded in native code:
     // https://cs.android.com/android/platform/superproject/+/android-7.1.1_r41:system/media/audio/include/system/audio.h;l=42;drc=57a4158dc4c4ce62bc6a2b8a0072ba43305548d4
@@ -242,7 +242,7 @@ public class ShadowAudioTrack {
     return minBufferSize;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int native_get_buffer_size_frames() {
     return bufferSizeInFrames;
   }
@@ -254,7 +254,7 @@ public class ShadowAudioTrack {
             : buffSizeInBytes;
   }
 
-  @Implementation(minSdk = N, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,
@@ -455,12 +455,12 @@ public class ShadowAudioTrack {
     return audioData.length;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected AudioDeviceInfo getRoutedDevice() {
     return routedDevice;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void addOnRoutingChangedListener(
       @Nonnull OnRoutingChangedListener listener, Handler handler) {
     OnRoutingChangedListenerInfo listenerInfo =
@@ -471,7 +471,7 @@ public class ShadowAudioTrack {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void removeOnRoutingChangedListener(@Nonnull OnRoutingChangedListener listener) {
     onRoutingChangedListeners.removeIf(
         registeredListener -> registeredListener.listener.equals(listener));

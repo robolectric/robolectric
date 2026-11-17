@@ -35,7 +35,6 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.content.pm.PackageManager.VERIFICATION_REJECT;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -2904,14 +2903,12 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getPackageUid() throws NameNotFoundException {
     shadowOf(packageManager).setPackagesForUid(10, "a_name");
     assertThat(packageManager.getPackageUid("a_name", 0)).isEqualTo(10);
   }
 
   @Test
-  @Config(minSdk = N)
   public void getPackageUid_shouldThrowNameNotFoundExceptionIfNotExist() {
     try {
       packageManager.getPackageUid("a_name", 0);
@@ -3140,7 +3137,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
+  @Config(maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistent.package", packageStatsObserver);
@@ -3151,7 +3148,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
+  @Config(maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure()
       throws Exception {
     shadowMainLooper().pause();
@@ -3166,7 +3163,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
+  @Config(maxSdk = N_MR1) // Functionality removed in O
   public void whenNotPreconfigured_getPackageSizeInfo_callsBackWithDefaults() throws Exception {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
@@ -3177,7 +3174,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
+  @Config(maxSdk = N_MR1) // Functionality removed in O
   public void whenPreconfigured_getPackageSizeInfo_callsBackWithConfiguredValues()
       throws Exception {
     PackageInfo packageInfo = new PackageInfo();
@@ -3195,7 +3192,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
+  @Config(maxSdk = N_MR1) // Functionality removed in O
   public void whenPreconfiguredForAnotherPackage_getPackageSizeInfo_callsBackWithConfiguredValues()
       throws Exception {
     PackageInfo packageInfo = new PackageInfo();
@@ -3213,7 +3210,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
+  @Config(maxSdk = N_MR1) // Functionality removed in O
   public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle()
       throws Exception {
     shadowMainLooper().pause();
@@ -5057,7 +5054,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setDefaultBrowserPackageNameAsUser_getConsistent() {
     ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
 

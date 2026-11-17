@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 
@@ -28,7 +27,7 @@ public abstract class ShadowJobScheduler {
   @Implementation
   protected abstract int schedule(JobInfo job);
 
-  @Implementation(minSdk = N)
+  @Implementation
   @SystemApi
   @HiddenApi
   protected abstract int scheduleAsPackage(JobInfo job, String packageName, int userId, String tag);
@@ -42,7 +41,7 @@ public abstract class ShadowJobScheduler {
   @Implementation
   protected abstract List<JobInfo> getAllPendingJobs();
 
-  @Implementation(minSdk = N)
+  @Implementation
   @HiddenApi
   public abstract JobInfo getPendingJob(int jobId);
 
@@ -82,7 +81,7 @@ public abstract class ShadowJobScheduler {
      * arguments other than {@code job}.
      */
     @Override
-    @Implementation(minSdk = N)
+    @Implementation
     @SystemApi
     @HiddenApi
     protected int scheduleAsPackage(JobInfo job, String packageName, int userId, String tag) {
@@ -108,7 +107,7 @@ public abstract class ShadowJobScheduler {
     }
 
     @Override
-    @Implementation(minSdk = N)
+    @Implementation
     public JobInfo getPendingJob(int jobId) {
       return scheduledJobs.get(jobId);
     }

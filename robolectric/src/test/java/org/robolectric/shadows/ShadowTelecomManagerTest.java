@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -624,7 +623,6 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void testSetManageBlockNumbersIntent() {
     // Check initial state
     Intent targetIntent = telecomService.createManageBlockedNumbersIntent();

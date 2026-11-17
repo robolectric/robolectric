@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
@@ -11,7 +10,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDatePickerDialogTest {
@@ -39,7 +37,6 @@ public class ShadowDatePickerDialogTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void updateListener_shouldUpdateTheListenerPassedInto() {
     DatePickerDialog.OnDateSetListener mockCallBack =
         mock(DatePickerDialog.OnDateSetListener.class);

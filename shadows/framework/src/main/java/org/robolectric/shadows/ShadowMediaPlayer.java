@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -647,7 +646,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     setDataSource(toDataSource(mediaDataSource));
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void setDataSource(AssetFileDescriptor assetFileDescriptor) throws IOException {
     setDataSource(toDataSource(assetFileDescriptor));
   }

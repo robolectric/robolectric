@@ -6,7 +6,6 @@ import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_TRUSTED;
 import static android.net.NetworkCapabilities.TRANSPORT_CELLULAR;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
@@ -78,7 +77,7 @@ public class ShadowNetworkCapabilitiesTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = N_MR1)
+  @Config(maxSdk = N_MR1)
   public void getNetworkSpecifier_shouldReturnTheSpecifiedValue_beforeO() {
     NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
     // Required to set NetworkSpecifier

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import java.util.Locale;
 import org.robolectric.annotation.Implements;
@@ -12,7 +11,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link android.os.LocaleList} */
-@Implements(value = LocaleList.class, minSdk = VERSION_CODES.N)
+@Implements(LocaleList.class)
 public class ShadowLocaleList {
 
   @Resetter

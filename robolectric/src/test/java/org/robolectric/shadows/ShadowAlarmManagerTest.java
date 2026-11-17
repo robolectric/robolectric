@@ -94,7 +94,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void set_alarmListener() {
     OnAlarmListener onFire = mock(OnAlarmListener.class);
@@ -165,7 +164,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void setWindow_alarmListener() {
     OnAlarmListener onFire = mock(OnAlarmListener.class);
@@ -230,7 +228,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void setExact_alarmListener() {
     OnAlarmListener onFire = mock(OnAlarmListener.class);
@@ -294,7 +291,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void set_alarmListener_workSource() {
     OnAlarmListener onFire = mock(OnAlarmListener.class);
@@ -321,7 +317,6 @@ public class ShadowAlarmManagerTest {
     verify(onFire).onAlarm();
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void set_alarmListener_workSource_noTag() {
     OnAlarmListener onFire = mock(OnAlarmListener.class);
@@ -476,7 +471,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void cancel_alarmListener() {
     OnAlarmListener onFire1 = mock(OnAlarmListener.class);
@@ -570,7 +564,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void replace_alarmListener() {
     OnAlarmListener onFire = mock(OnAlarmListener.class);
@@ -617,7 +610,6 @@ public class ShadowAlarmManagerTest {
     }
   }
 
-  @Config(minSdk = VERSION_CODES.N)
   @Test
   public void reentrant() {
     AtomicReference<OnAlarmListener> listenerRef = new AtomicReference<>();

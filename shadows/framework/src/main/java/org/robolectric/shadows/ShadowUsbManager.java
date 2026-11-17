@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -102,7 +101,7 @@ public class ShadowUsbManager {
     return usbAccessories != null && usbAccessories.contains(accessory);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   @HiddenApi
   protected void grantPermission(UsbDevice device) {
     grantPermission(device, RuntimeEnvironment.getApplication().getPackageName());

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
@@ -96,7 +95,6 @@ public class AccessibilityWindowInfoBuilderTest {
     assertThat(windowInfo.getType()).isEqualTo(AccessibilityWindowInfo.TYPE_INPUT_METHOD);
   }
 
-  @Config(minSdk = N)
   @Test
   public void setTitle_setsCorrectTitle() {
     AccessibilityWindowInfo windowInfo =

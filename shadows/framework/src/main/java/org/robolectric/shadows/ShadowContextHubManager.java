@@ -44,7 +44,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link ContextHubManager}. */
-@Implements(value = ContextHubManager.class, minSdk = VERSION_CODES.N, isInAndroidSdk = false)
+@Implements(value = ContextHubManager.class, isInAndroidSdk = false)
 public class ShadowContextHubManager {
   private static final List<ContextHubInfo> contextHubInfoList = new ArrayList<>();
   private static final List<ContextHubClient> contextHubClientWithPendingIntentList =

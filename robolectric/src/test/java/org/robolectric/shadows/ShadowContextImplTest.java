@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -49,7 +48,6 @@ public class ShadowContextImplTest {
   private final PausedExecutorService executorService = new PausedExecutorService();
 
   @Test
-  @Config(minSdk = N)
   public void deviceProtectedContext() {
     // Regular context should be credential protected, not device protected.
     assertThat(context.isDeviceProtectedStorage()).isFalse();
@@ -66,7 +64,6 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void lockedUser_credentialProtectedStorageUnavailable() throws Exception {
     UserManager userManager = context.getSystemService(UserManager.class);
     Context credentialContext = context.createCredentialProtectedStorageContext();
@@ -97,7 +94,6 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void testMoveSharedPreferencesFrom() {
     String PREFS = "PREFS";
     String PREF_NAME = "TOKEN_PREF";

@@ -14,14 +14,12 @@
 
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
-
 import android.graphics.drawable.VectorDrawable;
 import java.util.Arrays;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = VectorDrawable.class, minSdk = N)
+@Implements(VectorDrawable.class)
 public class ShadowVectorDrawable extends ShadowDrawable {
   // Groups and paths have no native state here. The tree pointer is never created, so VGroup and
   // VFullPath only call into native code to merge XML attributes into their properties, and

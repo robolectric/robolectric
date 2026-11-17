@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.net.TrafficStats;
-import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -40,7 +39,7 @@ public class ShadowTrafficStats {
   protected static void tagSocket(java.net.Socket socket) throws java.net.SocketException {}
 
   /** No-op in tests. */
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected static void tagDatagramSocket(java.net.DatagramSocket socket)
       throws java.net.SocketException {}
 

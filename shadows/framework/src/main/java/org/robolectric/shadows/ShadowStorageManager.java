@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -81,7 +80,7 @@ public class ShadowStorageManager {
    *
    * @return StorageVolume list
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected List<StorageVolume> getStorageVolumes() {
     return storageVolumeList;
   }
@@ -98,7 +97,7 @@ public class ShadowStorageManager {
    * @param file to check
    * @return StorageVolume for the file
    */
-  @Implementation(minSdk = N)
+  @Implementation
   public StorageVolume getStorageVolume(File file) {
     for (StorageVolume volume : storageVolumeList) {
       File volumeFile = volume.getPathFile();
@@ -112,7 +111,7 @@ public class ShadowStorageManager {
   // Use maxSdk=T for this method, since starting in U, this method in StorageManager is deprecated
   // and is no longer called by the Android framework. It's planned to be removed entirely in V.
   @HiddenApi
-  @Implementation(minSdk = N, maxSdk = TIRAMISU)
+  @Implementation(maxSdk = TIRAMISU)
   protected static boolean isFileEncryptedNativeOrEmulated() {
     return isFileEncryptionSupported;
   }
@@ -128,7 +127,7 @@ public class ShadowStorageManager {
 
   // Use maxSdk=U, as this method is planned to be removed from StorageManager in V.
   @HiddenApi
-  @Implementation(minSdk = N, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean isUserKeyUnlocked(int userId) {
     ShadowUserManager extract =
         Shadow.extract(RuntimeEnvironment.getApplication().getSystemService(UserManager.class));

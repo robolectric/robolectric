@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -158,7 +157,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetActivityList() {
     assertThat(launcherApps.getActivityList(TEST_PACKAGE_NAME, USER_HANDLE)).isEmpty();
 
@@ -171,7 +170,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGetActivityList_packageNull_getsActivitiesFromAllPackagesForUser() {
     LauncherActivityInfo launcherActivityInfo1 =
         createLauncherActivityInfo(TEST_PACKAGE_NAME, USER_HANDLE);

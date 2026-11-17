@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.media.MediaRouter.ROUTE_TYPE_LIVE_AUDIO;
 import static android.media.MediaRouter.ROUTE_TYPE_LIVE_VIDEO;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -60,7 +59,6 @@ public final class ShadowMediaRouterTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void testAddBluetoothRoute_checkBluetoothRouteProperties_apiN() {
     shadowOf(mediaRouter).addBluetoothRoute();
     RouteInfo bluetoothRoute = mediaRouter.getRouteAt(1);

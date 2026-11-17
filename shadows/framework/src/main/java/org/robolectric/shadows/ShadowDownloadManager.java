@@ -111,7 +111,7 @@ public class ShadowDownloadManager {
         /* referrer= */ null);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected long addCompletedDownload(
       String title,
       String description,

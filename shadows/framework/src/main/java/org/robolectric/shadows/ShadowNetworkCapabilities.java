@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -77,7 +76,7 @@ public class ShadowNetworkCapabilities {
    * Changes {@link NetworkSpecifier} for this network capabilities. Works only on Android N_MR1 and
    * lower. For higher versions use {@link #setNetworkSpecifier(NetworkSpecifier)}
    */
-  @Implementation(minSdk = N, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   public NetworkCapabilities setNetworkSpecifier(String networkSpecifier) {
     return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
         .setNetworkSpecifier(networkSpecifier);

@@ -19,7 +19,6 @@ import org.robolectric.shadows.testing.TestAccessibilityService;
 
 /** Test for ShadowMagnificationController. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.N)
 public final class ShadowMagnificationControllerTest {
 
   private MagnificationController magnificationController;

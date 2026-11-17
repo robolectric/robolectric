@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.telecom.Call;
@@ -16,7 +15,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.telecom.CallScreeningService}. */
-@Implements(value = CallScreeningService.class, minSdk = N)
+@Implements(CallScreeningService.class)
 public final class ShadowCallScreeningService {
   /** Contains the parameters used to call {@link CallScreeningService#respondToCall}. */
   public static final class RespondToCallInput {
@@ -42,7 +41,7 @@ public final class ShadowCallScreeningService {
   private Optional<RespondToCallInput> lastRespondToCallInput = Optional.empty();
 
   /** Shadows {@link CallScreeningService#respondToCall}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected void respondToCall(Call.Details callDetails, CallResponse response) {
     lastRespondToCallInput = Optional.of(new RespondToCallInput(callDetails, response));
 

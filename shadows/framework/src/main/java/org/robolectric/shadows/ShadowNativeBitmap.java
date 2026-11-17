@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -120,12 +119,12 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeCopyAshmem(nativeSrcBitmap);
   }
 
-  @Implementation(minSdk = N, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static Bitmap nativeCopyAshmemConfig(long nativeSrcBitmap, int nativeConfig) {
     return BitmapNatives.nativeCopyAshmemConfig(nativeSrcBitmap, nativeConfig);
   }
 
-  @Implementation(minSdk = N, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetNativeFinalizer() {
     return BitmapNatives.nativeGetNativeFinalizer();
   }

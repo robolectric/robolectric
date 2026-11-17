@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
@@ -113,7 +112,6 @@ public class ShadowJobSchedulerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void scheduleAsPackage_success() {
     int result =
         jobScheduler.scheduleAsPackage(
@@ -127,7 +125,6 @@ public class ShadowJobSchedulerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void scheduleAsPackage_fail() {
     shadowOf(jobScheduler).failOnJob(99);
 
@@ -144,7 +141,6 @@ public class ShadowJobSchedulerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getPendingJob_withValidId() {
     int jobId = 99;
     JobInfo originalJobInfo =
@@ -160,7 +156,6 @@ public class ShadowJobSchedulerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getPendingJob_withInvalidId() {
     int jobId = 99;
     int invalidJobId = 100;

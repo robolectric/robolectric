@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -39,7 +38,7 @@ public class ShadowSoundPool {
 
   private OnLoadCompleteListener listener;
 
-  @Implementation(minSdk = N, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected static IAudioService getService() {
     return ReflectionHelpers.createNullProxy(IAudioService.class);
   }

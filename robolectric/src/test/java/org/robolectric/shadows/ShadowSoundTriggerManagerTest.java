@@ -15,7 +15,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = VERSION_CODES.N)
 public final class ShadowSoundTriggerManagerTest {
   private ShadowSoundTriggerManager instance;
 

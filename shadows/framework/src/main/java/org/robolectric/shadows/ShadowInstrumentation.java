@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -219,7 +218,7 @@ public class ShadowInstrumentation {
     ShadowWindowManagerGlobal.setInTouchMode(inTouchMode);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected UiAutomation getUiAutomation(int flags) {
     if (uiAutomation == null) {
       // Create a new automation using reflection, the real code just connects through the

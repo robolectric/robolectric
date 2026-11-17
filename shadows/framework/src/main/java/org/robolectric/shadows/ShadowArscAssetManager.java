@@ -313,7 +313,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   //
 
   @HiddenApi
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected int addAssetPathNative(String path, boolean appAsLib) {
     if (Strings.isNullOrEmpty(path)) {
       return 0;

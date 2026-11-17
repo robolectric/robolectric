@@ -1532,7 +1532,6 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.N)
   public void testGnssNmeaMessageListener() {
     OnNmeaMessageListener listener1 = mock(OnNmeaMessageListener.class);
     OnNmeaMessageListener listener2 = mock(OnNmeaMessageListener.class);

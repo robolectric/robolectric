@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
@@ -145,7 +144,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setResource_invalidFlag_returnsZero() throws IOException {
     assertThat(manager.setResource(1, 0)).isEqualTo(0);
     assertThat(manager.hasResourceWallpaper(1)).isFalse();
@@ -153,21 +151,18 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setResource_lockScreenOnly_returnsNewId() throws IOException {
     assertThat(manager.setResource(1, WallpaperManager.FLAG_LOCK)).isEqualTo(1);
     assertThat(manager.hasResourceWallpaper(1)).isTrue();
   }
 
   @Test
-  @Config(minSdk = N)
   public void setResource_homeScreenOnly_returnsNewId() throws IOException {
     assertThat(manager.setResource(1, WallpaperManager.FLAG_SYSTEM)).isEqualTo(1);
     assertThat(manager.hasResourceWallpaper(1)).isTrue();
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_flagSystem_shouldCacheInMemory() throws Exception {
     int returnCode =
         manager.setBitmap(
@@ -182,7 +177,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_liveWallpaperWasDefault_flagSystem_shouldRemoveLiveWallpaper()
       throws Exception {
     manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
@@ -197,7 +191,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_multipleCallsWithFlagSystem_shouldCacheLastBitmapInMemory()
       throws Exception {
     manager.setBitmap(
@@ -221,7 +214,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_flagLock_shouldCacheInMemory() throws Exception {
     int returnCode =
         manager.setBitmap(
@@ -236,7 +228,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_liveWallpaperWasDefault_flagLock_shouldRemoveLiveWallpaper()
       throws Exception {
     manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
@@ -251,7 +242,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_multipleCallsWithFlagLock_shouldCacheLastBitmapInMemory() throws Exception {
     manager.setBitmap(
         TEST_IMAGE_1,
@@ -274,7 +264,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_unsupportedFlag_shouldNotCacheInMemory() throws Exception {
     int code =
         manager.setBitmap(
@@ -285,7 +274,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_liveWallpaperWasDefault_unsupportedFlag_shouldNotRemoveLiveWallpaper()
       throws Exception {
     manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
@@ -297,7 +285,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_flagLock_shouldCacheVisibleCropHintInMemory() throws Exception {
     int returnCode =
         manager.setBitmap(
@@ -313,7 +300,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_flagSystem_shouldCacheVisibleCropHintInMemory() throws Exception {
     int returnCode =
         manager.setBitmap(
@@ -329,7 +315,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_multipleCallsWithFlagLock_shouldCacheLastVisibleCropHintInMemory()
       throws Exception {
     manager.setBitmap(
@@ -404,13 +389,11 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperFile_flagSystem_nothingCached_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)).isNull();
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperFile_flagSystem_previouslyCached_shouldReturnParcelFileDescriptor()
       throws Exception {
     manager.setBitmap(
@@ -427,13 +410,11 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperFile_flagLock_nothingCached_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_LOCK)).isNull();
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperFile_flagLock_previouslyCached_shouldReturnParcelFileDescriptor()
       throws Exception {
     manager.setBitmap(
@@ -450,7 +431,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperFile_unsupportedFlag_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(UNSUPPORTED_FLAG)).isNull();
   }
@@ -472,7 +452,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperId_lockScreenBitmapNotConfigured_shouldReturnNegativeNumber()
       throws Exception {
     manager.setBitmap(
@@ -482,7 +461,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperId_setHomeScreenAndLockScreenBimap_shouldReturnIncreasingId()
       throws Exception {
     manager.setBitmap(TEST_IMAGE_1, null, false, WallpaperManager.FLAG_SYSTEM);
@@ -493,7 +471,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperId_lockScreenResourceNotConfigured_shouldReturnNegativeNumber()
       throws Exception {
     int resourceId = 12345;
@@ -503,7 +480,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getWallpaperId_setHomeScreenAndLockScreenResource_shouldReturnIncreasingId()
       throws Exception {
     int resourceId1 = 5;
@@ -516,7 +492,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isSetWallpaperAllowed_allowed_shouldReturnTrue() {
     shadowOf(manager).setIsSetWallpaperAllowed(true);
 
@@ -524,7 +499,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isSetWallpaperAllowed_disallowed_shouldReturnFalse() {
     shadowOf(manager).setIsSetWallpaperAllowed(false);
 
@@ -548,7 +522,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setStream_flagSystem_shouldCacheInMemory() throws Exception {
     byte[] testImageBytes = getBytesFromBitmap(TEST_IMAGE_1);
 
@@ -564,7 +537,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setStream_flagLock_shouldCacheInMemory() throws Exception {
     byte[] testImageBytes = getBytesFromBitmap(TEST_IMAGE_2);
     manager.setStream(
@@ -579,7 +551,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setStream_unsupportedFlag_shouldNotCacheInMemory() throws Exception {
     byte[] testImageBytes = getBytesFromBitmap(TEST_IMAGE_2);
     manager.setStream(
@@ -693,7 +664,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void
       getWallpaperInfo_staticWallpaperWasDefault_liveWallpaperSet_shouldRemoveCachedStaticWallpaper()
           throws Exception {
@@ -770,7 +740,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setBitmap_bothLockAndHome() throws Exception {
     int returnCode =
         manager.setBitmap(
@@ -785,7 +754,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setStream_bothLockAndHome() throws Exception {
     byte[] testImageBytes = getBytesFromBitmap(TEST_IMAGE_1);
     manager.setStream(

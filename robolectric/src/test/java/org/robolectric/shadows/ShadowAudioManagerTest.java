@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -1136,13 +1135,11 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getActiveRecordingConfigurations_defaultEmptyList() {
     assertThat(audioManager.getActiveRecordingConfigurations()).isEmpty();
   }
 
   @Test
-  @Config(minSdk = N)
   public void getActiveRecordingConfigurations_returnsSpecifiedList() {
     ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
     configurations.add(
@@ -1155,7 +1152,6 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setActiveRecordingConfigurations_notifiesCallback() {
     AudioManager.AudioRecordingCallback callback = mock(AudioManager.AudioRecordingCallback.class);
     audioManager.registerAudioRecordingCallback(callback, null);
@@ -1171,7 +1167,6 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void unregisterAudioRecordingCallback_removesCallback() {
     AudioManager.AudioRecordingCallback callback = mock(AudioManager.AudioRecordingCallback.class);
     audioManager.registerAudioRecordingCallback(callback, null);
@@ -1189,7 +1184,6 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void createActiveRecordingConfiguration_createsProperConfiguration() {
     AudioRecordingConfiguration configuration =
         shadowOf(audioManager)

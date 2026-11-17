@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
-
 import android.graphics.Path;
 import android.util.Log;
 import android.util.PathParser;
@@ -11,7 +9,7 @@ import java.util.Arrays;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = PathParser.class, minSdk = N, isInAndroidSdk = false)
+@Implements(value = PathParser.class, isInAndroidSdk = false)
 public class ShadowPathParser {
 
   static final String LOGTAG = ShadowPathParser.class.getSimpleName();

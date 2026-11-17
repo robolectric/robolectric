@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -118,7 +117,7 @@ public class ShadowNotificationManager {
     notifications.clear();
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected boolean areNotificationsEnabled() {
     return mAreNotificationsEnabled;
   }
@@ -127,7 +126,7 @@ public class ShadowNotificationManager {
     mAreNotificationsEnabled = areNotificationsEnabled;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   protected int getImportance() {
     return importance;
   }
@@ -387,7 +386,7 @@ public class ShadowNotificationManager {
     listenerAccessGrantedComponents.put(componentName.flattenToString(), granted);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected AutomaticZenRule getAutomaticZenRule(String id) {
     Objects.requireNonNull(id);
     enforcePolicyAccess();
@@ -395,14 +394,14 @@ public class ShadowNotificationManager {
     return automaticZenRules.get(id);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected Map<String, AutomaticZenRule> getAutomaticZenRules() {
     enforcePolicyAccess();
 
     return ImmutableMap.copyOf(automaticZenRules);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected String addAutomaticZenRule(AutomaticZenRule automaticZenRule) {
     Objects.requireNonNull(automaticZenRule);
     Objects.requireNonNull(automaticZenRule.getName());
@@ -418,7 +417,7 @@ public class ShadowNotificationManager {
     return id;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean updateAutomaticZenRule(String id, AutomaticZenRule automaticZenRule) {
     // NotificationManagerService doesn't check that id is non-null.
     Objects.requireNonNull(automaticZenRule);
@@ -440,7 +439,7 @@ public class ShadowNotificationManager {
     return true;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean removeAutomaticZenRule(String id) {
     Objects.requireNonNull(id);
     enforcePolicyAccess();

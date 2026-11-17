@@ -189,7 +189,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetCornerRadii() {
     float[] radii = new float[] {1.0f, 2.0f, 3.0f};
@@ -221,7 +220,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testGetCornerRadius() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -305,7 +303,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetShape() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -322,7 +319,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetGradientType() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -342,7 +338,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetGradientCenter() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -376,7 +371,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetUseLevel() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -406,7 +400,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetColor() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -422,7 +415,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetColors() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -440,7 +432,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testSetColorList() {
     GradientDrawable gradientDrawable = new GradientDrawable();
@@ -762,7 +753,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testPreloadDensity() throws XmlPullParserException, IOException {
     final int densityDpi = mResources.getConfiguration().densityDpi;
@@ -775,7 +765,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testPreloadDensity_tvdpi() throws XmlPullParserException, IOException {
     final int densityDpi = mResources.getConfiguration().densityDpi;
@@ -823,7 +812,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testGradientColorInflationWithThemeAndNonThemeResources() {
     final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -856,7 +844,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testGradientColorInflationWithAllThemeResources() {
     final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -884,7 +871,6 @@ public class GradientDrawableTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.N)
   public void testGradientColorNoCenterColorInflationWithThemeAndNonThemeResources() {
     final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();

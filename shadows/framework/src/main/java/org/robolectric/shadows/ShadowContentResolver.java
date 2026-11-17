@@ -6,7 +6,6 @@ import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -508,7 +507,7 @@ public class ShadowContentResolver {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void notifyChange(Uri uri, ContentObserver observer, int flags) {
     notifiedUris.add(new NotifiedUri(uri, observer, flags));
 

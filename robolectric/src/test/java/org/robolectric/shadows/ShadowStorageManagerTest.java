@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -60,7 +59,6 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getStorageVolumes() {
     File file1 = new File(sdcardStorage);
     shadowOf(storageManager).addStorageVolume(buildAndGetStorageVolume(file1, "sd card"));
@@ -68,7 +66,6 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getStorageVolumesHaveDifferentUUID() {
     File file1 = new File(sdcardStorage);
     File file2 = new File(internalStorage);
@@ -84,7 +81,6 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getStorageVolume() {
     File file1 = new File(internalStorage);
     File file2 = new File(sdcardStorage);
@@ -98,7 +94,7 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = TIRAMISU)
+  @Config(maxSdk = TIRAMISU)
   public void isFileEncryptedNativeOrEmulated() {
     shadowOf(storageManager).setFileEncryptedNativeOrEmulated(true);
     // Use reflection, as this method is planned to be removed from StorageManager in V.
@@ -110,7 +106,7 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = UPSIDE_DOWN_CAKE)
+  @Config(maxSdk = UPSIDE_DOWN_CAKE)
   public void isUserKeyUnlocked() {
     shadowOf(getApplication().getSystemService(UserManager.class)).setUserUnlocked(true);
     // Use reflection, as this method is planned to be removed from StorageManager in V.
@@ -124,7 +120,6 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getStorageVolumeFromAnUserContext() {
     File file1 = new File(internalStorage);
     shadowOf(storageManager).addStorageVolume(buildAndGetStorageVolume(file1, "internal"));

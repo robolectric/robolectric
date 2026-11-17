@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.app.Notification;
@@ -95,7 +94,7 @@ public class ShadowService extends ShadowContextWrapper {
     return foregroundServiceType;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void stopForeground(int flags) {
     if ((flags & Service.STOP_FOREGROUND_DETACH) != 0) {
       lastForegroundNotificationAttached = false;

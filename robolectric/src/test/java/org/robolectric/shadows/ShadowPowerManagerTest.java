@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -267,7 +266,6 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isLightDeviceIdleMode_shouldGetAndSet() {
     assertThat(powerManager.isLightDeviceIdleMode()).isFalse();
     shadowOf(powerManager).setIsLightDeviceIdleMode(true);

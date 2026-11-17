@@ -15,7 +15,6 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
-import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import androidx.test.core.app.ApplicationProvider;
@@ -224,9 +223,7 @@ public class DeviceConfigTest {
                 + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-470x320");
   }
 
-  // todo: this fails on LOLLIPOP through M... why?
   @Test
-  @Config(minSdk = VERSION_CODES.N)
   public void applyRules_rtlScript() {
     String language = "he";
     applyQualifiers(language);

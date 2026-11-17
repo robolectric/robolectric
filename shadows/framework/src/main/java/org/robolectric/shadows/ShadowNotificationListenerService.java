@@ -69,12 +69,12 @@ public class ShadowNotificationListenerService extends ShadowService {
     return statusBarNotification.getKey();
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected static void requestRebind(ComponentName componentName) {
     rebindRequestCount.incrementAndGet();
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void requestUnbind() {
     unbindRequestCount.incrementAndGet();
   }
