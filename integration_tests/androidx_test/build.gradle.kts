@@ -12,7 +12,7 @@ android {
 
   defaultConfig {
     testApplicationId = "org.robolectric.integrationtests.axt"
-    minSdk = 23
+    minSdk = 24
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     testInstrumentationRunnerArguments["useTestStorageService"] = "true"
   }

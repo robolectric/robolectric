@@ -12,7 +12,7 @@ android {
   namespace = "org.robolectric.integrationtests.ctesque"
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 24
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
