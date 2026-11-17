@@ -1,5 +1,5 @@
 <a name="README"></a>
-[![robolectric logo](https://raw.githubusercontent.com/robolectric/robolectric/master/images/robolectric-horizontal.png)](https://robolectric.org)
+[![robolectric logo](https://raw.githubusercontent.com/robolectric/robolectric/master/images/robolectric-horizontal.svg)](https://robolectric.org)
 
 [![Build Status](https://github.com/robolectric/robolectric/actions/workflows/tests.yml/badge.svg)](https://github.com/robolectric/robolectric/actions?query=workflow%3Atests)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
@@ -20,7 +20,7 @@ your module's `build.gradle`/`build.gradle.kts` file:
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
-testImplementation("org.robolectric:robolectric:4.17")
+testImplementation("org.robolectric:robolectric:4.18")
 testImplementation("androidx.test.ext:junit:1.3.0")
 ```
 

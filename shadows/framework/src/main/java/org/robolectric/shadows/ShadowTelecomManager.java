@@ -302,9 +302,6 @@ public class ShadowTelecomManager {
     accounts.remove(accountHandle);
   }
 
-  /**
-   * @deprecated
-   */
   @Deprecated
   @Implementation
   @HiddenApi
@@ -328,9 +325,6 @@ public class ShadowTelecomManager {
     }
   }
 
-  /**
-   * @deprecated
-   */
   @Deprecated
   @Implementation
   @HiddenApi

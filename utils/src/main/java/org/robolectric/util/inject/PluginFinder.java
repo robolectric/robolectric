@@ -1,7 +1,7 @@
 package org.robolectric.util.inject;
 
 import static java.util.Collections.reverseOrder;
-import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -215,7 +215,7 @@ class PluginFinder {
       serviceClasses.add(serviceClass);
     }
 
-    Comparator<Class<? extends T>> c = reverseOrder(comparing(PluginFinder::priority));
+    Comparator<Class<? extends T>> c = reverseOrder(comparingInt(PluginFinder::priority));
     c = c.thenComparing(Class::getName);
     serviceClasses.sort(c);
 

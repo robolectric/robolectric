@@ -6,7 +6,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.configure
@@ -37,6 +39,18 @@ class RoboJavaModulePlugin : Plugin<Project> {
 
       options.compilerArgs.add("-Xlint:-options") // Turn off "missing" bootclasspath warning
       options.encoding = "utf-8" // Make sure source encoding is UTF-8
+
+      if (!skipErrorProne) {
+        val ep = (options as ExtensionAware).extensions.findByName("errorprone")
+        if (ep != null) {
+          @Suppress("UNCHECKED_CAST")
+          val args = ep.javaClass.getMethod("getErrorproneArgs").invoke(ep) as ListProperty<String>
+          args.addAll(
+            "-Xep:CheckReturnValue:ERROR",
+            "-XepOpt:CheckReturnValue:CheckAllConstructors=true",
+          )
+        }
+      }
     }
 
     val provideBuildClasspath =

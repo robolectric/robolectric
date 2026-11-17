@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -110,7 +111,7 @@ public class ShadowCall {
      * @throws IOException if write to buffer fails.
      */
     public void writeRemoteMessage(String message) throws IOException {
-      byte[] messageBytes = message.getBytes();
+      byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
       pipedOutputStream.write(messageBytes, 0, messageBytes.length);
     }
   }

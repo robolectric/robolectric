@@ -116,7 +116,9 @@ public class ShadowingTest {
     public static boolean shadowDefaultConstructorCalled = false;
     public static boolean shadowDefaultConstructorImplementorCalled = false;
 
+    @SuppressWarnings("StaticAssignmentInConstructor")
     public ShadowForClassWithNoDefaultConstructor() {
+      // These flags verify that the shadow constructor is invoked.
       shadowDefaultConstructorCalled = true;
     }
 

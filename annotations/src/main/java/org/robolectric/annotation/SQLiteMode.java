@@ -29,9 +29,10 @@ public @interface SQLiteMode {
   @Deprecated
   enum Mode {
     /**
-     * Use the legacy SQLite implementation backed by sqlite4java.
+     * The legacy SQLite implementation backed by sqlite4java, which was removed in Robolectric
+     * 4.19.
      *
-     * @deprecated This mode is obsolete and will be removed soon.
+     * @deprecated Tests that use this mode fail. SQLite is always native.
      */
     @Deprecated
     LEGACY,

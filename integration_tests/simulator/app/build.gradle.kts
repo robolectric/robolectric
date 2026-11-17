@@ -35,8 +35,3 @@ android {
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
   }
 }
-
-dependencies {
-  implementation(libs.androidx.core)
-  implementation(libs.androidx.appcompat)
-}

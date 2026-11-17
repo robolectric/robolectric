@@ -272,7 +272,7 @@ public class ShadowLegacyPath extends ShadowPath {
       return false;
     }
 
-    mCachedIsEmpty = Boolean.TRUE;
+    mCachedIsEmpty = true;
     for (PathIterator it = mPath.getPathIterator(null); !it.isDone(); it.next()) {
       // int type = it.currentSegment(coords);
       // if (type != PathIterator.SEG_MOVETO) {

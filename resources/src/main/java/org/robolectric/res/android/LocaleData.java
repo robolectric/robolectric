@@ -82,7 +82,7 @@ public class LocaleData {
       }
       ancestor = findParent(ancestor, script);
     } while (ancestor != PACKED_ROOT);
-    stop_list_index.set((long) -1);
+    stop_list_index.set(-1L);
     return count;
   }
 

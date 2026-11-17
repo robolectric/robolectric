@@ -117,6 +117,15 @@ public class ShadowDisplayEventReceiver {
     }
   }
 
+  /** Releases the simulated receiver before NativeAllocationRegistry clears its pointer. */
+  @Filter(minSdk = UPSIDE_DOWN_CAKE)
+  protected void dispose() {
+    long receiverPtr = displayEventReceiverReflector.getReceiverPtr();
+    if (receiverPtr != 0) {
+      nativeDispose(receiverPtr);
+    }
+  }
+
   protected void onVsync(long frameTimeNanos, int frame, Object vsyncEventData) {
     if (RuntimeEnvironment.getApiLevel() < Q) {
       displayEventReceiverReflector.onVsync(

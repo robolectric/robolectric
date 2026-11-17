@@ -42,6 +42,7 @@ public class ShadowLegacyMessage extends ShadowMessage {
    * and then calls through to the package private method {@link Message#recycleUnchecked()} on the
    * real object.
    */
+  @Override
   @HiddenApi
   @Implementation
   public void recycleUnchecked() {

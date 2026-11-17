@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -153,25 +154,25 @@ public class ShadowBuildTest {
   @Test
   @Config(minSdk = Config.OLDEST_SDK)
   public void supported32BitAbis() {
-    assertThat(Build.SUPPORTED_32_BIT_ABIS).isEqualTo(new String[] {"armeabi-v7a", "armeabi"});
+    assertArrayEquals(new String[] {"armeabi-v7a", "armeabi"}, Build.SUPPORTED_32_BIT_ABIS);
     ShadowBuild.setSupported32BitAbis(new String[] {"x86"});
-    assertThat(Build.SUPPORTED_32_BIT_ABIS).isEqualTo(new String[] {"x86"});
+    assertArrayEquals(new String[] {"x86"}, Build.SUPPORTED_32_BIT_ABIS);
   }
 
   @Test
   @Config(minSdk = Config.OLDEST_SDK)
   public void supported64BitAbis() {
-    assertThat(Build.SUPPORTED_64_BIT_ABIS).isEqualTo(new String[] {"armeabi-v7a", "armeabi"});
+    assertArrayEquals(new String[] {"armeabi-v7a", "armeabi"}, Build.SUPPORTED_64_BIT_ABIS);
     ShadowBuild.setSupported64BitAbis(new String[] {"x86_64"});
-    assertThat(Build.SUPPORTED_64_BIT_ABIS).isEqualTo(new String[] {"x86_64"});
+    assertArrayEquals(new String[] {"x86_64"}, Build.SUPPORTED_64_BIT_ABIS);
   }
 
   @Test
   @Config(minSdk = Config.OLDEST_SDK)
   public void supportedAbis() {
-    assertThat(Build.SUPPORTED_ABIS).isEqualTo(new String[] {"armeabi-v7a"});
+    assertArrayEquals(new String[] {"armeabi-v7a"}, Build.SUPPORTED_ABIS);
     ShadowBuild.setSupportedAbis(new String[] {"x86"});
-    assertThat(Build.SUPPORTED_ABIS).isEqualTo(new String[] {"x86"});
+    assertArrayEquals(new String[] {"x86"}, Build.SUPPORTED_ABIS);
   }
 
   @Test

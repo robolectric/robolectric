@@ -169,6 +169,23 @@ public class CppAssetManager2ThemeTest {
     assertMissing(source, APP_ATTRIBUTE);
   }
 
+  @Test
+  public void applyingStyleRetainsReversePrecedenceAndBagEntryOrder() {
+    BagAssetManager assets = new BagAssetManager();
+    ResolvedBag.Entry first = entry(APP_ATTRIBUTE, TYPE_INT_DEC, 42);
+    ResolvedBag.Entry last = entry(APP_ATTRIBUTE, TYPE_INT_DEC, 73);
+    assets.addStyle(STYLE, 0x10, first, last);
+    Theme nonForced = assets.NewTheme();
+    Theme forced = assets.NewTheme();
+
+    assertThat(nonForced.ApplyStyle(STYLE, false)).isTrue();
+    assertThat(forced.ApplyStyle(STYLE, true)).isTrue();
+
+    assertAttribute(nonForced, APP_ATTRIBUTE, TYPE_INT_DEC, 73, 0x10);
+    assertAttribute(forced, APP_ATTRIBUTE, TYPE_INT_DEC, 42, 0x10);
+    assertThat(assets.GetBag(STYLE).entries).asList().containsExactly(first, last).inOrder();
+  }
+
   private static ResolvedBag.Entry entry(int attribute, int dataType, int data) {
     ResolvedBag.Entry entry = new ResolvedBag.Entry();
     entry.key = attribute;

@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.Configurer;
+import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
@@ -426,7 +427,9 @@ public class HierarchicalConfigurationStrategyTest {
         new HierarchicalConfigurationStrategy(
             new ConfigConfigurer(
                 packagePropertiesLoader,
-                () -> globalConfig == null ? Config.Builder.defaults().build() : globalConfig));
+                new GlobalConfigProvider[] {
+                  () -> globalConfig == null ? Config.Builder.defaults().build() : globalConfig
+                }));
     Configuration config = defaultConfigStrategy.getConfig(testClass, info);
     return config.get(Config.class);
   }

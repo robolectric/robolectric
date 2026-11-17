@@ -24,7 +24,7 @@ public class ShadowWifiConfiguration {
 
   private int securityType = -1; // for Android R
 
-  /* Returns a copy of the {@link WifiConfiguration} it shadows. */
+  /** Returns a copy of the {@link WifiConfiguration} it shadows. */
   public WifiConfiguration copy() {
     return new WifiConfiguration(realObject);
   }

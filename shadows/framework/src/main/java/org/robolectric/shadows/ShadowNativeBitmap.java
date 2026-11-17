@@ -24,6 +24,11 @@ import android.os.Parcelable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+import java.nio.ReadOnlyBufferException;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +41,9 @@ import org.robolectric.nativeruntime.BitmapNatives;
 import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
+import org.robolectric.util.OsUtil;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -215,6 +222,133 @@ public class ShadowNativeBitmap extends ShadowBitmap {
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeCopyPixelsFromBuffer(long nativeBitmap, Buffer src) {
     BitmapNatives.nativeCopyPixelsFromBuffer(nativeBitmap, src);
+  }
+
+  /** Copies ARGB_8888 pixels as RGBA unless {@code robolectric.useRgbaPixelOrder=false}. */
+  @Implementation
+  protected void copyPixelsToBuffer(Buffer dst) {
+    if (realBitmap.getConfig() == Bitmap.Config.ARGB_8888 && dst.isReadOnly()) {
+      throw new ReadOnlyBufferException();
+    }
+    int start = dst.position();
+    reflector(BitmapBufferReflector.class, realBitmap).copyPixelsToBuffer(dst);
+    if (shouldSwapRedAndBlue() && realBitmap.getConfig() == Bitmap.Config.ARGB_8888) {
+      swapRedAndBlue(dst, start, dst.position());
+    }
+  }
+
+  /**
+   * Converts ARGB_8888 pixels from RGBA to host order unless {@code
+   * robolectric.useRgbaPixelOrder=false}.
+   */
+  @Implementation
+  protected void copyPixelsFromBuffer(Buffer src) {
+    BitmapBufferReflector bitmap = reflector(BitmapBufferReflector.class, realBitmap);
+    bitmap.checkRecycled("copyPixelsFromBuffer called on recycled bitmap");
+    int elementSize =
+        src instanceof ByteBuffer
+            ? 1
+            : src instanceof ShortBuffer ? 2 : src instanceof IntBuffer ? 4 : 0;
+    int byteCount = realBitmap.getByteCount();
+    boolean swapChannels = shouldSwapRedAndBlue();
+    // JNI cannot access the array backing read-only heap buffers.
+    boolean copyReadOnly = src.isReadOnly() && !src.isDirect();
+    if ((!swapChannels && !copyReadOnly)
+        || realBitmap.getConfig() != Bitmap.Config.ARGB_8888
+        || elementSize == 0
+        || (long) src.remaining() * elementSize < byteCount) {
+      bitmap.copyPixelsFromBuffer(src);
+      return;
+    }
+
+    int end = src.position() + byteCount / elementSize;
+    int[] pixels = readPixels(src, src.position(), end);
+    if (swapChannels) {
+      swapRedAndBlue(pixels, 0, pixels.length);
+    }
+    bitmap.copyPixelsFromBuffer(IntBuffer.wrap(pixels));
+    src.position(end);
+  }
+
+  static boolean shouldSwapRedAndBlue() {
+    // Older macOS runtimes use RGBA; SDK 35+ uses BGRA on every host.
+    return Boolean.parseBoolean(System.getProperty("robolectric.useRgbaPixelOrder", "true"))
+        && (getApiLevel() >= VANILLA_ICE_CREAM || !OsUtil.isMac());
+  }
+
+  static void swapRedAndBlue(Buffer buffer, int start, int end) {
+    if (buffer instanceof IntBuffer && ((IntBuffer) buffer).hasArray()) {
+      IntBuffer ints = (IntBuffer) buffer;
+      swapRedAndBlue(ints.array(), ints.arrayOffset() + start, ints.arrayOffset() + end);
+      return;
+    }
+    int[] pixels = readPixels(buffer, start, end);
+    swapRedAndBlue(pixels, 0, pixels.length);
+    writePixels(buffer, start, end, pixels);
+  }
+
+  private static void swapRedAndBlue(int[] pixels, int start, int end) {
+    for (int i = start; i < end; i++) {
+      int pixel = pixels[i];
+      pixels[i] = (pixel & 0xff00ff00) | ((pixel & 0xff) << 16) | ((pixel >>> 16) & 0xff);
+    }
+  }
+
+  private static int[] readPixels(Buffer buffer, int start, int end) {
+    int elementsPerPixel = buffer instanceof ByteBuffer ? 4 : buffer instanceof ShortBuffer ? 2 : 1;
+    int[] pixels = new int[(end - start) / elementsPerPixel];
+    if (buffer instanceof ByteBuffer) {
+      ((ByteBuffer) buffer)
+          .duplicate()
+          .position(start)
+          .limit(end)
+          .slice()
+          .order(ByteOrder.LITTLE_ENDIAN)
+          .asIntBuffer()
+          .get(pixels);
+    } else if (buffer instanceof ShortBuffer) {
+      ShortBuffer shorts = (ShortBuffer) buffer;
+      ByteBuffer copy = ByteBuffer.allocate(pixels.length * 4).order(shorts.order());
+      copy.asShortBuffer().put(shorts.duplicate().position(start).limit(end));
+      copy.order(ByteOrder.LITTLE_ENDIAN).asIntBuffer().get(pixels);
+    } else {
+      IntBuffer ints = (IntBuffer) buffer;
+      ints.duplicate().position(start).limit(end).get(pixels);
+      if (ints.order() == ByteOrder.BIG_ENDIAN) {
+        reverseBytes(pixels);
+      }
+    }
+    return pixels;
+  }
+
+  private static void writePixels(Buffer buffer, int start, int end, int[] pixels) {
+    if (buffer instanceof ByteBuffer) {
+      ((ByteBuffer) buffer)
+          .duplicate()
+          .position(start)
+          .limit(end)
+          .slice()
+          .order(ByteOrder.LITTLE_ENDIAN)
+          .asIntBuffer()
+          .put(pixels);
+    } else if (buffer instanceof ShortBuffer) {
+      ShortBuffer shorts = (ShortBuffer) buffer;
+      ByteBuffer copy = ByteBuffer.allocate(pixels.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+      copy.asIntBuffer().put(pixels);
+      shorts.duplicate().position(start).limit(end).put(copy.order(shorts.order()).asShortBuffer());
+    } else {
+      IntBuffer ints = (IntBuffer) buffer;
+      if (ints.order() == ByteOrder.BIG_ENDIAN) {
+        reverseBytes(pixels);
+      }
+      ints.duplicate().position(start).limit(end).put(pixels);
+    }
+  }
+
+  private static void reverseBytes(int[] pixels) {
+    for (int i = 0; i < pixels.length; i++) {
+      pixels[i] = Integer.reverseBytes(pixels[i]);
+    }
   }
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
@@ -568,5 +702,14 @@ public class ShadowNativeBitmap extends ShadowBitmap {
       }
       colorSpaceAllocationsP.clear();
     }
+  }
+
+  @ForType(Bitmap.class)
+  interface BitmapBufferReflector extends BitmapReflector {
+    @Direct
+    void copyPixelsToBuffer(Buffer dst);
+
+    @Direct
+    void copyPixelsFromBuffer(Buffer src);
   }
 }

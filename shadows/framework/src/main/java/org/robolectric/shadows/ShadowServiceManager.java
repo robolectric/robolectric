@@ -142,9 +142,6 @@ public class ShadowServiceManager {
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> declaredServices = new HashSet<>();
 
-  @GuardedBy("ShadowServiceManager.class")
-  private static final Map<String, Object> waitingServices = new HashMap<>();
-
   /** Represents the type of implementation to use for the Binder interface */
   private enum BinderType {
     /* use ReflectionHelpers.createNullProxy */
@@ -552,8 +549,8 @@ public class ShadowServiceManager {
   @Implementation(minSdk = R)
   protected static synchronized IBinder waitForService(String name) throws InterruptedException {
     while (unavailableServices.contains(name)) {
-      waitingServices.putIfAbsent(name, new Object());
-      waitingServices.get(name).wait();
+      // setServiceAvailability notifies on the class, whose monitor this method holds.
+      ShadowServiceManager.class.wait();
     }
     return getBinderForService(name);
   }
@@ -600,10 +597,7 @@ public class ShadowServiceManager {
   public static synchronized void setServiceAvailability(String service, boolean available) {
     if (available) {
       unavailableServices.remove(service);
-      if (waitingServices.containsKey(service)) {
-        waitingServices.get(service).notifyAll();
-        waitingServices.remove(service);
-      }
+      ShadowServiceManager.class.notifyAll();
     } else {
       unavailableServices.add(service);
     }
@@ -636,7 +630,6 @@ public class ShadowServiceManager {
   @Resetter
   public static synchronized void reset() {
     unavailableServices.clear();
-    waitingServices.clear();
     declaredServices.clear();
     for (BinderService service : binderServices.values()) {
       service.reset();

@@ -382,6 +382,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  @SuppressWarnings("DirectInvocationOnMock")
   public void registerProvider_shouldAttachProviderInfo() {
     ContentProvider mock = mock(ContentProvider.class);
 

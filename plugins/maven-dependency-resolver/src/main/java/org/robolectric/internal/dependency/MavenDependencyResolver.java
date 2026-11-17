@@ -1,6 +1,10 @@
 package org.robolectric.internal.dependency;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -8,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -39,7 +44,16 @@ import org.xml.sax.SAXException;
  */
 public class MavenDependencyResolver implements DependencyResolver {
 
-  private static final Object DOWNLOAD_LOCK = new Object();
+  private static final Interner<String> DOWNLOAD_LOCKS = Interners.newWeakInterner();
+
+  private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2";
+
+  /**
+   * Google's mirror of Maven Central, which serves the same files. Maven Central rate limits
+   * downloads with 429 responses, for example when many CI jobs download the SDK jars at once.
+   */
+  private static final String MAVEN_CENTRAL_GOOGLE_MIRROR_URL =
+      "https://maven-central.storage-download.googleapis.com/maven2";
 
   private final MavenArtifactFetcher mavenArtifactFetcher;
   private final File localRepositoryDir;
@@ -81,13 +95,10 @@ public class MavenDependencyResolver implements DependencyResolver {
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     List<MavenJarArtifact> artifacts = new ArrayList<>(dependencies.length);
-    whileLocked(() -> {
-      for (DependencyJar dependencyJar : dependencies) {
-        MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
-        artifacts.add(artifact);
-        mavenArtifactFetcher.fetchArtifact(artifact);
-      }
-    });
+    for (DependencyJar dependencyJar : dependencies) {
+      artifacts.add(new MavenJarArtifact(dependencyJar));
+    }
+    fetchArtifacts(artifacts);
     URL[] urls = new URL[dependencies.length];
     try {
       for (int i = 0; i < artifacts.size(); i++) {
@@ -100,25 +111,40 @@ public class MavenDependencyResolver implements DependencyResolver {
     return urls;
   }
 
-  private void whileLocked(Runnable runnable) {
+  private void fetchArtifacts(List<MavenJarArtifact> artifacts) {
+    File lockFile = createLockFile();
+    boolean canWriteLock = lockFile.exists() ? lockFile.canWrite() : localRepositoryDir.canWrite();
+    // Populated caches still work when their lock file cannot be written.
+    if (!canWriteLock
+        && artifacts.stream()
+            .allMatch(artifact -> new File(localRepositoryDir, artifact.jarPath()).exists())) {
+      return;
+    }
     // File locks coordinate processes, but overlapping locks in the same JVM throw instead of wait.
-    synchronized (DOWNLOAD_LOCK) {
-      File lockFile = createLockFile();
-      try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
-        try (FileChannel channel = raf.getChannel()) {
-          try (FileLock ignored = channel.lock()) {
-            runnable.run();
+    try {
+      synchronized (DOWNLOAD_LOCKS.intern(lockFile.getCanonicalPath())) {
+        try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+            FileChannel channel = raf.getChannel();
+            FileLock ignored = channel.lock()) {
+          for (MavenJarArtifact artifact : artifacts) {
+            mavenArtifactFetcher.fetchArtifact(artifact);
           }
         }
-      } catch (IOException e) {
-        throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
       }
-      // Keep the lock file: deleting it lets another process lock a different inode.
+    } catch (IOException e) {
+      throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
     }
+    // Keep the lock file: deleting it lets another process lock a different inode.
   }
 
   protected File createLockFile() {
-    return new File(System.getProperty("user.home"), ".robolectric-download-lock");
+    try {
+      Files.createDirectories(localRepositoryDir.toPath());
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Couldn't create repository directory " + localRepositoryDir, e);
+    }
+    return new File(localRepositoryDir, ".robolectric-download-lock");
   }
 
   @Override
@@ -178,13 +204,31 @@ public class MavenDependencyResolver implements DependencyResolver {
       File localRepositoryDir,
       ExecutorService executorService) {
     return new MavenArtifactFetcher(
-        repositoryUrl,
+        repositoryUrls(repositoryUrl, repositoryUserName),
         repositoryUserName,
         repositoryPassword,
         proxyHost,
         proxyPort,
         localRepositoryDir,
         executorService);
+  }
+
+  /**
+   * Returns the repositories to fetch from. Maven Central falls back to Google's mirror of it. Any
+   * other repository, or one with credentials, which shouldn't be sent to another host, is used
+   * alone.
+   */
+  @VisibleForTesting
+  static ImmutableList<String> repositoryUrls(String repositoryUrl, String repositoryUserName) {
+    if (Strings.isNullOrEmpty(repositoryUserName)
+        && stripTrailingSlash(repositoryUrl).equals(MAVEN_CENTRAL_URL)) {
+      return ImmutableList.of(repositoryUrl, MAVEN_CENTRAL_GOOGLE_MIRROR_URL);
+    }
+    return ImmutableList.of(repositoryUrl);
+  }
+
+  private static String stripTrailingSlash(String url) {
+    return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
   }
 
   protected ExecutorService createExecutorService() {

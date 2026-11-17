@@ -30,7 +30,7 @@ public class UnsafeAccess {
           (Lookup) privateLookupInMethod.invoke(lookup, iClass, lookup);
       return (Class<?>) defineClassMethod.invoke(privateLookup, bytecode);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new AssertionError(e);
+      throw new LinkageError("Failed to define reflector class " + reflectorClassName, e);
     }
   }
 }

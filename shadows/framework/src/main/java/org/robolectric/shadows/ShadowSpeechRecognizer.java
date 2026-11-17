@@ -235,7 +235,7 @@ public class ShadowSpeechRecognizer {
 
   /**
    * {@link SpeechRecognizer} implementation now checks if the service's binder is alive whenever
-   * {@link SpeechRecognizer#checkOpenConnection} is called. This means that we need to return a
+   * {@code SpeechRecognizer.checkOpenConnection} is called. This means that we need to return a
    * deeper proxy that returns a delegating proxy that always reports the binder as alive.
    */
   private static IRecognitionService createFakeSpeechRecognitionService() {

@@ -1,9 +1,11 @@
 package org.robolectric.gradle
 
-import com.android.SdkConstants.FD_GENERATED
-import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.HostTestBuilder
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.register
@@ -16,27 +18,24 @@ class AndroidProjectConfigPlugin : Plugin<Project> {
     project.tasks.withType<Test>().configureEach { configureTestTask() }
 
     val provideBuildClasspath =
-      project.tasks.register<ProvideBuildClasspathTask>("provideBuildClasspath") {
-        val outDirProvider = project.layout.buildDirectory.dir("$FD_GENERATED/robolectric")
-
-        outFile.set(outDirProvider.map { it.file("robolectric-deps.properties") })
-
-        project.extensions.configure<LibraryExtension> {
-          sourceSets
-            .getByName("test")
-            .resources
-            .directories
-            .add(outDirProvider.get().asFile.absolutePath)
-        }
+      project.tasks.register<ProvideAndroidBuildClasspathTask>("provideBuildClasspath") {
+        outFile.set(outputDir.file("robolectric-deps.properties"))
       }
 
     ProvideBuildClasspathTask.configure(project, provideBuildClasspath)
 
-    project.afterEvaluate {
-      project.tasks.forEach { task ->
-        if (task.name.matches(UNIT_TEST_JAVA_RES_TASK_NAME_REGEX)) {
-          task.dependsOn("provideBuildClasspath")
-        }
+    // Puts robolectric-deps.properties in the unit tests' Java resources, so Robolectric loads the
+    // SDK jars that Gradle resolved instead of downloading them. AGP also makes the tasks that
+    // package those resources depend on provideBuildClasspath.
+    project.extensions.configure<LibraryAndroidComponentsExtension> {
+      onVariants { variant ->
+        variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
+          ?.sources
+          ?.resources
+          ?.addGeneratedSourceDirectory(
+            provideBuildClasspath,
+            ProvideAndroidBuildClasspathTask::outputDir,
+          )
       }
     }
 
@@ -45,7 +44,8 @@ class AndroidProjectConfigPlugin : Plugin<Project> {
     project.tasks.withType<Test>().configureEach { onlyIf { name.lowercase().contains("debug") } }
   }
 
-  private companion object {
-    private val UNIT_TEST_JAVA_RES_TASK_NAME_REGEX = "process.*UnitTestJavaRes".toRegex()
+  /** Writes robolectric-deps.properties into a directory, which AGP's generated sources need. */
+  abstract class ProvideAndroidBuildClasspathTask : ProvideBuildClasspathTask() {
+    @get:OutputDirectory abstract val outputDir: DirectoryProperty
   }
 }

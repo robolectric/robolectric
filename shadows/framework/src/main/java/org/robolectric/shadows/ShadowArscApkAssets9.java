@@ -220,9 +220,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       throws IOException {
     CppApkAssets apkAssets = CppApkAssets.loadArscFromFd(fileDescriptor);
     if (apkAssets == null) {
-      String errorMessage =
-          String.format("Failed to load from the file descriptor %s", fileDescriptor);
-      throw new IOException(errorMessage);
+      throw new IOException("Failed to load from the file descriptor");
     }
     return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apkAssets);
   }

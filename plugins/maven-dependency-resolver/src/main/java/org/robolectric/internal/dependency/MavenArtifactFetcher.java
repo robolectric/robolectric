@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import javax.annotation.Nonnull;
@@ -31,10 +32,14 @@ import org.robolectric.util.Logger;
 /**
  * Class responsible for fetching artifacts from Maven. This uses a thread pool of size two in order
  * to parallelize downloads.
+ *
+ * <p>An artifact is downloaded from the first of the repositories that has all of its files, and
+ * its checksums are validated as usual, so a repository that fails, for example with a 429
+ * response, is skipped.
  */
 @SuppressWarnings("UnstableApiUsage")
 public class MavenArtifactFetcher {
-  private final String repositoryUrl;
+  private final List<String> repositoryUrls;
   private final String repositoryUserName;
   private final String repositoryPassword;
   private final String proxyHost;
@@ -44,14 +49,17 @@ public class MavenArtifactFetcher {
   private File stagingRepositoryDir;
 
   public MavenArtifactFetcher(
-      String repositoryUrl,
+      List<String> repositoryUrls,
       String repositoryUserName,
       String repositoryPassword,
       String proxyHost,
       int proxyPort,
       File localRepositoryDir,
       ExecutorService executorService) {
-    this.repositoryUrl = repositoryUrl;
+    if (repositoryUrls.isEmpty()) {
+      throw new IllegalArgumentException("No repositories to fetch artifacts from");
+    }
+    this.repositoryUrls = repositoryUrls;
     this.repositoryUserName = repositoryUserName;
     this.repositoryPassword = repositoryPassword;
     this.proxyHost = proxyHost;
@@ -71,12 +79,8 @@ public class MavenArtifactFetcher {
     this.stagingRepositoryDir.deleteOnExit();
     try {
       createArtifactSubdirectory(artifact, stagingRepositoryDir);
-      Futures.whenAllSucceed(
-              fetchToStagingRepository(artifact.pomSha512Path()),
-              fetchToStagingRepository(artifact.pomPath()),
-              fetchToStagingRepository(artifact.jarSha512Path()),
-              fetchToStagingRepository(artifact.jarPath()))
-          .callAsync(
+      String repositoryUrl = fetchToStagingRepository(artifact);
+      Futures.submitAsync(
               () -> {
                 // double check that the artifact has not been installed
                 if (new File(localRepositoryDir, artifact.jarPath()).exists()) {
@@ -108,8 +112,8 @@ public class MavenArtifactFetcher {
                 }
                 Logger.info(
                     String.format(
-                        "Checksums validated, moving artifact %s to local maven directory",
-                        artifact));
+                        "Checksums validated, moving artifact %s from %s to local maven directory",
+                        artifact, repositoryUrl));
                 commitFromStaging(artifact.pomSha512Path());
                 commitFromStaging(artifact.pomPath());
                 commitFromStaging(artifact.jarSha512Path());
@@ -172,8 +176,39 @@ public class MavenArtifactFetcher {
     Files.createParentDirs(jarPath);
   }
 
-  private URL getRemoteUrl(String path) {
-    String url = this.repositoryUrl;
+  /**
+   * Downloads the files of the artifact to the staging repository from the first repository that
+   * has all of them, and returns that repository.
+   */
+  private String fetchToStagingRepository(MavenJarArtifact artifact)
+      throws InterruptedException, ExecutionException {
+    ExecutionException lastFailure = null;
+    for (String repositoryUrl : repositoryUrls) {
+      if (lastFailure != null) {
+        Logger.info(
+            String.format(
+                "Failed to fetch %s, trying %s: %s",
+                artifact, repositoryUrl, lastFailure.getCause()));
+        removeArtifactFiles(stagingRepositoryDir, artifact);
+      }
+      try {
+        Futures.whenAllSucceed(
+                fetchToStagingRepository(repositoryUrl, artifact.pomSha512Path()),
+                fetchToStagingRepository(repositoryUrl, artifact.pomPath()),
+                fetchToStagingRepository(repositoryUrl, artifact.jarSha512Path()),
+                fetchToStagingRepository(repositoryUrl, artifact.jarPath()))
+            .call(() -> null, executorService)
+            .get();
+        return repositoryUrl;
+      } catch (ExecutionException e) {
+        lastFailure = e;
+      }
+    }
+    throw lastFailure;
+  }
+
+  private static URL getRemoteUrl(String repositoryUrl, String path) {
+    String url = repositoryUrl;
     if (!url.endsWith("/")) {
       url = url + "/";
     }
@@ -184,8 +219,8 @@ public class MavenArtifactFetcher {
     }
   }
 
-  private ListenableFuture<Void> fetchToStagingRepository(String path) {
-    URL remoteUrl = getRemoteUrl(path);
+  private ListenableFuture<Void> fetchToStagingRepository(String repositoryUrl, String path) {
+    URL remoteUrl = getRemoteUrl(repositoryUrl, path);
     File destination = new File(this.stagingRepositoryDir, path);
     return createFetchToFileTask(remoteUrl, destination);
   }

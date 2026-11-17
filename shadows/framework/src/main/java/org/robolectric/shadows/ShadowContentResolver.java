@@ -1034,7 +1034,10 @@ public class ShadowContentResolver {
   private static ContentProvider createAndInitialize(ProviderInfo providerInfo) {
     try {
       ContentProvider provider =
-          (ContentProvider) Class.forName(providerInfo.name).getDeclaredConstructor().newInstance();
+          Class.forName(providerInfo.name)
+              .asSubclass(ContentProvider.class)
+              .getDeclaredConstructor()
+              .newInstance();
       provider.attachInfo(RuntimeEnvironment.application, providerInfo);
       return provider;
     } catch (InstantiationException

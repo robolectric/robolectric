@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
@@ -17,16 +19,22 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
+import java.io.FileNotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -55,6 +63,37 @@ public class ShadowContextImplTest {
 
     // Data dirs of these two contexts must be different locations.
     assertThat(context.getDataDir()).isNotEqualTo(deviceProtectedStorageContext.getDataDir());
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void lockedUser_credentialProtectedStorageUnavailable() throws Exception {
+    UserManager userManager = context.getSystemService(UserManager.class);
+    Context credentialContext = context.createCredentialProtectedStorageContext();
+    Context deviceContext = context.createDeviceProtectedStorageContext();
+    context.getApplicationInfo().targetSdkVersion = O;
+    shadowOf(userManager).setUserUnlocked(false);
+
+    for (Context ctx : new Context[] {context, credentialContext}) {
+      assertThrows(
+          FileNotFoundException.class, () -> ctx.openFileOutput("f", Context.MODE_PRIVATE));
+      assertThrows(
+          SQLiteCantOpenDatabaseException.class,
+          () -> ctx.openOrCreateDatabase("d", Context.MODE_PRIVATE, null));
+    }
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> credentialContext.getSharedPreferences("p", Context.MODE_PRIVATE));
+
+    deviceContext.openFileOutput("f", Context.MODE_PRIVATE).close();
+    assertThat(deviceContext.getSharedPreferences("p", Context.MODE_PRIVATE)).isNotNull();
+    deviceContext.openOrCreateDatabase("d", Context.MODE_PRIVATE, null).close();
+
+    shadowOf(userManager).setUserUnlocked(true);
+    context.openFileOutput("f", Context.MODE_PRIVATE).close();
+    assertThat(context.getSharedPreferences("p", Context.MODE_PRIVATE)).isNotNull();
+    context.openOrCreateDatabase("d", Context.MODE_PRIVATE, null).close();
   }
 
   @Test
@@ -296,6 +335,158 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  public void bindServiceAsUser_withNullHandler_throws() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            context
+                .getBaseContext()
+                .bindServiceAsUser(
+                    newBindServiceIntent(),
+                    buildServiceConnection(),
+                    0,
+                    null,
+                    Process.myUserHandle()));
+  }
+
+  @Test
+  public void bindServiceAsUser_withHandler_callsServiceConnectedOnHandler() {
+    HandlerThread handlerThread = new HandlerThread("bindServiceAsUser");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    // ContextWrapper does not forward this overload before O, so call ContextImpl directly.
+    assertThat(
+            context
+                .getBaseContext()
+                .bindServiceAsUser(
+                    newBindServiceIntent(), serviceConnection, 0, handler, Process.myUserHandle()))
+        .isTrue();
+    shadowOf(handlerThread.getLooper()).idle();
+
+    assertThat(serviceConnection.connectedThread).isSameInstanceAs(handlerThread);
+    assertConnectedAndUnbind(serviceConnection, binder);
+    handlerThread.quit();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void bindIsolatedService_callsServiceConnectedOnExecutor() {
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    assertThat(
+            context.bindIsolatedService(
+                newBindServiceIntent(), 0, "instance", executorService, serviceConnection))
+        .isTrue();
+    assertThat(serviceConnection.isConnected).isFalse();
+    executorService.runAll();
+
+    assertConnectedAndUnbind(serviceConnection, binder);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void bindService_withBindServiceFlags() {
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    assertThat(
+            context.bindService(
+                newBindServiceIntent(), serviceConnection, Context.BindServiceFlags.of(0)))
+        .isTrue();
+    ShadowLooper.idleMainLooper();
+
+    assertConnectedAndUnbind(serviceConnection, binder);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void bindService_withBindServiceFlagsAndExecutor_callsServiceConnectedOnExecutor() {
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    assertThat(
+            context.bindService(
+                newBindServiceIntent(),
+                Context.BindServiceFlags.of(0),
+                executorService,
+                serviceConnection))
+        .isTrue();
+    assertThat(serviceConnection.isConnected).isFalse();
+    executorService.runAll();
+
+    assertConnectedAndUnbind(serviceConnection, binder);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void bindIsolatedService_withBindServiceFlags_callsServiceConnectedOnExecutor() {
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    // ContextWrapper does not forward this overload, so call ContextImpl directly.
+    assertThat(
+            context
+                .getBaseContext()
+                .bindIsolatedService(
+                    newBindServiceIntent(),
+                    Context.BindServiceFlags.of(0),
+                    "instance",
+                    executorService,
+                    serviceConnection))
+        .isTrue();
+    assertThat(serviceConnection.isConnected).isFalse();
+    executorService.runAll();
+
+    assertConnectedAndUnbind(serviceConnection, binder);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void bindServiceAsUser_withBindServiceFlags() {
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    assertThat(
+            context.bindServiceAsUser(
+                newBindServiceIntent(),
+                serviceConnection,
+                Context.BindServiceFlags.of(0),
+                Process.myUserHandle()))
+        .isTrue();
+    ShadowLooper.idleMainLooper();
+
+    assertConnectedAndUnbind(serviceConnection, binder);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void bindServiceAsUser_withBindServiceFlagsAndHandler_callsServiceConnectedOnHandler() {
+    HandlerThread handlerThread = new HandlerThread("bindServiceAsUser");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    IBinder binder = setUpBinderForBindService();
+    TestServiceConnection serviceConnection = buildServiceConnection();
+
+    assertThat(
+            context.bindServiceAsUser(
+                newBindServiceIntent(),
+                serviceConnection,
+                Context.BindServiceFlags.of(0),
+                handler,
+                Process.myUserHandle()))
+        .isTrue();
+    shadowOf(handlerThread.getLooper()).idle();
+
+    assertThat(serviceConnection.connectedThread).isSameInstanceAs(handlerThread);
+    assertConnectedAndUnbind(serviceConnection, binder);
+    handlerThread.quit();
+  }
+
+  @Test
   public void startService_shouldThrowOnImplicitIntent() {
     assertThrows(
         IllegalArgumentException.class, () -> context.startService(new Intent("dummy_action")));
@@ -408,12 +599,40 @@ public class ShadowContextImplTest {
     return new TestServiceConnection();
   }
 
+  private static Intent newBindServiceIntent() {
+    return new Intent().setComponent(new ComponentName("dummy.package", "dummy.Service"));
+  }
+
+  private IBinder setUpBinderForBindService() {
+    IBinder binder = new Binder();
+    shadowOf(context)
+        .setComponentNameAndServiceForBindService(
+            new ComponentName("dummy.package", "dummy.Service"), binder);
+    return binder;
+  }
+
+  private void assertConnectedAndUnbind(TestServiceConnection serviceConnection, IBinder binder) {
+    assertThat(serviceConnection.isConnected).isTrue();
+    assertThat(serviceConnection.service).isSameInstanceAs(binder);
+    assertThat(shadowOf(context).getBoundServiceConnections()).containsExactly(serviceConnection);
+
+    context.unbindService(serviceConnection);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(shadowOf(context).getBoundServiceConnections()).isEmpty();
+    assertThat(shadowOf(context).getUnboundServiceConnections()).containsExactly(serviceConnection);
+  }
+
   private static class TestServiceConnection implements ServiceConnection {
     boolean isConnected;
+    IBinder service;
+    Thread connectedThread;
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
       isConnected = true;
+      this.service = service;
+      connectedThread = Thread.currentThread();
     }
 
     @Override

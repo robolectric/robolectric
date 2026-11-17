@@ -15,7 +15,7 @@ public class ShadowMediaSessionTest {
   @Test
   public void mediaSessionCompat_creation() {
     // Should not result in an exception.
-    new MediaSession(ApplicationProvider.getApplicationContext(), "test");
+    assertThat(new MediaSession(ApplicationProvider.getApplicationContext(), "test")).isNotNull();
   }
 
   @Test

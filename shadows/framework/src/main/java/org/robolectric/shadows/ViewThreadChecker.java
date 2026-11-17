@@ -13,8 +13,8 @@ import org.robolectric.shadow.api.Shadow;
  * called on the main thread.
  *
  * <p>This decorator is enabled if the system property {@code
- * robolectric.enforceViewMethodsCalledOnMainThread} is set to {@code true}, or if {@link
- * ShadowView#enableThreadCheck} is {@code true}.
+ * robolectric.enforceViewMethodsCalledOnMainThread} is set to {@code true}, or if {@code
+ * ShadowView.enableThreadCheck} is {@code true}.
  */
 @SuppressWarnings("NewApi")
 @AutoService(MethodHandleDecorator.class)

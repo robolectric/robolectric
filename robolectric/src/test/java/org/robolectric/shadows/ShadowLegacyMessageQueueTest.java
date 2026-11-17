@@ -166,9 +166,9 @@ public class ShadowLegacyMessageQueueTest {
           @Override
           public void handleMessage(@Nonnull Message msg) {
             boolean inUse = callInstanceMethod(msg, "isInUse");
-            assertWithMessage(msg.what + ":inUse").that(inUse).isTrue();
+            assertWithMessage("%s:inUse", msg.what).that(inUse).isTrue();
             Message next = reflector(MessageReflector.class, msg).getNext();
-            assertWithMessage(msg.what + ":next").that(next).isNull();
+            assertWithMessage("%s:next", msg.what).that(next).isNull();
           }
         };
     Message msg = handler.obtainMessage(1);

@@ -278,12 +278,14 @@ public class ShadowCanvasTest {
   }
 
   @Test
+  @SuppressWarnings("UnnecessaryStringBuilder")
   public void shouldRecordText_charSequenceOverload() {
     Canvas canvas = new Canvas();
     Paint paint = new Paint();
     paint.setColor(1);
-    // StringBuilder implements CharSequence:
-    canvas.drawText(new StringBuilder("hello"), 1, 4, 1f, 2f, paint);
+    // StringBuilder exercises the CharSequence overload.
+    CharSequence text = new StringBuilder("hello");
+    canvas.drawText(text, 1, 4, 1f, 2f, paint);
     ShadowCanvas shadowCanvas = shadowOf(canvas);
 
     assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);

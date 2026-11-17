@@ -20,8 +20,9 @@ public class ShadowTime {
   @Implementation
   protected static int getChar(String s, int spos, int mul) {
     char c = s.charAt(spos);
-    if (Character.isDigit(c)) {
-      return Character.getNumericValue(c) * mul;
+    int digit = Character.digit(c, 10);
+    if (digit >= 0) {
+      return digit * mul;
     } else {
       throwTimeFormatException("Parse error at pos=" + spos);
     }

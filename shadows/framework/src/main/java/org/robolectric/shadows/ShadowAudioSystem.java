@@ -175,7 +175,7 @@ public class ShadowAudioSystem {
 
   /**
    * Sets whether offload playback is supported for a key-pair of {@link AudioFormat} and {@link
-   * AudioAttributes}. As a result, calling {@link AudioSystem#isOffloadSupported} with the same
+   * AudioAttributes}. As a result, calling {@code AudioSystem.isOffloadSupported} with the same
    * pair of {@link AudioFormat} and {@link AudioAttributes} values will return {@code supported}.
    *
    * @param format the audio format (codec, sample rate, channels)

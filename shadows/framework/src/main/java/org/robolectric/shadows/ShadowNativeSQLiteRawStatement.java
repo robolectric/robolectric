@@ -11,14 +11,5 @@ import org.robolectric.annotation.Implements;
     className = "android.database.sqlite.SQLiteRawStatement",
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true,
-    minSdk = VANILLA_ICE_CREAM,
-    shadowPicker = ShadowNativeSQLiteRawStatement.Picker.class)
-public class ShadowNativeSQLiteRawStatement {
-
-  /** Shadow {@link Picker} for {@link ShadowCursorWindow} */
-  public static class Picker extends SQLiteShadowPicker<Object> {
-    public Picker() {
-      super(null, ShadowNativeSQLiteRawStatement.class);
-    }
-  }
-}
+    minSdk = VANILLA_ICE_CREAM)
+public class ShadowNativeSQLiteRawStatement {}

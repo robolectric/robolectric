@@ -709,7 +709,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Checks states for methods that only log when there is an error. Such methods throw an {@link
    * IllegalArgumentException} when invoked in the END state, but log an error in other disallowed
    * states. This method will either emulate this behavior or else will generate an assertion if
-   * invoked from a disallowed state if {@link #setAssertOnError assertOnError} is set.
+   * invoked from a disallowed state if {@code setAssertOnError} is set.
    *
    * @param method the name of the method being tested.
    * @param allowedStates the states that this method is allowed to be called from.
@@ -743,8 +743,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    *
    * <p>This method will either emulate this behavior by posting an {@code onError()} callback to
    * the current thread's message queue (or throw an {@link IllegalStateException} if invoked from
-   * the END state), or else it will generate an assertion if {@link #setAssertOnError
-   * assertOnError} is set.
+   * the END state), or else it will generate an assertion if {@code setAssertOnError} is set.
    *
    * @param method the name of the method being tested.
    * @param allowedStates the states that this method is allowed to be called from.
@@ -778,7 +777,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Checks states for methods that synchronously throw an exception when invoked in an illegal
    * state. This method will likewise throw an {@link IllegalArgumentException} if it determines
    * that the method has been invoked from a disallowed state, or else it will generate an assertion
-   * if {@link #setAssertOnError assertOnError} is set.
+   * if {@code setAssertOnError} is set.
    *
    * @param method the name of the method being tested.
    * @param allowedStates the states that this method is allowed to be called from.

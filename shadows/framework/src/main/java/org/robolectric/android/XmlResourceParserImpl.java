@@ -386,7 +386,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   /**
    * A twin implementation of the native android nativeNext(status)
    *
-   * @throws XmlPullParserException
+   * @throws XmlPullParserException if an XML parsing error occurs
    */
   private int nativeNext() throws XmlPullParserException {
     switch (mEventType) {

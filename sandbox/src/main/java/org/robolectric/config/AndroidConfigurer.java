@@ -49,8 +49,6 @@ public class AndroidConfigurer {
         .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker");
 
     builder
-        .doNotAcquirePackage(
-            "com.almworks.sqlite4java") // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("io.mockk.proxy.")
         .doNotAcquirePackage("kotlin.")
         .doNotAcquirePackage("org.bouncycastle.")

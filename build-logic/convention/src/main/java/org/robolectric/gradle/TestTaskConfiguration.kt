@@ -1,5 +1,9 @@
 package org.robolectric.gradle
 
+import java.io.File
+import java.util.zip.ZipFile
+import org.gradle.api.GradleException
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -28,7 +32,15 @@ fun Test.configureTestTask() {
   minHeapSize = "2g"
   maxHeapSize = "12g"
 
-  System.getenv("GRADLE_MAX_PARALLEL_FORKS")?.toIntOrNull()?.let { maxParallelForks = it }
+  val maxForks = System.getenv("GRADLE_MAX_PARALLEL_FORKS")?.toIntOrNull()
+  if (maxForks != null) {
+    maxParallelForks = maxForks
+  }
+
+  // Runs the tests on another JDK than Gradle's, such as an x64 JDK under Rosetta 2.
+  System.getenv("TEST_JAVA_HOME")
+    ?.takeIf { it.isNotEmpty() }
+    ?.let { executable = File(it, "bin/java").path }
 
   jvmArgumentProviders.add(
     RobolectricJvmArgumentsProvider(
@@ -37,10 +49,38 @@ fun Test.configureTestTask() {
     ),
   )
   jvmArgumentProviders.add(DefaultJvmArgumentsProvider())
+
+  // Without robolectric-deps.properties on the classpath, Robolectric downloads the SDK jars from
+  // Maven Central in every test JVM instead of using the ones Gradle resolved, which gets CI rate
+  // limited. Fail instead, for example when an AGP update changes how the file gets there.
+  doFirst { requireRobolectricDeps(classpath) }
 }
 
+private fun requireRobolectricDeps(classpath: FileCollection) {
+  val found =
+    classpath.files.any { entry ->
+      when {
+        entry.isDirectory -> File(entry, ROBOLECTRIC_DEPS).isFile
+        entry.isFile && entry.name.endsWith(".jar") ->
+          ZipFile(entry).use { it.getEntry(ROBOLECTRIC_DEPS) != null }
+        else -> false
+      }
+    }
+  if (!found) {
+    throw GradleException(
+      "$ROBOLECTRIC_DEPS is not on the test classpath, so Robolectric would download the SDK " +
+        "jars instead of using the ones Gradle resolved",
+    )
+  }
+}
+
+private const val ROBOLECTRIC_DEPS = "robolectric-deps.properties"
+
+// The input is public so that Kotlin generates the annotated getter, which Gradle reads to find the
+// task's inputs. With a private property the annotation is dropped, and changing a robolectric.*
+// system property neither reruns the tests nor misses the build cache.
 private class RobolectricJvmArgumentsProvider(
-  @get:Input private val robolectricPropertiesProvider: Provider<Map<String, String>>,
+  @get:Input val robolectricPropertiesProvider: Provider<Map<String, String>>,
   @get:Internal private val logger: Logger,
 ) : CommandLineArgumentProvider {
   override fun asArguments(): Iterable<String> {

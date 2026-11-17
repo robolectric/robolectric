@@ -17,11 +17,13 @@ import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentProvider;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
+import android.content.pm.ProviderInfo;
 import android.content.res.Resources;
 import android.content.type.DefaultMimeMapFactory;
 import android.graphics.Bitmap;
@@ -39,6 +41,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.internal.os.ApplicationSharedMemory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -48,9 +51,11 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -86,6 +91,7 @@ import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowActivityThread.ActivityThreadReflector;
 import org.robolectric.shadows.ShadowActivityThread.AppBindDataReflector;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.shadows.ShadowContextImpl.ContextImplReflector;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation.InstrumentationReflector;
@@ -128,6 +134,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private final ShadowProvider[] shadowProviders;
   private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
   private final Locale initialLocale = Locale.getDefault();
+  private boolean installContentProviders;
+  private boolean installedUncaughtExceptionHandler;
+  @Nullable private Thread.UncaughtExceptionHandler previousUncaughtExceptionHandler;
 
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
@@ -144,6 +153,17 @@ public class AndroidTestEnvironment implements TestEnvironment {
     reflector(RuntimeEnvironmentReflector.class).setApiLevel(apiLevel);
   }
 
+  /**
+   * Sets whether {@link #setUpApplicationState} creates the content providers declared in the
+   * manifest before Application.onCreate, as Android does. Only the simulator turns this on, since
+   * it starts one application per process. Tests start a new application for every test, and the
+   * providers of widely used libraries, such as androidx.startup's InitializationProvider, keep the
+   * first application in process-wide singletons and skip initialization after that.
+   */
+  public void setInstallContentProviders(boolean installContentProviders) {
+    this.installContentProviders = installContentProviders;
+  }
+
   @Override
   public void setUpApplicationState(
       String tmpDirName, Configuration configuration, AndroidManifest appManifest) {
@@ -157,6 +177,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     clearEnvironment();
+    // Off by default, since many tests rely on uncaught exceptions reaching their handler as is.
+    // The simulator turns it on.
+    if (Boolean.getBoolean("robolectric.installDefaultUncaughtExceptionHandler")) {
+      installUncaughtExceptionHandler();
+    }
 
     // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
     // must be loaded upfront.
@@ -302,6 +327,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     final ActivityThreadReflector activityThreadReflector =
         reflector(ActivityThreadReflector.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
+    // A lazily created application is created after setup returns, so use the setting from now.
+    final boolean installContentProviders = this.installContentProviders;
 
     return Suppliers.memoize(() ->
         PerfStatsCollector.getInstance()
@@ -313,7 +340,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
                         config,
                         shadowActivityThread,
                         activityThreadReflector,
-                        activityThread.getInstrumentation())));
+                        activityThread.getInstrumentation(),
+                        installContentProviders)));
   }
 
   private Application installAndCreateApplication(
@@ -321,7 +349,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       Config config,
       ShadowActivityThread shadowActivityThread,
       ActivityThreadReflector activityThreadReflector,
-      Instrumentation androidInstrumentation) {
+      Instrumentation androidInstrumentation,
+      boolean installContentProviders) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
 
     // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
@@ -451,6 +480,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
             System.getProperty("robolectric.installFakeMediaProvider", "true"))) {
       this.fakeMediaProvider =
           Robolectric.setupContentProvider(FakeMediaProvider.class, MediaStore.AUTHORITY);
+    }
+
+    if (installContentProviders) {
+      PerfStatsCollector.getInstance()
+          .measure(
+              "install content providers",
+              () -> installContentProviders(application, parsedPackage, loadedApk));
     }
 
     PerfStatsCollector.getInstance()
@@ -659,9 +695,34 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return !shadowLooper.isIdle();
   }
 
+  /**
+   * Installs a default uncaught exception handler like the one Android always has, so crash
+   * reporters that wrap it in Application.onCreate work. It is removed again after the test, along
+   * with any handler the app put in front of it.
+   */
+  private void installUncaughtExceptionHandler() {
+    if (installedUncaughtExceptionHandler) {
+      return;
+    }
+    previousUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    Thread.setDefaultUncaughtExceptionHandler(
+        new AndroidUncaughtExceptionHandler(previousUncaughtExceptionHandler));
+    installedUncaughtExceptionHandler = true;
+  }
+
+  private void restoreUncaughtExceptionHandler() {
+    if (!installedUncaughtExceptionHandler) {
+      return;
+    }
+    Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler);
+    previousUncaughtExceptionHandler = null;
+    installedUncaughtExceptionHandler = false;
+  }
+
   @Override
   public void resetState() {
     Locale.setDefault(initialLocale);
+    restoreUncaughtExceptionHandler();
     if (fakeMediaProvider != null) {
       fakeMediaProvider.shutdown();
       fakeMediaProvider = null;
@@ -707,6 +768,48 @@ public class AndroidTestEnvironment implements TestEnvironment {
         .createIfNotExists(name)
         .toAbsolutePath()
         .toString();
+  }
+
+  /**
+   * Creates the content providers declared in the manifest and registers them with the content
+   * resolver, as ActivityThread.installContentProviders does after the application is attached and
+   * before Application.onCreate. Providers that run in other processes are skipped.
+   */
+  private static void installContentProviders(
+      Application application, Package parsedPackage, LoadedApk loadedApk) {
+    String processName = application.getApplicationInfo().processName;
+    List<ProviderInfo> providerInfos = new ArrayList<>();
+    for (PackageParser.Provider provider : parsedPackage.providers) {
+      ProviderInfo info = provider.info;
+      if (info.enabled && (info.processName == null || info.processName.equals(processName))) {
+        providerInfos.add(info);
+      }
+    }
+    // The package manager returns providers by descending initOrder, keeping manifest order
+    // otherwise.
+    providerInfos.sort(Comparator.comparingInt((ProviderInfo info) -> info.initOrder).reversed());
+    for (ProviderInfo info : providerInfos) {
+      ContentProvider provider = newContentProvider(info.name, loadedApk);
+      provider.attachInfo(application, info);
+      for (String authority : Splitter.on(';').split(info.authority)) {
+        ShadowContentResolver.registerProviderInternal(authority, provider);
+      }
+    }
+  }
+
+  private static ContentProvider newContentProvider(String className, LoadedApk loadedApk) {
+    if (loadedApk == null
+        || RuntimeEnvironment.getApiLevel() < P
+        || loadedApk.getAppFactory() == null) {
+      return (ContentProvider) newInstanceOf(className);
+    }
+    try {
+      return loadedApk
+          .getAppFactory()
+          .instantiateProvider(Shadow.class.getClassLoader(), className);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static BroadcastReceiver newBroadcastReceiverFromP(

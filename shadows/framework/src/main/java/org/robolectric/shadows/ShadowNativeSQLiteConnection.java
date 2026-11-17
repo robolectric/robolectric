@@ -8,13 +8,17 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.database.sqlite.SQLiteConnection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.SQLiteConnectionNatives;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link SQLiteConnection} that is backed by native code */
 @Implements(
@@ -22,6 +26,21 @@ import org.robolectric.util.PerfStatsCollector;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
+
+  @ReflectorObject SQLiteConnectionReflector sqliteConnectionReflector;
+
+  private final AtomicBoolean disposed = new AtomicBoolean();
+
+  @Implementation
+  protected void dispose(boolean finalized) {
+    // On the JVM there may be two concurrent finalizer threads running if 'System.runFinalization'
+    // is called. Because SQLiteConnection.dispose is not thread safe, we can work around it
+    // by manually making it thread safe.
+    if (disposed.compareAndSet(false, true)) {
+      sqliteConnectionReflector.dispose(finalized);
+    }
+  }
+
   @Implementation(maxSdk = O)
   protected static long nativeOpen(
       String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
@@ -301,5 +320,11 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return PerfStatsCollector.getInstance()
         .measure(
             "androidsqlite", () -> SQLiteConnectionNatives.nativeGetDbLookaside(connectionPtr));
+  }
+
+  @ForType(SQLiteConnection.class)
+  interface SQLiteConnectionReflector {
+    @Direct
+    void dispose(boolean finalized);
   }
 }

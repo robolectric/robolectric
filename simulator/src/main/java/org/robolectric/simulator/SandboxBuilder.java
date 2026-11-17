@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Properties;
 import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.ResourcesMode;
-import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.SandboxManager;
@@ -99,11 +98,7 @@ public final class SandboxBuilder {
 
     AndroidSandbox androidSandbox =
         sandboxBuilder.build(
-            instrumentationConfiguration,
-            chosenSdk,
-            chosenSdk,
-            ResourcesMode.Mode.BINARY,
-            SQLiteMode.Mode.NATIVE);
+            instrumentationConfiguration, chosenSdk, chosenSdk, ResourcesMode.Mode.BINARY);
 
     ClassHandlerBuilder classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
 

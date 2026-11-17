@@ -117,7 +117,7 @@ public class ShadowSharedMemory {
   }
 
   /**
-   * Causes subsequent calls to {@link SharedMemory#create)} to throw the specified exception, if
+   * Causes subsequent calls to {@code SharedMemory.create()} to throw the specified exception, if
    * non-null. Pass null to restore create to normal operation.
    */
   public static void setCreateShouldThrow(ErrnoException e) {

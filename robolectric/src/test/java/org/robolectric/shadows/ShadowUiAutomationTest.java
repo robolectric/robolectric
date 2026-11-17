@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
@@ -18,6 +20,7 @@ import android.provider.Settings;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
@@ -64,35 +67,40 @@ public class ShadowUiAutomationTest {
 
   @Test
   public void setAnimationScale_zero() throws Exception {
-    ShadowUiAutomation.setAnimationScaleCompat(0);
+    assertAnimationScale(0);
+  }
+
+  private void assertAnimationScale(float scale) throws Exception {
+    ShadowUiAutomation.setAnimationScaleCompat(scale);
 
     ContentResolver cr = ApplicationProvider.getApplicationContext().getContentResolver();
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE)).isEqualTo(0);
+    assertThat(Settings.Global.getFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE))
+        .isEqualTo(scale);
     assertThat(Settings.Global.getFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE))
-        .isEqualTo(0);
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(0);
+        .isEqualTo(scale);
+    assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE))
+        .isEqualTo(scale);
   }
 
   @Test
   public void setAnimationScale_one() throws Exception {
-    ShadowUiAutomation.setAnimationScaleCompat(1);
-
-    ContentResolver cr = ApplicationProvider.getApplicationContext().getContentResolver();
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE)).isEqualTo(1);
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE))
-        .isEqualTo(1);
-    assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(1);
+    assertAnimationScale(1);
   }
 
   @Test
   public void setRotation_freeze90_rotatesToLandscape() {
+    assertRotation(
+        UiAutomation.ROTATION_FREEZE_90, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  private void assertRotation(
+      int requestedRotation, int expectedRotation, int expectedOrientation) {
     UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
 
-    uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90);
+    uiAutomation.setRotation(requestedRotation);
 
-    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_90);
-    assertThat(Resources.getSystem().getConfiguration().orientation)
-        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(expectedRotation);
+    assertThat(Resources.getSystem().getConfiguration().orientation).isEqualTo(expectedOrientation);
   }
 
   @Test
@@ -120,13 +128,14 @@ public class ShadowUiAutomationTest {
   @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
   @Test
   public void setAnimationScale_zero_instrumentationTestLooperMode() throws Exception {
-    setAnimationScale_zero();
+    assertAnimationScale(0);
   }
 
   @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
   @Test
   public void setRotation_freeze90_rotatesToLandscape_instrumentationTestLooperMode() {
-    setRotation_freeze90_rotatesToLandscape();
+    assertRotation(
+        UiAutomation.ROTATION_FREEZE_90, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
   }
 
   @Test
@@ -311,6 +320,49 @@ public class ShadowUiAutomationTest {
       assertThat(root.findAccessibilityNodeInfosByText("Non-focusable Overlay")).isEmpty();
 
       activity.getWindowManager().removeViewImmediate(overlayView);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void takeScreenshot_pausedActivity_isDrawn() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      View content = new View(controller.get());
+      content.setBackgroundColor(Color.RED);
+      controller.get().setContentView(content);
+      ShadowLooper.idleMainLooper();
+
+      // A paused activity is still visible, such as one below a dialog or transparent activity.
+      controller.pause();
+      ShadowLooper.idleMainLooper();
+      Bitmap screenshot = uiAutomation.takeScreenshot();
+
+      assertThat(screenshot.getPixel(screenshot.getWidth() / 2, screenshot.getHeight() / 2))
+          .isEqualTo(Color.RED);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void takeScreenshot_stoppedActivity_isNotDrawn() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      View content = new View(controller.get());
+      content.setBackgroundColor(Color.RED);
+      controller.get().setContentView(content);
+      ShadowLooper.idleMainLooper();
+
+      controller.pause().stop();
+      ShadowLooper.idleMainLooper();
+      Bitmap screenshot = uiAutomation.takeScreenshot();
+
+      assertThat(screenshot.getPixel(screenshot.getWidth() / 2, screenshot.getHeight() / 2))
+          .isNotEqualTo(Color.RED);
     }
   }
 

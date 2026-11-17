@@ -221,7 +221,7 @@ public class ShadowTextToSpeech {
 
     if (!Boolean.getBoolean("robolectric.enableShadowTtsSynthesisToFileWriteToFileSuppression")) {
       this.lastSynthesizeToFile = file;
-      try (PrintWriter writer = new PrintWriter(file, UTF_8.name())) {
+      try (PrintWriter writer = new PrintWriter(file, UTF_8)) {
         writer.println(text);
       }
 

@@ -99,14 +99,13 @@ public final class ShadowBugreportManagerTest {
 
     assertThrows(
         SecurityException.class,
-        () -> {
-          shadowBugreportManager.startBugreport(
-              createWriteFile("bugreport"),
-              createWriteFile("screenshot"),
-              new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
-              directExecutor(),
-              callback);
-        });
+        () ->
+            shadowBugreportManager.startBugreport(
+                createWriteFile("bugreport"),
+                createWriteFile("screenshot"),
+                new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+                directExecutor(),
+                callback));
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();

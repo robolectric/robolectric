@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -22,7 +23,6 @@ import android.graphics.HardwareRenderer.PrepareSurfaceControlForWebviewCallback
 import android.graphics.PixelFormat;
 import android.graphics.RenderNode;
 import android.media.Image;
-import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Surface;
 import java.io.FileDescriptor;
@@ -35,7 +35,9 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
 import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.Direct.DirectFormat;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
 @Implements(
@@ -425,12 +427,20 @@ public class ShadowNativeHardwareRenderer {
 
   @Implementation(minSdk = R)
   protected static void nAddObserver(long nativeProxy, long nativeObserver) {
-    // currently not supported
+    // Observers are only hooked up from SDK 37. On earlier SDKs HWUI does not report frame metrics
+    // in Robolectric, because the host Surface leaves the frame numbers it compares uninitialized.
+    // A 0 observer comes from InputEventReceiver, whose natives Robolectric does not implement, and
+    // HWUI would crash using it.
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN && nativeObserver != 0) {
+      reflector(HardwareRendererReflector.class).nAddObserver(nativeProxy, nativeObserver);
+    }
   }
 
   @Implementation(minSdk = R)
   protected static void nRemoveObserver(long nativeProxy, long nativeObserver) {
-    // currently not supported
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN && nativeObserver != 0) {
+      reflector(HardwareRendererReflector.class).nRemoveObserver(nativeProxy, nativeObserver);
+    }
   }
 
   @Implementation(maxSdk = TIRAMISU)
@@ -552,9 +562,8 @@ public class ShadowNativeHardwareRenderer {
       renderer.setLightSourceAlpha(0, 0);
       renderer.createRenderRequest().syncAndDraw();
       Image nativeImage = imageReader.acquireNextImage();
-      Plane[] planes = nativeImage.getPlanes();
       Bitmap destBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
-      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      ShadowNativeImageReaderSurfaceImage.copyPixelsToBitmap(nativeImage, destBitmap);
       surface.release();
       // Return an immutable copy of the Bitmap, which is what this API expects.
       return destBitmap.copy(Config.HARDWARE, false);
@@ -595,6 +604,14 @@ public class ShadowNativeHardwareRenderer {
     int syncAndDrawFrame(FrameInfo frameInfo);
 
     void forceDrawNextFrame();
+
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    void nAddObserver(long nativeProxy, long nativeObserver);
+
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    void nRemoveObserver(long nativeProxy, long nativeObserver);
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */

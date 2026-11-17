@@ -392,7 +392,7 @@ public class ShadowAudioRecordTest {
       idField.setAccessible(true);
       idField.setInt(handle, /* id= */ 1);
     } catch (ReflectiveOperationException e) {
-      throw new AssertionError(e);
+      throw new LinkageError("Failed to access AudioHandle fields", e);
     }
     return info;
   }

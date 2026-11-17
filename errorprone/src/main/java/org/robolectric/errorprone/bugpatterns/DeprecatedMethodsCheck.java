@@ -22,9 +22,9 @@ import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -186,9 +186,9 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
   private static MethodCall getSurroundingMethodCall(Tree node, VisitorState state) {
     TreePath nodePath = TreePath.getPath(state.getPath(), node);
     TreePath parentPath = nodePath.getParentPath();
-    if (parentPath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
+    if (parentPath.getLeaf() instanceof MemberSelectTree) {
       Tree grandparentNode = parentPath.getParentPath().getLeaf();
-      if (grandparentNode.getKind() == Kind.METHOD_INVOCATION) {
+      if (grandparentNode instanceof MethodInvocationTree) {
         return new MethodCall((JCMethodInvocation) grandparentNode);
       }
     }

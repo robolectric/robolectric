@@ -28,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -272,7 +273,7 @@ public class ShadowViewGroupTest {
     child3.addView(textView);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    shadowOf(root).dump(new PrintStream(out), 0);
+    shadowOf(root).dump(new PrintStream(out, false, StandardCharsets.UTF_8), 0);
     String expected =
         "<FrameLayout>\n"
             + "  <View/>\n"
@@ -283,7 +284,8 @@ public class ShadowViewGroupTest {
             + "    <TextView visibility=\"INVISIBLE\" text=\"Here&#39;s some text!\"/>\n"
             + "  </FrameLayout>\n"
             + "</FrameLayout>\n";
-    assertEquals(expected.replaceAll("\n", System.lineSeparator()), out.toString());
+    assertEquals(
+        expected.replaceAll("\n", System.lineSeparator()), out.toString(StandardCharsets.UTF_8));
   }
 
   @Test

@@ -6,6 +6,7 @@ import static org.robolectric.res.android.Util.isTruthy;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,16 +66,17 @@ public class ConfigDescription {
     String variant;
 
     void set_language(String language_chars) {
-      language = language_chars.trim().toLowerCase();
+      language = language_chars.trim().toLowerCase(Locale.ROOT);
     }
 
     void set_region(String region_chars) {
-      region = region_chars.trim().toUpperCase();
+      region = region_chars.trim().toUpperCase(Locale.ROOT);
     }
 
     void set_script(String script_chars) {
       script =
-          Character.toUpperCase(script_chars.charAt(0)) + script_chars.substring(1).toLowerCase();
+          Character.toUpperCase(script_chars.charAt(0))
+              + script_chars.substring(1).toLowerCase(Locale.ROOT);
     }
 
     void set_variant(String variant_chars) {
@@ -97,7 +99,7 @@ public class ConfigDescription {
       if (part.startsWith("b+")) {
         // This is a "modified" BCP 47 language tag. Same semantics as BCP 47 tags,
         // except that the separator is "+" and not "-".
-        String[] subtags = part.substring(2).toLowerCase().split("\\+", 0);
+        String[] subtags = part.substring(2).toLowerCase(Locale.ROOT).split("\\+", 0);
         if (subtags.length == 1) {
           set_language(subtags[0]);
         } else if (subtags.length == 2) {
@@ -199,7 +201,8 @@ public class ConfigDescription {
   public static boolean parse(
       final String str, ResTable_config out, boolean applyVersionForCompat) {
     PeekingIterator<String> part_iter =
-        Iterators.peekingIterator(Arrays.asList(str.toLowerCase().split("-")).iterator());
+        Iterators.peekingIterator(
+            Arrays.asList(str.toLowerCase(Locale.ROOT).split("-")).iterator());
 
     LocaleValue locale = new LocaleValue();
 

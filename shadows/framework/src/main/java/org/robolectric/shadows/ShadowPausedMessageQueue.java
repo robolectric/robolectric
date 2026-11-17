@@ -117,7 +117,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
           // store timeout so ClockListener can notify when clock
           // advances sufficiently
           pollTimeout = timeoutMillis;
-          poller.wait();
+          while (!pendingWake) {
+            poller.wait();
+          }
         }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();

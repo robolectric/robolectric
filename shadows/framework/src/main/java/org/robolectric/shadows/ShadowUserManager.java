@@ -348,7 +348,10 @@ public class ShadowUserManager {
     }
   }
 
-  /** Setter for {@link UserManager#isUserUnlocked()} */
+  /**
+   * Setter for {@link UserManager#isUserUnlocked()}. While locked, opening files, shared
+   * preferences and databases in credential protected storage fails.
+   */
   public void setUserUnlocked(boolean userUnlocked) {
     userManagerState.userUnlocked = userUnlocked;
   }
@@ -532,8 +535,8 @@ public class ShadowUserManager {
   }
 
   /**
-   * @deprecated When possible, please use the real Android framework API {@link
-   *     UserManager#setUserRestriction()}.
+   * @deprecated When possible, please use the real Android framework API {@code
+   *     UserManager.setUserRestriction}.
    */
   @Deprecated
   public void setUserRestriction(UserHandle userHandle, String restrictionKey, boolean value) {

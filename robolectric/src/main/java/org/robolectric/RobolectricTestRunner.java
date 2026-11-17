@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -20,7 +19,6 @@ import java.util.ServiceLoader;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Priority;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -80,7 +78,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   static {
     // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
     // classloader.
-    new SecureRandom();
+    var unused = new SecureRandom();
     // Fixes an issue using AWT-backed graphics shadows when using X11 forwarding.
     System.setProperty("java.awt.headless", "true");
     // Fixes a performance regression in caused by the addition of RSA modulus
@@ -129,13 +127,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     this(testClass, DEFAULT_INJECTOR);
   }
 
+  @SuppressWarnings("StaticAssignmentInConstructor")
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
     super(testClass, injector);
-
-    if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
-      DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
-    }
 
     this.sandboxManager = injector.getInstance(SandboxManager.class);
     this.sdkPicker = injector.getInstance(SdkPicker.class);
@@ -281,22 +276,24 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     if (verifySdk) {
       sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+      // Like an unsupported SDK, an IllegalArgumentException fails only this test.
+      if (sqliteMode == SQLiteMode.Mode.LEGACY) {
+        throw new IllegalArgumentException(
+            "The legacy SQLite mode was removed in Robolectric 4.19, and SQLite is always native."
+                + " Remove @SQLiteMode(LEGACY), or the sqliteMode=LEGACY property, from "
+                + method.getDeclaringClass().getName()
+                + ".");
+      }
     }
     return sandboxManager.getAndroidSandbox(
-        classLoaderConfig, sdk, resourcesMode, looperMode, sqliteMode, graphicsMode);
+        classLoaderConfig, sdk, resourcesMode, looperMode, graphicsMode);
   }
 
   @Override
   protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
-    SQLiteMode.Mode sqliteMode =
-        roboMethod.configuration == null
-            ? SQLiteMode.Mode.LEGACY
-            : roboMethod.configuration.get(SQLiteMode.Mode.class);
-
     AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
-    androidSandbox.updateModes(sqliteMode);
     if (roboMethod.configuration != null) {
       // Class-level code (@BeforeClass, class rules) runs before any test sets up its environment.
       androidSandbox.updateConfigurationRegistry(roboMethod.configuration);
@@ -493,18 +490,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @SuppressWarnings("InlineMeSuggester")
   protected Config buildGlobalConfig() {
     return new Config.Builder().build();
-  }
-
-  @AutoService(GlobalConfigProvider.class)
-  @Priority(Integer.MIN_VALUE)
-  @Deprecated
-  public static class DeprecatedTestRunnerDefaultConfigProvider implements GlobalConfigProvider {
-    static Config globalConfig = new Config.Builder().build();
-
-    @Override
-    public Config get() {
-      return globalConfig;
-    }
   }
 
   @Override

@@ -66,8 +66,8 @@ public class ShadowStatsManager {
   }
 
   /**
-   * Retrieves the broadcast subscriber map stored in the shadow as a result of {@link
-   * StatsManager#setBroadcastSubscriber()}.
+   * Retrieves the broadcast subscriber map stored in the shadow as a result of {@code
+   * StatsManager.setBroadcastSubscriber}.
    *
    * @return A map where the keys are {@link BroadcastSubscriberKey} objects, which contain the
    *     configKey and subscriberId, and the values are {@link PendingIntent} objects.

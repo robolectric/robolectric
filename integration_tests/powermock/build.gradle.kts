@@ -6,6 +6,7 @@ dependencies {
   api(project(":robolectric"))
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
 
+  testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)

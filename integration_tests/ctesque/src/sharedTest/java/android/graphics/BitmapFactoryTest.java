@@ -92,7 +92,7 @@ public class BitmapFactoryTest {
     ByteArrayInputStream inputStream = new ByteArrayInputStream(invalidBitmapPixels);
     BitmapFactory.Options opts = new Options();
     Bitmap result = BitmapFactory.decodeStream(inputStream, null, opts);
-    assertThat(result).isEqualTo(null);
+    assertThat(result).isNull();
     assertThat(opts.outWidth).isEqualTo(-1);
     assertThat(opts.outHeight).isEqualTo(-1);
   }

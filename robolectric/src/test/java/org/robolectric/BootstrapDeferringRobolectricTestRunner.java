@@ -76,6 +76,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
     void callSetUpApplicationState();
 
+    void setInstallContentProviders(boolean installContentProviders);
+
     void changeConfig(Configuration config);
 
     AndroidManifest getAppManifest();

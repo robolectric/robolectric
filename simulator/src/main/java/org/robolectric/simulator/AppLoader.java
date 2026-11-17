@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.GraphicsMode;
@@ -56,10 +57,11 @@ public class AppLoader implements Runnable {
   @Override
   public void run() {
     Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
-    // Android always has a default handler, and apps' crash reporters wrap it. Install it before
-    // the Application is created. A crash on another thread ends the simulator, like a crash on
-    // the main thread does.
-    SimulatorUncaughtExceptionHandler.installIfNone(() -> System.exit(1));
+    // Android always has a default uncaught exception handler, and apps' crash reporters wrap it.
+    // With robolectric.installDefaultUncaughtExceptionHandler, which the simulator Gradle plugin
+    // sets, AndroidTestEnvironment installs one that logs the crash and then hands it to this one,
+    // so a crash on another thread ends the simulator, like a crash on the main thread does.
+    Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> System.exit(1));
 
     AndroidManifest manifest = new AndroidManifest(null, null, null, null, "", this.apkPath);
 
@@ -73,7 +75,11 @@ public class AppLoader implements Runnable {
             .put(Config.class, getBestConfig())
             .build();
 
-    this.sandbox.getTestEnvironment().setUpApplicationState("simulator", configuration, manifest);
+    AndroidTestEnvironment testEnvironment = (AndroidTestEnvironment) sandbox.getTestEnvironment();
+    // Android creates the manifest's content providers before Application.onCreate, and libraries
+    // such as androidx.startup and Firebase initialize themselves from one.
+    testEnvironment.setInstallContentProviders(true);
+    testEnvironment.setUpApplicationState("simulator", configuration, manifest);
 
     Application application = RuntimeEnvironment.getApplication();
 

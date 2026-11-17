@@ -47,6 +47,7 @@ import org.junit.runners.MethodSorters;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
@@ -99,6 +100,46 @@ public class RobolectricTestRunnerTest {
             "failure: API level 11 is not available",
             "finished: oldSdkMethod",
             "ignored: ignoredOldSdkMethod");
+  }
+
+  @Test
+  public void legacySQLiteMode_failsTheTestsThatUseIt() throws Exception {
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithLegacySQLite.class);
+    runner.run(notifier);
+    assertThat(events)
+        .containsExactly(
+            "started: legacy",
+            "failure: " + legacySQLiteMessage(TestWithLegacySQLite.class),
+            "finished: legacy",
+            "started: nativeSqlite",
+            "finished: nativeSqlite")
+        .inOrder();
+  }
+
+  @Test
+  public void legacySQLiteModeProperty_failsTests() throws Exception {
+    setSystemPropertyRule.set("robolectric.sqliteMode", "LEGACY");
+    // A new injector, so the configurers read the property.
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(
+            TestWithTwoMethods.class, SingleSdkRobolectricTestRunner.defaultInjector().build());
+    runner.run(notifier);
+    assertThat(events)
+        .containsExactly(
+            "started: first",
+            "failure: " + legacySQLiteMessage(TestWithTwoMethods.class),
+            "finished: first",
+            "started: second",
+            "failure: " + legacySQLiteMessage(TestWithTwoMethods.class),
+            "finished: second")
+        .inOrder();
+  }
+
+  private static String legacySQLiteMessage(Class<?> testClass) {
+    return "The legacy SQLite mode was removed in Robolectric 4.19, and SQLite is always native."
+        + " Remove @SQLiteMode(LEGACY), or the sqliteMode=LEGACY property, from "
+        + testClass.getName()
+        + ".";
   }
 
   @Test
@@ -360,6 +401,19 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void second() throws Exception {}
+  }
+
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  public static class TestWithLegacySQLite {
+    @Test
+    @SQLiteMode(SQLiteMode.Mode.LEGACY)
+    public void legacy() {
+      fail("I should not be run!");
+    }
+
+    @Test
+    public void nativeSqlite() {}
   }
 
   @Ignore

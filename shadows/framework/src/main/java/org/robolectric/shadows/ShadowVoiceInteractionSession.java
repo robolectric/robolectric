@@ -160,9 +160,9 @@ public class ShadowVoiceInteractionSession {
    * The method calls {@link VoiceInteractionSession#onRequestCommand(CommandRequest)} with newly
    * created {@link VoiceInteractionSession.CommandRequest}.
    *
-   * @param commandRequest: Command request sent by a third-party application.
-   * @param packageName: Package name of the application that initiated the request.
-   * @param uid: User ID of the application that initiated the request.
+   * @param commandRequest Command request sent by a third-party application.
+   * @param packageName Package name of the application that initiated the request.
+   * @param uid User ID of the application that initiated the request.
    * @return newly created {@link VoiceInteractionSession.CommandRequest}
    */
   public CommandRequest sendCommandRequest(
@@ -183,11 +183,11 @@ public class ShadowVoiceInteractionSession {
   /**
    * Creates the {@link VoiceInteractionSession.CommandRequest}.
    *
-   * @param packageName: Package name of the application that initiated the request.
-   * @param uid: User ID of the application that initiated the request.
-   * @param callback: IVoiceInteractorCallback.
-   * @param command: RequestCommand command.
-   * @param extras: Additional extra information that was supplied as part of the request.
+   * @param packageName Package name of the application that initiated the request.
+   * @param uid User ID of the application that initiated the request.
+   * @param callback IVoiceInteractorCallback.
+   * @param command RequestCommand command.
+   * @param extras Additional extra information that was supplied as part of the request.
    * @return created {@link VoiceInteractionSession.CommandRequest}.
    */
   private CommandRequest createCommandRequest(

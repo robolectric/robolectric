@@ -254,7 +254,7 @@ public class ShadowLog {
    * <p>If log capturing is disabled, {@link #getLogs()} and {@link #getLogsForTag(String)} will
    * throw if called.
    *
-   * @param isEnabled
+   * @param isEnabled whether log capture is enabled
    */
   public static void setCaptureLogsEnabled(boolean isEnabled) {
     boolean previous = logCaptureEnabled.getAndSet(isEnabled);
