@@ -199,8 +199,6 @@ public class ShadowWrangler implements ClassHandler {
               } else if (shadowMethod.isAnnotationPresent(Filter.class)) {
                 mh = getFilterMethodHandle(shadowMethod, name, paramTypes, definingClass, isStatic);
               } else {
-                shadowMethod.setAccessible(true);
-
                 if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)) {
                   if (Modifier.isStatic(shadowMethod.getModifiers())) {
                     throw new UnsupportedOperationException(
@@ -244,7 +242,6 @@ public class ShadowWrangler implements ClassHandler {
       throws IllegalAccessException {
     validateFilter(shadowMethod, name, isStatic);
 
-    shadowMethod.setAccessible(true);
     MethodHandle filter = LOOKUP.unreflect(shadowMethod);
 
     String originalName = Shadow.directMethodName(definingClass.getName(), name);
