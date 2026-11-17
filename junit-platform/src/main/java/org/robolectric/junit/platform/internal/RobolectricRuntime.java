@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
@@ -185,19 +186,33 @@ public final class RobolectricRuntime {
 
   public SandboxSpec createSpec(
       Configuration configuration, Sdk sdk, InstrumentationConfiguration classLoaderConfig) {
+    return createSpec(configuration, sdk, classLoaderConfig, null);
+  }
+
+  /**
+   * Returns the spec of a sandbox that {@code sandboxManager}, rather than the engine's, creates,
+   * or the engine's if it is null.
+   */
+  public SandboxSpec createSpec(
+      Configuration configuration,
+      Sdk sdk,
+      InstrumentationConfiguration classLoaderConfig,
+      @Nullable SandboxManager sandboxManager) {
     return new SandboxSpec(
         classLoaderConfig,
         sdk,
         configuration.get(ResourcesMode.Mode.class),
         configuration.get(LooperMode.Mode.class),
-        configuration.get(GraphicsMode.Mode.class));
+        configuration.get(GraphicsMode.Mode.class),
+        sandboxManager);
   }
 
   /** Returns the sandbox for {@code spec}, creating it if needed. */
   public AndroidSandbox getSandbox(SandboxSpec spec) {
     spec.sdk.verifySupportedSdk(spec.displayName());
+    SandboxManager manager = spec.sandboxManager != null ? spec.sandboxManager : sandboxManager;
     AndroidSandbox sandbox =
-        sandboxManager.getAndroidSandbox(
+        manager.getAndroidSandbox(
             spec.classLoaderConfig,
             spec.sdk,
             spec.resourcesMode,

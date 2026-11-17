@@ -28,12 +28,14 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.TestLifecycle;
 import org.robolectric.internal.AndroidSandbox;
+import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.inject.Injector;
 
 /**
  * Runs JUnit 4 classes that use {@code RobolectricTestRunner} (or a subclass, a {@code Suite} of
@@ -133,11 +135,28 @@ final class JUnit4Compat {
                 ReflectionHelpers.callInstanceMethod(
                     unit.runner, "createClassLoaderConfig", parameter));
         SandboxSpec spec =
-            runtime.createSpec(method.getConfiguration(), method.getSdk(), classLoaderConfig);
+            runtime.createSpec(
+                method.getConfiguration(),
+                method.getSdk(),
+                classLoaderConfig,
+                customSandboxManager(unit.runner));
         result.add(new PlannedTest(unit, method, description, ignored, spec));
       }
     }
     return result;
+  }
+
+  /**
+   * Returns the {@link SandboxManager} of a runner that has an injector of its own, which can bind
+   * another {@code TestEnvironmentSpec}, or null for a runner with the default injector, whose
+   * tests share the engine's sandboxes.
+   */
+  @Nullable
+  private static SandboxManager customSandboxManager(RobolectricTestRunner runner) {
+    SandboxManager manager = ReflectionHelpers.getField(runner, "sandboxManager");
+    Injector defaultInjector =
+        ReflectionHelpers.getStaticField(RobolectricTestRunner.class, "DEFAULT_INJECTOR");
+    return manager == defaultInjector.getInstance(SandboxManager.class) ? null : manager;
   }
 
   @Nullable

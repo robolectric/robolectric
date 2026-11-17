@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Named;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -31,13 +32,22 @@ import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.junit.jupiter.RobolectricExtension;
 import org.robolectric.junit.platform.RobolectricTestEngine;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.util.inject.Injector;
 
 /** Tests for running JUnit 4 Robolectric test classes with the robolectric engine. */
 class JUnit4CompatibilityTest {
@@ -129,6 +139,13 @@ class JUnit4CompatibilityTest {
 
     assertThat(testsOfEngine(testPlan, "robolectric")).hasSize(4);
     assertThat(testsOfEngine(testPlan, "junit-vintage")).isEmpty();
+  }
+
+  @Test
+  void runsRunnerWithInjectorOfItsOwn() {
+    executeTests(selectClass(CustomInjectorTest.class))
+        .testEvents()
+        .assertStatistics(stats -> stats.started(1).succeeded(1));
   }
 
   private static EngineExecutionResults executeTests(
@@ -247,6 +264,46 @@ class JUnit4CompatibilityTest {
     @org.junit.Test
     public void works() {
       assertTrue(getClass().getClassLoader() instanceof SandboxClassLoader);
+    }
+  }
+
+  /** A runner with an injector of its own, which binds another test environment. */
+  public static class CustomInjectorRunner extends RobolectricTestRunner {
+    private static final Injector INJECTOR =
+        defaultInjector()
+            .bind(TestEnvironmentSpec.class, new TestEnvironmentSpec(MarkingTestEnvironment.class))
+            .build();
+
+    public CustomInjectorRunner(Class<?> testClass) throws InitializationError {
+      super(testClass, INJECTOR);
+    }
+  }
+
+  public static class MarkingTestEnvironment extends AndroidTestEnvironment {
+    static boolean setUp;
+
+    public MarkingTestEnvironment(
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        @Named("compileSdk") Sdk compileSdk,
+        ShadowProvider[] shadowProviders,
+        TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
+      super(runtimeSdk, compileSdk, shadowProviders, lifecyclePlugins);
+    }
+
+    @Override
+    public void setUpApplicationState(
+        String tmpDirName, Configuration config, AndroidManifest appManifest) {
+      setUp = true;
+      super.setUpApplicationState(tmpDirName, config, appManifest);
+    }
+  }
+
+  @RunWith(CustomInjectorRunner.class)
+  @Config(sdk = 34)
+  public static class CustomInjectorTest {
+    @org.junit.Test
+    public void usesTestEnvironmentOfRunner() {
+      assertTrue(MarkingTestEnvironment.setUp);
     }
   }
 }
