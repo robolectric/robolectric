@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -179,7 +178,6 @@ public class ShadowProcessTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGetStartElapsedRealtimeAsSet() {
     ShadowProcess.setStartElapsedRealtime(123L);
 
@@ -187,7 +185,6 @@ public class ShadowProcessTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGetStartElapsedRealtimeAsZeroAfterReset() {
     ShadowProcess.setStartElapsedRealtime(123L);
 

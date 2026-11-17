@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
@@ -13,7 +12,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow for {@link NativeAllocationRegistry} that is a no-op. */
-@Implements(value = NativeAllocationRegistry.class, minSdk = N, isInAndroidSdk = false)
+@Implements(value = NativeAllocationRegistry.class, isInAndroidSdk = false)
 public class ShadowNoopNativeAllocationRegistry {
 
   @RealObject protected NativeAllocationRegistry realNativeAllocationRegistry;

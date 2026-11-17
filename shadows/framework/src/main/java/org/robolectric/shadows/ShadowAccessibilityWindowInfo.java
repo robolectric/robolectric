@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -125,7 +124,7 @@ public class ShadowAccessibilityWindowInfo {
     return (rootNode == null) ? null : AccessibilityNodeInfo.obtain(rootNode);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected AccessibilityNodeInfo getAnchor() {
     if (useRealAni()) {
       return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
@@ -247,7 +246,7 @@ public class ShadowAccessibilityWindowInfo {
    *
    * @param value The {@link CharSequence} to set as the title of this window
    */
-  @Implementation(minSdk = N)
+  @Implementation
   public void setTitle(CharSequence value) {
     reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).setTitle(value);
   }

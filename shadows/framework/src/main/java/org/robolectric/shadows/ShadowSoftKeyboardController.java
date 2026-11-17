@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
-
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.SoftKeyboardController;
 import android.os.Handler;
@@ -12,7 +10,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 /** Shadow of SoftKeyboardController. */
-@Implements(value = SoftKeyboardController.class, minSdk = N)
+@Implements(SoftKeyboardController.class)
 public class ShadowSoftKeyboardController {
 
   @RealObject private SoftKeyboardController realObject;

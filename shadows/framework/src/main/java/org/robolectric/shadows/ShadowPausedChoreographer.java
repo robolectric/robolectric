@@ -11,7 +11,6 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.FrameInfo;
-import android.os.Build.VERSION_CODES;
 import android.os.Looper;
 import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
@@ -70,7 +69,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
   }
 
   /** Disposes the receiver, if present, and removes the choreographer from reset tracking. */
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void dispose() {
     DisplayEventReceiver receiver =
         reflector(ChoreographerReflector.class, realChoreographer).getReceiver();

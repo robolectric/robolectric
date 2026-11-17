@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
-
 import android.os.Debug;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
@@ -90,7 +88,7 @@ public class ShadowDebug {
     tracingFilename = null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected static String fixTracePath(String tracePath) {
     String defaultTraceBody = "dmtrace";
     String defaultTraceExtension = ".trace";

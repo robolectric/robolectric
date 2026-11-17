@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 /** Shadow of MagnificationController. */
-@Implements(value = MagnificationController.class, minSdk = VERSION_CODES.N)
+@Implements(MagnificationController.class)
 public class ShadowMagnificationController {
 
   private static final float DEFAULT_CENTER_X = 0.0f;

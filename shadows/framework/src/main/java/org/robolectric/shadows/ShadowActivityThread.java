@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
@@ -176,7 +175,7 @@ public class ShadowActivityThread {
   }
 
   // Override this method as it's used directly by reflection by androidx ActivityRecreator.
-  @Implementation(minSdk = N, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected void requestRelaunchActivity(
       IBinder token,
       List<ResultInfo> pendingResults,

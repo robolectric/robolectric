@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -712,7 +711,7 @@ public class ShadowTelephonyManager {
     return simCountryIso == null ? null : Ascii.toLowerCase(simCountryIso);
   }
 
-  @Implementation(minSdk = N, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   @HiddenApi
   protected String getSimCountryIso(int subId) {
     return simCountryIsoMap.get(subId);
@@ -887,7 +886,7 @@ public class ShadowTelephonyManager {
    * Returns whatever value was set by the last call to {@link #setDataNetworkType}, defaulting to
    * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getDataNetworkType() {
     checkReadPhoneStatePermission();
     return dataNetworkType;
@@ -909,7 +908,7 @@ public class ShadowTelephonyManager {
    *
    * <p>An exception will be thrown if the READ_PHONE_STATE permission has not been granted.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getVoiceNetworkType() {
     checkReadPhoneStatePermission();
     return voiceNetworkType;
@@ -1266,7 +1265,7 @@ public class ShadowTelephonyManager {
    * Returns {@code null} by default or the value specified via {@link
    * #setVoicemailVibrationEnabled(PhoneAccountHandle, boolean)}.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isVoicemailVibrationEnabled(PhoneAccountHandle handle) {
     Boolean result = voicemailVibrationEnabledMap.get(handle);
     return result != null ? result : false;
@@ -1285,7 +1284,7 @@ public class ShadowTelephonyManager {
    * Returns {@code null} by default or the value specified via {@link
    * #setVoicemailRingtoneUri(PhoneAccountHandle, Uri)}.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected Uri getVoicemailRingtoneUri(PhoneAccountHandle handle) {
     return voicemailRingtoneUriMap.get(handle);
   }
@@ -1338,7 +1337,7 @@ public class ShadowTelephonyManager {
    * Returns {@code null} by default or the value specified via {@link
    * #setTelephonyManagerForSubscriptionId(int, TelephonyManager)}
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected TelephonyManager createForSubscriptionId(int subId) {
     return subscriptionIdsToTelephonyManagers.get(subId);
   }
@@ -1788,7 +1787,7 @@ public class ShadowTelephonyManager {
   /**
    * @return False by default, unless set with {@link #setHasCarrierPrivileges(int, boolean)}.
    */
-  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @Implementation
   @HiddenApi
   protected boolean hasCarrierPrivileges(int subId) {
     return subIdToHasCarrierPrivileges.getOrDefault(subId, false);
@@ -2011,7 +2010,7 @@ public class ShadowTelephonyManager {
     return modemRebootCount.get();
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected String getIccAuthentication(int appType, int authType, String data) {
     return iccAuthentication;
   }

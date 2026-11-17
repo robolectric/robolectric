@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -1025,7 +1024,7 @@ public class ShadowView {
     ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void getWindowDisplayFrame(Rect outRect) {
     // TODO: figure out how to simulate this logic instead
     // if (mAttachInfo != null) {

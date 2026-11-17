@@ -22,7 +22,6 @@ import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -1235,7 +1234,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return PERMISSION_CONTROLLER_PACKAGE_NAME;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void getPackageSizeInfoAsUser(
       String pkgName,
       int uid,
@@ -1421,7 +1420,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LEANBACK_LAUNCHER);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected @ClassName("android.content.pm.PackageInfo") Object getPackageInfoAsUser(
       String packageName, int flags, int userId) throws NameNotFoundException {
     return getPackageInfo(packageName, flags);
@@ -1442,7 +1441,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new int[0];
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int[] getPackageGids(String packageName, int flags) throws NameNotFoundException {
     return null;
   }
@@ -1474,12 +1473,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getPackageUidAsUser(packageName, (int) ((PackageInfoFlags) flags).getValue());
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getPackageUidAsUser(String packageName, int userId) throws NameNotFoundException {
     return getPackageUidAsUser(packageName, /* flags= */ 0, userId);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getPackageUidAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
     // UserId is ignored because we don't currently support multi-profile calls.
@@ -1600,17 +1599,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return systemSharedLibraryNames.toArray(new String[0]);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected @Nonnull String getServicesSystemSharedLibraryPackageName() {
     return null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected @Nonnull String getSharedSystemSharedLibraryPackageName() {
     return "";
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean hasSystemFeature(String name, int version) {
     return false;
   }
@@ -1760,7 +1759,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected List<PackageInfo> getInstalledPackagesAsUser(int flags, int userId) {
     return null;
   }
@@ -1894,7 +1893,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
     return null;
   }
@@ -1998,7 +1997,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int installExistingPackageAsUser(String packageName, int userId)
       throws NameNotFoundException {
     return 0;
@@ -2007,12 +2006,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected void verifyIntentFilter(int id, int verificationCode, List<String> failedDomains) {}
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getIntentVerificationStatusAsUser(String packageName, int userId) {
     return 0;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean updateIntentVerificationStatusAsUser(
       String packageName, int status, int userId) {
     return false;
@@ -2028,12 +2027,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected String getDefaultBrowserPackageNameAsUser(int userId) {
     return defaultBrowsers.get(userId);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean setDefaultBrowserPackageNameAsUser(String packageName, int userId) {
     defaultBrowsers.put(userId, packageName);
     return true;
@@ -2086,7 +2085,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void deletePackageAsUser(
       String packageName, IPackageDeleteObserver observer, int flags, int userId) {}
 
@@ -2098,20 +2097,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected void deleteApplicationCacheFiles(String packageName, IPackageDataObserver observer) {}
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void deleteApplicationCacheFilesAsUser(
       String packageName, int userId, IPackageDataObserver observer) {}
 
   @Implementation
   protected void freeStorage(String volumeUuid, long freeStorageSize, IntentSender pi) {}
 
-  @Implementation(minSdk = N, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected String[] setPackagesSuspendedAsUser(
       String[] packageNames, boolean suspended, int userId) {
     return null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isPackageSuspendedForUser(String packageName, int userId) {
     return false;
   }
@@ -2156,7 +2155,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void flushPackageRestrictionsAsUser(int userId) {}
 
   @Implementation

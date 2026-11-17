@@ -38,7 +38,6 @@ import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowContextHubManager}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.N)
 public class ShadowContextHubManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 

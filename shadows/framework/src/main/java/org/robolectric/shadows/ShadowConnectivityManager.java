@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.Shadows.shadowOf;
@@ -194,7 +193,7 @@ public class ShadowConnectivityManager {
     registerNetworkCallback(request, networkCallback);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void requestNetwork(
       NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback, int timeoutMs) {
     registerNetworkCallback(request, networkCallback);
@@ -217,7 +216,7 @@ public class ShadowConnectivityManager {
     registerNetworkCallback(request, networkCallback, handler);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback) {
     registerDefaultNetworkCallback(networkCallback, null);
@@ -367,7 +366,7 @@ public class ShadowConnectivityManager {
   }
 
   /** Returns the captive portal URL previously set with {@link #setCaptivePortalServerUrl}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected String getCaptivePortalServerUrl() {
     return captivePortalServerUrl;
   }
@@ -640,7 +639,7 @@ public class ShadowConnectivityManager {
    * Gets the RESTRICT_BACKGROUND_STATUS value. Default value is 1
    * (RESTRICT_BACKGROUND_STATUS_DISABLED).
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getRestrictBackgroundStatus() {
     return restrictBackgroundStatus;
   }

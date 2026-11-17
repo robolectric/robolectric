@@ -1046,7 +1046,7 @@ public class ShadowLocationManager {
     }
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
     if (handler == null) {
       handler = new Handler();
@@ -1065,7 +1065,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void unregisterGnssStatusCallback(GnssStatus.Callback listener) {
     synchronized (gnssStatusTransports) {
       Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
@@ -1148,7 +1148,7 @@ public class ShadowLocationManager {
     return gnssCapabilities;
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected boolean addNmeaListener(OnNmeaMessageListener listener, Handler handler) {
     if (handler == null) {
       handler = new Handler();
@@ -1167,7 +1167,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void removeNmeaListener(OnNmeaMessageListener listener) {
     synchronized (nmeaMessageTransports) {
       Iterables.removeIf(nmeaMessageTransports, transport -> transport.getListener() == listener);
@@ -1196,7 +1196,7 @@ public class ShadowLocationManager {
     simulateNmeaMessage(message, timestamp);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected boolean registerGnssMeasurementsCallback(
       GnssMeasurementsEvent.Callback listener, Handler handler) {
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.R) {
@@ -1240,7 +1240,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback listener) {
     synchronized (gnssMeasurementTransports) {
       Iterables.removeIf(

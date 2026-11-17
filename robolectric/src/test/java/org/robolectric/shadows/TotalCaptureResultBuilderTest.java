@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public final class TotalCaptureResultBuilderTest {
 
   @Test

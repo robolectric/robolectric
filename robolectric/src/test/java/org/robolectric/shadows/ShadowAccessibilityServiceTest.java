@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -67,13 +66,11 @@ public class ShadowAccessibilityServiceTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getGesturesDispatched_returnsNothingInitially() {
     assertThat(shadow.getGesturesDispatched()).isEmpty();
   }
 
   @Test
-  @Config(minSdk = N)
   public void getGesturesDispatched_returnsFirstGestureDescription() {
     GestureDescription gestureDescription = createTestGesture();
     GestureResultCallback gestureResultCallback = createEmptyGestureResultCallback();
@@ -85,7 +82,6 @@ public class ShadowAccessibilityServiceTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getGesturesDispatched_returnsFirstGestureResultCallback() {
     GestureDescription gestureDescription = createTestGesture();
     GestureResultCallback gestureResultCallback = createEmptyGestureResultCallback();
@@ -97,7 +93,6 @@ public class ShadowAccessibilityServiceTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setCanDispatchGestures_false_causesDispatchGestureToReturnFalse() {
     GestureDescription gestureDescription = createTestGesture();
     GestureResultCallback gestureResultCallback = createEmptyGestureResultCallback();
@@ -110,7 +105,6 @@ public class ShadowAccessibilityServiceTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setCanDispatchGestures_false_stopsRecordingDispatchedGestures() {
     GestureDescription gestureDescription = createTestGesture();
     GestureResultCallback gestureResultCallback = createEmptyGestureResultCallback();
@@ -122,7 +116,6 @@ public class ShadowAccessibilityServiceTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setCanDispatchGestures_true_causesDispatchGestureToReturnTrue() {
     GestureDescription gestureDescription = createTestGesture();
     GestureResultCallback gestureResultCallback = createEmptyGestureResultCallback();

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
-
 import android.os.Process;
 import android.os.health.HealthStats;
 import android.os.health.SystemHealthManager;
@@ -11,7 +9,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow for {@link android.os.health.SystemHealthManager} */
-@Implements(value = SystemHealthManager.class, minSdk = N)
+@Implements(SystemHealthManager.class)
 public class ShadowSystemHealthManager {
 
   private static final HealthStats DEFAULT_HEALTH_STATS =

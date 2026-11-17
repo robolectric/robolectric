@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -13,12 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.testing.TestAccessibilityService;
 
 /** Test for ShadowSoftKeyboardController. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = N)
 public final class ShadowSoftKeyboardControllerTest {
 
   private SoftKeyboardController softKeyboardController;

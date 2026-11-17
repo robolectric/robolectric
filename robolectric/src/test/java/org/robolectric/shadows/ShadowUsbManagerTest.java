@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -111,7 +110,6 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void grantPermission_selfPackage_shouldHavePermission() {
     usbManager.grantPermission(usbDevice1);
 

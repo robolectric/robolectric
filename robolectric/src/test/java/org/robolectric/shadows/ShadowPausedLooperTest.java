@@ -735,7 +735,6 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
   public void runOneTask_ignoreSyncBarrier() {
     int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
 

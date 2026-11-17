@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
@@ -107,7 +106,7 @@ public class ShadowAccessibilityService extends ShadowService {
     return anotherArray;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean dispatchGesture(
       GestureDescription gesture, GestureResultCallback callback, Handler handler) {
     if (canDispatchGestures) {

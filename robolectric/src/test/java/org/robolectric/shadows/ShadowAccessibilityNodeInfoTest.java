@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -203,7 +202,6 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(nodeCopy.getExtras().getString("key")).isEqualTo("value");
   }
 
-  @Config(minSdk = N)
   @Test
   public void shouldClonePreserveImportance() {
     node.setImportantForAccessibility(true);

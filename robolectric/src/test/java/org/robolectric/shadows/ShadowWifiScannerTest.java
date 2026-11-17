@@ -22,7 +22,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = VERSION_CODES.N)
 public class ShadowWifiScannerTest {
   private static final ImmutableList<ScanResult> SCAN_RESULTS = createFakeScanResults();
 

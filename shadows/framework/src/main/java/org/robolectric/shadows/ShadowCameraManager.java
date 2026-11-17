@@ -485,7 +485,7 @@ public class ShadowCameraManager {
     /**
      * Cannot create a CameraService connection within Robolectric. Avoid endless reconnect loop.
      */
-    @Implementation(minSdk = VERSION_CODES.N)
+    @Implementation
     protected void scheduleCameraServiceReconnectionLocked() {}
   }
 }

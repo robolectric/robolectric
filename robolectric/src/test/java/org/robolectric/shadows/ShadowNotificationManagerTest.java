@@ -227,7 +227,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void areNotificationsEnabled() {
     shadowOf(notificationManager).setNotificationsEnabled(true);
     assertThat(notificationManager.areNotificationsEnabled()).isTrue();
@@ -236,7 +235,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void setAndGetImportance() {
     shadowOf(notificationManager).setImportance(NotificationManager.IMPORTANCE_DEFAULT);
     assertThat(notificationManager.getImportance())
@@ -256,7 +254,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void
       setNotificationPolicyAccessGranted_temporarilyDenyAccess_shouldClearAutomaticZenRules() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
@@ -309,7 +306,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void getAutomaticZenRule_notificationAccessDenied_shouldThrowSecurityException() {
     try {
       notificationManager.getAutomaticZenRule("some_id");
@@ -319,7 +315,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void getAutomaticZenRule_nonexistentId_shouldReturnNull() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     AutomaticZenRule rule =
@@ -336,7 +331,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void getAutomaticZenRules_notificationAccessDenied_shouldThrowSecurityException() {
     try {
       notificationManager.getAutomaticZenRules();
@@ -346,14 +340,12 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void getAutomaticZenRules_noRulesAdded_shouldReturnEmptyMap() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     assertThat(notificationManager.getAutomaticZenRules()).isEmpty();
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void addAutomaticZenRule_notificationAccessDenied_shouldThrowSecurityException() {
     AutomaticZenRule rule =
         new AutomaticZenRule(
@@ -391,7 +383,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void addAutomaticZenRule_oneRule_shouldAddRuleAndReturnId() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
 
@@ -410,7 +401,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void addAutomaticZenRule_twoRules_shouldAddBothRulesAndReturnDifferentIds() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
 
@@ -438,7 +428,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void updateAutomaticZenRule_notificationAccessDenied_shouldThrowSecurityException() {
     AutomaticZenRule rule =
         new AutomaticZenRule(
@@ -455,7 +444,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void updateAutomaticZenRule_nonexistentId_shouldThrowSecurityException() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     AutomaticZenRule rule =
@@ -487,7 +475,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void updateAutomaticZenRule_existingId_shouldUpdateRuleAndReturnTrue() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     AutomaticZenRule rule1 =
@@ -565,7 +552,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void removeAutomaticZenRule_notificationAccessDenied_shouldThrowSecurityException() {
     try {
       notificationManager.removeAutomaticZenRule("some_id");
@@ -575,7 +561,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void removeAutomaticZenRule_nonexistentId_shouldAndReturnFalse() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     AutomaticZenRule rule =
@@ -594,7 +579,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void removeAutomaticZenRule_existingId_shouldRemoveRuleAndReturnTrue() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
     AutomaticZenRule rule1 =

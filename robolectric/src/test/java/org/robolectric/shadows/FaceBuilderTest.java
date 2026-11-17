@@ -5,14 +5,11 @@ import static com.google.common.truth.Truth.assertThat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.camera2.params.Face;
-import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public final class FaceBuilderTest {
 
   @Test

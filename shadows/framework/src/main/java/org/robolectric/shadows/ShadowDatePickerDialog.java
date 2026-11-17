@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -21,7 +20,7 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
   @RealObject protected DatePickerDialog realDatePickerDialog;
   private Calendar calendar;
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void __constructor__(
       Context context,
       int theme,

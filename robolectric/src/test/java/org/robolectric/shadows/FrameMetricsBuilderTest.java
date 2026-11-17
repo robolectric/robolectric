@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -12,7 +11,6 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link FrameMetricsBuilder}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = N)
 public class FrameMetricsBuilderTest {
 
   @Test

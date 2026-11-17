@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -910,7 +909,7 @@ public class ShadowAudioManager {
    * Returns list of active recording configurations that was set by {@link
    * #setActiveRecordingConfigurations} or empty list otherwise.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected List<AudioRecordingConfiguration> getActiveRecordingConfigurations() {
     return activeRecordingConfigurations;
   }
@@ -919,14 +918,14 @@ public class ShadowAudioManager {
    * Registers callback that will receive changes made to the list of active recording
    * configurations by {@link #setActiveRecordingConfigurations}.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected void registerAudioRecordingCallback(
       AudioManager.AudioRecordingCallback cb, Handler handler) {
     audioRecordingCallbacks.add(cb);
   }
 
   /** Unregisters callback listening to changes made to list of active recording configurations. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected void unregisterAudioRecordingCallback(AudioManager.AudioRecordingCallback cb) {
     audioRecordingCallbacks.remove(cb);
   }

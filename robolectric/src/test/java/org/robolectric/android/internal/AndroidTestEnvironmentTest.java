@@ -226,7 +226,6 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void setUpApplicationState_shouldCreateStorageDirs_Nplus() {
     bootstrapWrapper.callSetUpApplicationState();
     ApplicationInfo applicationInfo =

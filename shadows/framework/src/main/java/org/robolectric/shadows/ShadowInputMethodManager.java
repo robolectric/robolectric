@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -264,7 +263,7 @@ public class ShadowInputMethodManager {
   @Implementation
   protected void displayCompletions(View view, CompletionInfo[] completions) {}
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean startInputInner(
       int startInputReason,
       IBinder windowGainingFocus,

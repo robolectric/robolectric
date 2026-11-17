@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -40,7 +39,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
 
-@Implements(value = SubscriptionManager.class)
+@Implements(SubscriptionManager.class)
 public class ShadowSubscriptionManager {
 
   private static boolean readPhoneStatePermission = true;
@@ -79,13 +78,13 @@ public class ShadowSubscriptionManager {
   }
 
   /** Returns value set with {@link #setDefaultSubscriptionId(int)}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected static int getDefaultSubscriptionId() {
     return defaultSubscriptionId;
   }
 
   /** Returns value set with {@link #setDefaultDataSubscriptionId(int)}. */
-  @Implementation(minSdk = N)
+  @Implementation
   protected static int getDefaultDataSubscriptionId() {
     return defaultDataSubscriptionId;
   }
@@ -335,7 +334,7 @@ public class ShadowSubscriptionManager {
    * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} if it can find
    * one with the specified slot index or null if none found.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
     if (throwException != null) {
       throw throwException;

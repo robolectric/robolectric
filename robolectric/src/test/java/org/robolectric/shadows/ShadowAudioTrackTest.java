@@ -5,7 +5,6 @@ import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -547,7 +546,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void getRoutedDevice_withoutSetRoutedDevice_returnsNull() {
     AudioTrack audioTrack = new AudioTrack.Builder().build();
 
@@ -555,7 +553,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void getRoutedDevice_afterSetRoutedDevice_returnsRoutedDevice() {
     AudioTrack audioTrack = new AudioTrack.Builder().build();
     AudioDeviceInfo audioDeviceInfo =
@@ -567,7 +564,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void addOnRoutingChangedListener_beforeSetRoutedDevice_listenerCalledOnceDeviceSet() {
     AudioTrack audioTrack = new AudioTrack.Builder().build();
     AudioDeviceInfo audioDeviceInfo =
@@ -588,7 +584,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void
       addOnRoutingChangedListener_afterSetRoutedDevice_listenerCalledImmediatelyAndWhenNewDeviceSet() {
     AudioTrack audioTrack = new AudioTrack.Builder().build();
@@ -614,7 +609,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void setRoutedDevice_toNull_listenerCalled() {
     AudioTrack audioTrack = new AudioTrack.Builder().build();
     AudioDeviceInfo audioDeviceInfo =
@@ -633,7 +627,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void removeOnRoutingChangedListener_noFurtherUpdatesSent() {
     AudioTrack audioTrack = new AudioTrack.Builder().build();
     AudioDeviceInfo audioDeviceInfo1 =
@@ -658,7 +651,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void play_illegalStateOnPlayEnabled_throws() {
     ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ true);
     AudioTrack audioTrack = new AudioTrack.Builder().build();
@@ -666,7 +658,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void play_illegalStateOnPlayEnabled_thenDisabled_notThrowing() {
     ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ true);
     AudioTrack audioTrack = new AudioTrack.Builder().build();
@@ -675,7 +666,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = N)
   public void play_illegalStateOnPlayEnabled_reset_notThrowing() {
     ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ true);
     AudioTrack audioTrack = new AudioTrack.Builder().build();

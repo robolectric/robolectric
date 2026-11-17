@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -79,7 +78,6 @@ public class ShadowInstrumentationTest {
    * ShadowInstrumentation implementation.
    */
   @Test
-  @Config(minSdk = N)
   public void concurrentStartService_hasCorrectStartServiceCount() throws InterruptedException {
 
     HandlerThread background1Thread = new HandlerThread("background1");

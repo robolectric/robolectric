@@ -57,7 +57,6 @@ public class ShadowWindowManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.N)
   public void startDragAndDrop_withoutClipData_startsDrag() {
     ShadowWindowManagerGlobal.clearLastDragClipData();
     View view =

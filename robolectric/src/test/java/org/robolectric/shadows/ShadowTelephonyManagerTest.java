@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.os.Build.VERSION_CODES.BASE;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -389,14 +388,12 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGiveDataNetworkType() {
     shadowOf(telephonyManager).setDataNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getDataNetworkType());
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGiveVoiceNetworkType() {
     shadowOf(telephonyManager).setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertThat(telephonyManager.getVoiceNetworkType())
@@ -753,7 +750,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGiveVoiceVibrationEnabled() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
@@ -765,7 +761,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setVoicemailVibrationEnabled_accessibleFromAllTelephonyManagers() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
@@ -777,7 +772,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGiveVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
@@ -804,7 +798,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setVoicemailRingtoneUri_accessibleFromAllTelephonyManagers() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
@@ -846,7 +839,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldCreateForSubscriptionId() {
     int subscriptionId = 42;
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
@@ -858,7 +850,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldCreateForSubscriptionId_fromAllInstances() {
     int subscriptionId = 42;
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
@@ -1062,7 +1053,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
+  @Config(maxSdk = Q)
   public void shouldGetSimIso_resetsZeroSpecial() {
     assertThat(callGetSimCountryIso(telephonyManager, 1)).isNull();
     assertThat(callGetSimCountryIso(telephonyManager, 0)).isEmpty();
@@ -1089,7 +1080,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
+  @Config(maxSdk = Q)
   public void shouldGetSimIsoWhenSetUsingSlotNumber() {
     String expectedSimIso = "usa";
     int subId = 2;
@@ -1099,7 +1090,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
+  @Config(maxSdk = Q)
   public void setSimIso_withSlotParameter_doesNotAffectCaller() {
     String expectedSimIso = "usa";
     int subId = 2;
@@ -1109,7 +1100,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
+  @Config(maxSdk = Q)
   public void setSimIso_withSlotParameter_acceptsNull() {
     String expectedSimIso = "usa";
     int subId = 2;
@@ -1299,7 +1290,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void resetSimCountryIsos_shouldRetainDefaultState() {
     shadowOf(telephonyManager).resetSimCountryIsos();
 
@@ -1307,7 +1297,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
+  @Config(maxSdk = Q)
   public void resetSimCountryIsos_resetZeroSpecial() {
     shadowOf(telephonyManager).resetSimCountryIsos();
     assertThat(callGetSimCountryIso(telephonyManager, 1)).isNull();
@@ -1610,7 +1600,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void hasCarrierPrivilegesWithSubId() {
     int subId = 3;
     assertThat(telephonyManager.hasCarrierPrivileges(subId)).isFalse();
@@ -2033,7 +2022,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void shouldGetIccAuthentication() {
     shadowOf(telephonyManager).setIccAuthentication("iccAuth");
 

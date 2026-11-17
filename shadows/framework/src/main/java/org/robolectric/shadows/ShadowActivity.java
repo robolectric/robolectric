@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
@@ -951,17 +950,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     inMultiWindowMode = value;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isInMultiWindowMode() {
     return inMultiWindowMode;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isInPictureInPictureMode() {
     return isInPictureInPictureMode;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected void enterPictureInPictureMode() {
     isInPictureInPictureMode = true;
   }

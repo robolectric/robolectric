@@ -87,7 +87,7 @@ public class ShadowAlarmManager {
     setImpl(type, triggerAtMs, WINDOW_HEURISTIC, 0L, operation, null, null, false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void set(
       int type,
       long triggerAtMs,
@@ -118,7 +118,7 @@ public class ShadowAlarmManager {
     setImpl(type, windowStartMs, windowLengthMs, 0L, operation, null, null, false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void setWindow(
       int type,
       long windowStartMs,
@@ -179,7 +179,7 @@ public class ShadowAlarmManager {
     setImpl(type, triggerAtMs, WINDOW_EXACT, 0L, operation, null, null, false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void setExact(
       int type,
       long triggerAtTime,
@@ -214,7 +214,7 @@ public class ShadowAlarmManager {
     setImpl(type, triggerAtMs, windowLengthMs, intervalMs, operation, workSource, null, false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void set(
       int type,
       long triggerAtMs,
@@ -236,7 +236,7 @@ public class ShadowAlarmManager {
         false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void set(
       int type,
       long triggerAtMs,
@@ -311,7 +311,7 @@ public class ShadowAlarmManager {
     }
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation
   protected void cancel(OnAlarmListener listener) {
     synchronized (scheduledAlarms) {
       Iterables.removeIf(

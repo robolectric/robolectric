@@ -57,7 +57,6 @@ public final class ShadowCallTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
   public void triggerStateChanged_invokesCallback() {
     Call.Callback mockCallback = mock(Call.Callback.class);
     call.registerCallback(mockCallback);
@@ -68,7 +67,6 @@ public final class ShadowCallTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
   public void triggerDetailsChanged_invokesCallback() {
     Call.Callback mockCallback = mock(Call.Callback.class);
     call.registerCallback(mockCallback);
@@ -80,7 +78,6 @@ public final class ShadowCallTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
   public void triggerCallDestroyed_invokesCallback() {
     Call.Callback mockCallback = mock(Call.Callback.class);
     call.registerCallback(mockCallback);

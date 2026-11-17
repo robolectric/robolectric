@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -736,7 +735,6 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void notifyChangeWithFlags_shouldTrackNotifiedUris() {
     contentResolver.notifyChange(Uri.parse("foo"), null, ContentResolver.NOTIFY_SYNC_TO_NETWORK);
     contentResolver.notifyChange(Uri.parse("bar"), null, ContentResolver.NOTIFY_UPDATE);

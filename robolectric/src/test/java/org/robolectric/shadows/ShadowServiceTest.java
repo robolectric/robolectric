@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -154,7 +153,6 @@ public class ShadowServiceTest {
    * allowing it to remain after the service dies.
    */
   @Test
-  @Config(minSdk = N)
   public void onDestroyDoesntRemoveDetachedNotification() {
     Notification n = notBuilder.build();
     service.startForeground(21, n);

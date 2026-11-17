@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
@@ -386,7 +385,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void requestNetwork_withTimeout_shouldAddCallback() {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
@@ -413,7 +411,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void registerDefaultCallback_shouldAddCallback() {
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -681,7 +678,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_notifiesRegisteredCallbacks() {
     RecordingNetworkCallback defaultCallback = new RecordingNetworkCallback();
     RecordingNetworkCallback requestCallback = new RecordingNetworkCallback();
@@ -706,7 +702,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_callbacksDisabled_stillUpdatesCapabilities() {
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -729,7 +724,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_callbackUnregistersItself() {
     RecordingNetworkCallback callback =
         new RecordingNetworkCallback() {
@@ -752,7 +746,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_nullCapabilities_doesNotNotifyCallbacks() {
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -808,7 +801,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_defaultCallbackIgnoresOtherNetworks() {
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -830,7 +822,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_onlyAnnouncesAvailabilityOnce() {
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -847,7 +838,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_afterOnAvailableDoesNotRepeatAvailability() {
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -871,7 +861,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_propertyDisabledStillUpdatesState() {
     setSystemPropertyRule.set("robolectric.notifyCapabilityChanges", "false");
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
@@ -974,7 +963,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_unregisteredBeforeDeliveryDoesNotNotify() {
     RecordingNetworkCallback callback = new RecordingNetworkCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
@@ -988,7 +976,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setNetworkCapabilities_unregisteringInOnAvailableStopsCapabilityNotification() {
     RecordingNetworkCallback callback =
         new RecordingNetworkCallback() {
@@ -1048,7 +1035,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getCaptivePortalServerUrl_shouldReturnAddedUrl() {
     assertThat(connectivityManager.getCaptivePortalServerUrl()).isEqualTo("http://10.0.0.2");
 
@@ -1091,7 +1077,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setRestrictBackgroundStatus() {
     shadowOf(connectivityManager).setRestrictBackgroundStatus(1);
     assertThat(connectivityManager.getRestrictBackgroundStatus())
@@ -1107,13 +1092,11 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void setRestrictBackgroundStatus_defaultValueIsDisabled() {
     assertThat(connectivityManager.getRestrictBackgroundStatus())
         .isEqualTo(RESTRICT_BACKGROUND_STATUS_DISABLED);
   }
 
-  @Config(minSdk = N)
   @Test
   public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus0() {
     assertThrows(
@@ -1121,7 +1104,6 @@ public class ShadowConnectivityManagerTest {
         () -> shadowOf(connectivityManager).setRestrictBackgroundStatus(0));
   }
 
-  @Config(minSdk = N)
   @Test
   public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus4() {
     assertThrows(

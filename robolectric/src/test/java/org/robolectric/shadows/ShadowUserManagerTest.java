@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -129,7 +128,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isUserUnlocked() {
     assertThat(userManager.isUserUnlocked()).isTrue();
     shadowOf(userManager).setUserUnlocked(false);
@@ -217,7 +215,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isManagedProfileWithHandle() {
     shadowOf(userManager).addUser(12, "secondary user", 0);
     shadowOf(userManager)
@@ -424,7 +421,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isPrimaryUser() {
     assertThat(userManager.isPrimaryUser()).isTrue();
 
@@ -459,7 +455,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void setSeedAccountName() {
     assertThat(userManager.getSeedAccountName()).isNull();
 
@@ -468,7 +463,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void setSeedAccountType() {
     assertThat(userManager.getSeedAccountType()).isNull();
 
@@ -477,7 +471,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void setSeedAccountOptions() {
     assertThat(userManager.getSeedAccountOptions()).isNull();
 
@@ -487,7 +480,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.N)
   public void clearSeedAccountData() {
     shadowOf(userManager).setSeedAccountName(SEED_ACCOUNT_NAME);
     shadowOf(userManager).setSeedAccountType(SEED_ACCOUNT_TYPE);
@@ -592,7 +584,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = 24)
   public void isUserUnlockedByUserHandle() {
     UserHandle userHandle = newUserHandle(0);
 
@@ -685,7 +676,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void canSwitchUsers() {
     shadowOf(userManager).setCanSwitchUser(false);
     assertThat(shadowOf(userManager).canSwitchUsers()).isFalse();
@@ -694,7 +684,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void getSerialNumbersOfUsers() {
     assertThat(userManager.getSerialNumbersOfUsers(true)).hasLength(userManager.getUserCount());
 
@@ -738,7 +727,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void switchToUserNotAddedShouldThrowException() {
     try {
       shadowOf(userManager).switchUser(10);
@@ -932,7 +920,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void supportsMultipleUsers() {
     assertThat(UserManager.supportsMultipleUsers()).isFalse();
 
@@ -963,7 +950,7 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
+  @Config(maxSdk = Q)
   public void canSwitchUser_shouldReflectSwitchabilityState() {
     shadowOf(userManager)
         .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
@@ -993,13 +980,11 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isQuietModeEnabled_shouldReturnFalse() {
     assertThat(userManager.isQuietModeEnabled(Process.myUserHandle())).isFalse();
   }
 
   @Test
-  @Config(minSdk = N)
   public void isQuietModeEnabled_withProfile_shouldReturnFalse() {
     shadowOf(userManager).addProfile(0, 10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE);
 
@@ -1007,7 +992,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
   public void isQuietModeEnabled_withProfileQuietMode_shouldReturnTrue() {
     shadowOf(userManager)
         .addProfile(

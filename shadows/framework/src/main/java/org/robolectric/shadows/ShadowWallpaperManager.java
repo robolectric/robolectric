@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.Manifest.permission;
@@ -186,7 +185,7 @@ public class ShadowWallpaperManager {
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int setBitmap(Bitmap fullImage, Rect visibleCropHint, boolean allowBackup, int which) {
     if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
       return 0;
@@ -316,7 +315,7 @@ public class ShadowWallpaperManager {
    * @return An open, readable file descriptor to the requested wallpaper image file; {@code null}
    *     if no such wallpaper is configured.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   @Nullable
   protected ParcelFileDescriptor getWallpaperFile(int which) {
     if (which == WallpaperManager.FLAG_SYSTEM && homeScreenImage != null) {
@@ -355,7 +354,7 @@ public class ShadowWallpaperManager {
    * Returns the id of the current wallpaper associated with {@code which}. If there is no such
    * wallpaper configured, returns a negative number.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int getWallpaperId(int which) {
     if (which == WallpaperManager.FLAG_LOCK) {
       return lockScreenId;
@@ -365,7 +364,7 @@ public class ShadowWallpaperManager {
     return -1;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected boolean isSetWallpaperAllowed() {
     return isWallpaperAllowed;
   }
@@ -392,7 +391,7 @@ public class ShadowWallpaperManager {
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
    */
-  @Implementation(minSdk = N)
+  @Implementation
   protected int setStream(
       InputStream bitmapData, Rect visibleCropHint, boolean allowBackup, int which) {
     if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {

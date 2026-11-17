@@ -7,7 +7,6 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Build.VERSION_CODES;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import androidx.test.core.app.ApplicationProvider;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 
 /** Test for ShadowNotificationListenerService. */
 @RunWith(AndroidJUnit4.class)
@@ -182,7 +180,6 @@ public final class ShadowNotificationListenerServiceTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.N)
   public void requestRebind_incrementsCounter() {
     TestNotificationListenerService.requestRebind(
         ComponentName.createRelative(DEFAULT_PACKAGE, "Test"));
@@ -193,7 +190,6 @@ public final class ShadowNotificationListenerServiceTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.N)
   public void requestUnbind_incrementsCounter() {
     service.requestUnbind();
     service.requestUnbind();

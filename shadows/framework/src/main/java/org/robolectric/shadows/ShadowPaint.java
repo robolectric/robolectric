@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -84,7 +83,7 @@ public class ShadowPaint {
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(Paint.class, otherPaint));
   }
 
-  @Implementation(minSdk = N)
+  @Implementation
   protected static long nInit() {
     return 1;
   }
@@ -390,7 +389,7 @@ public class ShadowPaint {
     return Math.max(0f, textScaleX) * textWidth;
   }
 
-  @Implementation(minSdk = N, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected static int nBreakText(
       long nObject,
       long nTypeface,
@@ -422,7 +421,7 @@ public class ShadowPaint {
     return text.length;
   }
 
-  @Implementation(minSdk = N, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected static int nBreakText(
       long nObject,
       long nTypeface,
@@ -481,7 +480,7 @@ public class ShadowPaint {
     return nGetFontMetricsInt(nativePaint, fmi);
   }
 
-  @Implementation(minSdk = N, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected int nGetFontMetricsInt(
       long nativePaint,
       long nativeTypeface,
@@ -545,7 +544,7 @@ public class ShadowPaint {
         advancesIndex);
   }
 
-  @Implementation(minSdk = N, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected static float nGetRunAdvance(
       long paintPtr,
       long typefacePtr,

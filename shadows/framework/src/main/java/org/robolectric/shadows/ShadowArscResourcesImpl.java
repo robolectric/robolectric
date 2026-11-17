@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -22,11 +21,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings("NewApi")
-@Implements(
-    value = ResourcesImpl.class,
-    isInAndroidSdk = false,
-    minSdk = N,
-    shadowPicker = Picker.class)
+@Implements(value = ResourcesImpl.class, isInAndroidSdk = false, shadowPicker = Picker.class)
 public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
   private static List<LongSparseArray<?>> resettableArrays;
 
