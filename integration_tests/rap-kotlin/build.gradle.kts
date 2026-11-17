@@ -10,7 +10,7 @@ android {
   compileSdk = 37
   namespace = "org.robolectric.rap.kotlin"
 
-  defaultConfig { minSdk = 23 }
+  defaultConfig { minSdk = 24 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11

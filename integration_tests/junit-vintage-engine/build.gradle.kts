@@ -11,7 +11,7 @@ android {
   namespace = "org.robolectric.integrationtests.junit.vintage"
   compileSdk = 37
 
-  defaultConfig { minSdk = 23 }
+  defaultConfig { minSdk = 24 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
