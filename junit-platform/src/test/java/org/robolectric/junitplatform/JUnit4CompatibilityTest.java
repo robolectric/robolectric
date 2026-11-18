@@ -20,6 +20,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -129,6 +130,28 @@ class JUnit4CompatibilityTest {
 
     assertThat(testsOfEngine(testPlan, "robolectric")).hasSize(4);
     assertThat(testsOfEngine(testPlan, "junit-vintage")).isEmpty();
+  }
+
+  @Test
+  void launcher_runsRobolectricClassesInsideEnclosedOnlyWithRobolectricEngine() {
+    TestPlan testPlan =
+        LauncherFactory.create()
+            .discover(
+                LauncherDiscoveryRequestBuilder.request()
+                    .selectors(selectClass(EnclosedTest.class))
+                    .build());
+
+    assertThat(testNames(testsOfEngine(testPlan, "robolectric")))
+        .containsExactly("robolectric", "parameterized[0]", "parameterized[1]");
+    assertThat(testNames(testsOfEngine(testPlan, "junit-vintage"))).containsExactly("plain");
+  }
+
+  private static List<String> testNames(List<TestIdentifier> tests) {
+    List<String> result = new ArrayList<>();
+    for (TestIdentifier test : tests) {
+      result.add(test.getDisplayName());
+    }
+    return result;
   }
 
   private static EngineExecutionResults executeTests(
@@ -247,6 +270,35 @@ class JUnit4CompatibilityTest {
     @org.junit.Test
     public void works() {
       assertTrue(getClass().getClassLoader() instanceof SandboxClassLoader);
+    }
+  }
+
+  @RunWith(Enclosed.class)
+  public static class EnclosedTest {
+    @RunWith(RobolectricTestRunner.class)
+    @Config(sdk = 34)
+    public static class RobolectricTest {
+      @org.junit.Test
+      public void robolectric() {}
+    }
+
+    @RunWith(ParameterizedRobolectricTestRunner.class)
+    @Config(sdk = 34)
+    public static class ParameterizedTest {
+      @Parameters
+      public static Collection<Object[]> parameters() {
+        return Arrays.asList(new Object[][] {{1}, {2}});
+      }
+
+      public ParameterizedTest(int unused) {}
+
+      @org.junit.Test
+      public void parameterized() {}
+    }
+
+    public static class PlainTest {
+      @org.junit.Test
+      public void plain() {}
     }
   }
 }

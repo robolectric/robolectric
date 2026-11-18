@@ -90,9 +90,9 @@ public final class Planner {
           planJupiterClass(testClass, entry.getValue());
         } else {
           List<JUnit4Compat.PlannedTest> tests = JUnit4Compat.plan(testClass, entry.getValue());
-          if (tests == null) {
-            claimed = false; // Not a Robolectric runner: left to other engines.
-          } else {
+          // Claimed by plan: for an Enclosed class, only its Robolectric inner classes.
+          claimed = false;
+          if (tests != null) {
             JUnit4Compat.addToSandboxes(tests, this::sandbox);
           }
         }

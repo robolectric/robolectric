@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.builders.AllDefaultPossibilitiesBuilder;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -105,7 +106,7 @@ final class JUnit4Compat {
 
   /**
    * Returns the selected tests of {@code testClass}, or null if its runner is not a Robolectric
-   * runner, in which case the class is left to other engines.
+   * runner, in which case the class is left to other engines. Claims the classes it runs.
    */
   @Nullable
   static List<PlannedTest> plan(Class<?> testClass, List<Selection.Item> items) throws Throwable {
@@ -143,17 +144,42 @@ final class JUnit4Compat {
   @Nullable
   private static List<Unit> units(Class<?> testClass) throws Throwable {
     Runner runner = new AllDefaultPossibilitiesBuilder().runnerForClass(testClass);
+    if (!(runner instanceof Enclosed)) {
+      List<Unit> units = units(runner);
+      if (units != null) {
+        ClaimRegistry.claim(testClass);
+      }
+      return units;
+    }
+    // An Enclosed runner has one runner per inner class: the Robolectric ones are claimed and run
+    // here, the others are left to other engines.
+    List<Unit> units = new ArrayList<>();
+    List<Runner> children = ReflectionHelpers.callInstanceMethod(runner, "getChildren");
+    for (Runner child : children) {
+      List<Unit> childUnits = units(child);
+      if (childUnits != null) {
+        ClaimRegistry.claim(childUnits.get(0).testClass);
+        units.addAll(childUnits);
+      }
+    }
+    return units.isEmpty() ? null : units;
+  }
+
+  @Nullable
+  private static List<Unit> units(Runner runner) {
     if (runner.getClass().getName().equals(ANDROID_JUNIT4)) {
       runner = ReflectionHelpers.getField(runner, "delegate");
     }
     List<Unit> units = new ArrayList<>();
     if (runner instanceof RobolectricTestRunner) {
-      units.add(new Unit(testClass, (RobolectricTestRunner) runner, null));
+      RobolectricTestRunner robolectricRunner = (RobolectricTestRunner) runner;
+      units.add(new Unit(robolectricRunner.getTestClass().getJavaClass(), robolectricRunner, null));
       return units;
     }
     if (!(runner instanceof ParentRunner)) {
       return null;
     }
+    Class<?> testClass = ((ParentRunner<?>) runner).getTestClass().getJavaClass();
     List<?> children = ReflectionHelpers.callInstanceMethod(runner, "getChildren");
     if (children.isEmpty()) {
       return null;
@@ -164,8 +190,8 @@ final class JUnit4Compat {
       }
       RobolectricTestRunner childRunner = (RobolectricTestRunner) child;
       Class<?> childClass = childRunner.getTestClass().getJavaClass();
-      // A parameterized runner has one child per parameter set, for the same class; an Enclosed
-      // runner has one per inner class.
+      // A parameterized runner has one child per parameter set, for the same class; a Suite
+      // runner has one per suite class.
       units.add(
           new Unit(
               childClass,
