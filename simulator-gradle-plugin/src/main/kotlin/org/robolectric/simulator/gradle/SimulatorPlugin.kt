@@ -1,7 +1,6 @@
 package org.robolectric.simulator.gradle
 
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import java.util.concurrent.Callable
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -96,22 +95,22 @@ class SimulatorPlugin : Plugin<Project> {
 
     task.apply {
       // The test task's classpath carries the tasks that build it, but not the test task itself.
-      classpath = project.files(Callable { testTask.get().classpath })
-      jvmArgumentProviders.add(
-        CommandLineArgumentProvider {
-          val test = testTask.get()
-          // Gradle keeps the heap sizes apart from the other JVM arguments.
-          val heapSizeArgs =
-            listOfNotNull(test.minHeapSize?.let { "-Xms$it" }, test.maxHeapSize?.let { "-Xmx$it" })
-          test.jvmArgs + heapSizeArgs + robolectricJvmArgs
-        },
-      )
+      classpath = project.files(testTask.map { it.classpath })
+      // Capture only values, not tasks, which the configuration cache can't store.
+      val jvmArgs = testTask.map { test ->
+        // Gradle keeps the heap sizes apart from the other JVM arguments.
+        val heapSizeArgs =
+          listOfNotNull(test.minHeapSize?.let { "-Xms$it" }, test.maxHeapSize?.let { "-Xmx$it" })
+        test.jvmArgs + heapSizeArgs + robolectricJvmArgs
+      }
+      jvmArgumentProviders.add(CommandLineArgumentProvider { jvmArgs.get() })
       mainClass.set(MAIN_CLASS)
       // The 'apk-for-local-test.ap_' file.
+      val packageOutputs = project.files(packageTask.map { it.outputs.files })
       argumentProviders.add(
         CommandLineArgumentProvider {
           val resourceApkFile =
-            packageTask.get().outputs.files.find { it.name.endsWith(".ap_") }
+            packageOutputs.find { it.name.endsWith(".ap_") }
               ?: throw GradleException(
                 "Could not find an .ap_ file in the outputs of task '$packageTaskName'.",
               )

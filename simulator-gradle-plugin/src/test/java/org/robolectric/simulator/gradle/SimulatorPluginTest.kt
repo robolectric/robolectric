@@ -161,6 +161,24 @@ class SimulatorPluginTest {
       .contains("-Drobolectric.installDefaultUncaughtExceptionHandler=true")
   }
 
+  @Test
+  fun simulate_isCompatibleWithTheConfigurationCache() {
+    // Skip the simulator itself: the configuration cache entry, which holds the task's state, is
+    // stored before any task runs, and reused by the second build.
+    val project =
+      AndroidTestProject(
+        tempFolder.root,
+        extraBuildScript =
+          """tasks.matching { it.name == "simulateDebug" }.configureEach { onlyIf { false } }""",
+      )
+
+    val firstResult = project.build("simulateDebug", "--configuration-cache")
+    val secondResult = project.build("simulateDebug", "--configuration-cache")
+
+    assertThat(firstResult.output).contains("Configuration cache entry stored.")
+    assertThat(secondResult.output).contains("Configuration cache entry reused.")
+  }
+
   private fun simulateJvmArgs(result: BuildResult): List<String> =
     result.output
       .lines()
