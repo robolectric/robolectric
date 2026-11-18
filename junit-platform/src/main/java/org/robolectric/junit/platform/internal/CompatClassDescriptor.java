@@ -12,7 +12,8 @@ final class CompatClassDescriptor extends AbstractTestDescriptor {
     super(
         uniqueId,
         unit.name == null ? unit.testClass.getSimpleName() : unit.name,
-        ClassSource.from(unit.testClass));
+        // A parameter set is not the class: its CompatSuiteDescriptor parent is.
+        unit.name == null ? ClassSource.from(unit.testClass) : null);
     this.unit = unit;
   }
 
@@ -23,6 +24,6 @@ final class CompatClassDescriptor extends AbstractTestDescriptor {
 
   @Override
   public String getLegacyReportingName() {
-    return unit.testClass.getName();
+    return unit.name == null ? unit.testClass.getName() : unit.name;
   }
 }

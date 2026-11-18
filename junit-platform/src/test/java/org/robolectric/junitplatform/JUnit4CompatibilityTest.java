@@ -1,6 +1,7 @@
 package org.robolectric.junitplatform;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -23,12 +24,15 @@ import org.junit.Rule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
+import org.junit.platform.testkit.engine.Event;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.ParameterizedRobolectricTestRunner;
@@ -67,6 +71,36 @@ class JUnit4CompatibilityTest {
     executeTests(selectClass(ParameterizedTest.class))
         .testEvents()
         .assertStatistics(stats -> stats.started(2).succeeded(2));
+  }
+
+  @Test
+  void parameterizedRobolectricTestRunner_reportsParameterSetsUnderClass() {
+    EngineExecutionResults results = executeTests(selectClass(ParameterizedTest.class));
+    List<TestDescriptor> classContainers =
+        results
+            .containerEvents()
+            .started()
+            .map(Event::getTestDescriptor)
+            .filter(d -> d.getSource().filter(ClassSource.class::isInstance).isPresent())
+            .collect(toList());
+    assertThat(classContainers).hasSize(1);
+    TestDescriptor classContainer = classContainers.get(0);
+    assertThat(classContainer.getDisplayName()).isEqualTo("ParameterizedTest");
+    assertThat(classContainer.getLegacyReportingName())
+        .isEqualTo(ParameterizedTest.class.getName());
+    assertThat(
+            classContainer.getChildren().stream()
+                .map(TestDescriptor::getDisplayName)
+                .collect(toList()))
+        .containsExactly("[0]", "[1]");
+    results
+        .testEvents()
+        .started()
+        .map(Event::getTestDescriptor)
+        .forEach(test ->
+            assertThat(test.getParent().flatMap(TestDescriptor::getParent))
+                .hasValue(classContainer));
+    results.testEvents().assertStatistics(stats -> stats.started(2).succeeded(2));
   }
 
   @Test

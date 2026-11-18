@@ -47,6 +47,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  */
 final class JUnit4Compat {
   static final String CLASS_SEGMENT_TYPE = "junit4-class";
+  static final String PARAMETERS_SEGMENT_TYPE = "junit4-parameters";
   static final String TEST_SEGMENT_TYPE = "junit4-test";
 
   private static final String ANDROID_JUNIT4 = "androidx.test.ext.junit.runners.AndroidJUnit4";
@@ -187,14 +188,26 @@ final class JUnit4Compat {
     }
     for (Map.Entry<SandboxSpec, Map<Unit, List<PlannedTest>>> bySandbox : grouped.entrySet()) {
       SandboxDescriptor sandbox = sandboxes.apply(bySandbox.getKey());
+      Map<Class<?>, CompatSuiteDescriptor> suites = new LinkedHashMap<>();
       for (Map.Entry<Unit, List<PlannedTest>> byUnit : bySandbox.getValue().entrySet()) {
         Unit unit = byUnit.getKey();
         UniqueId classId =
-            sandbox
-                .getUniqueId()
-                .append(
-                    CLASS_SEGMENT_TYPE,
-                    unit.testClass.getName() + (unit.name == null ? "" : "#" + unit.name));
+            sandbox.getUniqueId().append(CLASS_SEGMENT_TYPE, unit.testClass.getName());
+        TestDescriptor parent = sandbox;
+        if (unit.name != null) {
+          // Nest the parameter sets under one descriptor for the class, as the Vintage engine
+          // does, so that build tools report them under the class's name.
+          UniqueId suiteId = classId;
+          parent =
+              suites.computeIfAbsent(
+                  unit.testClass,
+                  c -> {
+                    CompatSuiteDescriptor suite = new CompatSuiteDescriptor(suiteId, c);
+                    sandbox.addChild(suite);
+                    return suite;
+                  });
+          classId = classId.append(PARAMETERS_SEGMENT_TYPE, unit.name);
+        }
         CompatClassDescriptor classDescriptor = new CompatClassDescriptor(classId, unit);
         Set<String> names = new LinkedHashSet<>();
         for (PlannedTest test : byUnit.getValue()) {
@@ -205,7 +218,7 @@ final class JUnit4Compat {
                 new CompatMethodDescriptor(classId.append(TEST_SEGMENT_TYPE, name), test));
           }
         }
-        sandbox.addChild(classDescriptor);
+        parent.addChild(classDescriptor);
       }
     }
   }

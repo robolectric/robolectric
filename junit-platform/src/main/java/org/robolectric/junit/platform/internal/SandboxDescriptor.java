@@ -109,15 +109,14 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
       AtomicReference<Throwable> failure = new AtomicReference<>();
       sandbox.runOnMainThreadWithClassLoader(() -> executeJupiterTests(request, jupiter, failure));
       for (TestDescriptor child : new ArrayList<>(getChildren())) {
-        if (!(child instanceof CompatClassDescriptor)) {
-          continue;
-        }
-        CompatClassDescriptor compatClass = (CompatClassDescriptor) child;
-        if (request.getCancellationToken().isCancellationRequested()) {
-          listener.executionSkipped(child, "Execution cancelled");
+        if (child instanceof CompatSuiteDescriptor) {
+          listener.executionStarted(child);
+          for (TestDescriptor parameters : new ArrayList<>(child.getChildren())) {
+            executeJUnit4Class(parameters, sandbox, request, listener);
+          }
+          listener.executionFinished(child, TestExecutionResult.successful());
         } else {
-          sandbox.runOnMainThreadWithClassLoader(
-              () -> JUnit4Compat.execute(compatClass, sandbox, listener));
+          executeJUnit4Class(child, sandbox, request, listener);
         }
       }
       result =
@@ -128,6 +127,23 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
       result = TestExecutionResult.failed(t);
     }
     listener.executionFinished(this, result);
+  }
+
+  private static void executeJUnit4Class(
+      TestDescriptor child,
+      AndroidSandbox sandbox,
+      ExecutionRequest request,
+      EngineExecutionListener listener) {
+    if (!(child instanceof CompatClassDescriptor)) {
+      return;
+    }
+    CompatClassDescriptor compatClass = (CompatClassDescriptor) child;
+    if (request.getCancellationToken().isCancellationRequested()) {
+      listener.executionSkipped(child, "Execution cancelled");
+    } else {
+      sandbox.runOnMainThreadWithClassLoader(
+          () -> JUnit4Compat.execute(compatClass, sandbox, listener));
+    }
   }
 
   /**
