@@ -20,9 +20,11 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
@@ -106,6 +108,22 @@ class JUnit4CompatibilityTest {
                 .filter("sandbox"::equals)
                 .count())
         .isEqualTo(1);
+  }
+
+  @Test
+  void reportsCategoriesAsTags() {
+    EngineTestKit.engine(new RobolectricTestEngine())
+        .selectors(selectClass(CategorizedTest.class))
+        .filters(TagFilter.includeTags(SlowCategory.class.getName()))
+        .execute()
+        .testEvents()
+        .assertStatistics(stats -> stats.started(1).succeeded(1));
+    EngineTestKit.engine(new RobolectricTestEngine())
+        .selectors(selectClass(CategorizedTest.class))
+        .filters(TagFilter.includeTags(FastCategory.class.getName()))
+        .execute()
+        .testEvents()
+        .assertStatistics(stats -> stats.started(2).succeeded(2));
   }
 
   @Test
@@ -248,5 +266,21 @@ class JUnit4CompatibilityTest {
     public void works() {
       assertTrue(getClass().getClassLoader() instanceof SandboxClassLoader);
     }
+  }
+
+  public interface FastCategory {}
+
+  public interface SlowCategory {}
+
+  @RunWith(RobolectricTestRunner.class)
+  @Config(sdk = 34)
+  @Category(FastCategory.class)
+  public static class CategorizedTest {
+    @org.junit.Test
+    public void fast() {}
+
+    @org.junit.Test
+    @Category(SlowCategory.class)
+    public void slow() {}
   }
 }

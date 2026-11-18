@@ -1,5 +1,6 @@
 package org.robolectric.junit.platform.internal;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -9,11 +10,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.junit.experimental.categories.Category;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.builders.AllDefaultPossibilitiesBuilder;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestTag;
 import org.junit.platform.engine.UniqueId;
 import org.junit.rules.RunRules;
 import org.junit.rules.TestRule;
@@ -52,6 +55,25 @@ final class JUnit4Compat {
   private static final String ANDROID_JUNIT4 = "androidx.test.ext.junit.runners.AndroidJUnit4";
 
   private JUnit4Compat() {}
+
+  /**
+   * Returns the {@code @Category} classes of the given elements as tags named by their fully
+   * qualified names, as JUnit Vintage reports them.
+   */
+  static Set<TestTag> categoryTags(AnnotatedElement... elements) {
+    Set<TestTag> tags = new LinkedHashSet<>();
+    for (AnnotatedElement element : elements) {
+      Category category = element.getAnnotation(Category.class);
+      if (category != null) {
+        for (Class<?> categoryClass : category.value()) {
+          if (TestTag.isValid(categoryClass.getName())) {
+            tags.add(TestTag.create(categoryClass.getName()));
+          }
+        }
+      }
+    }
+    return tags;
+  }
 
   /** One runner of a JUnit 4 class: the class's own, or one child of its {@code Suite} runner. */
   static final class Unit {

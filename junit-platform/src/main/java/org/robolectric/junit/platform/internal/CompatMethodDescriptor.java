@@ -1,5 +1,7 @@
 package org.robolectric.junit.platform.internal;
 
+import java.util.Set;
+import org.junit.platform.engine.TestTag;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -19,6 +21,11 @@ final class CompatMethodDescriptor extends AbstractTestDescriptor {
   @Override
   public Type getType() {
     return Type.TEST;
+  }
+
+  @Override
+  public Set<TestTag> getTags() {
+    return JUnit4Compat.categoryTags(planned.unit.testClass, planned.method.getMethod());
   }
 
   @Override
