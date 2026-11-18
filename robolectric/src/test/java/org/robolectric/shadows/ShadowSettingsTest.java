@@ -237,6 +237,27 @@ public class ShadowSettingsTest {
   }
 
   @Test
+  public void settingsSecure_androidId_defaultsToStable64BitHexString() {
+    String androidId = Secure.getString(contentResolver, Secure.ANDROID_ID);
+
+    assertThat(androidId).matches("[0-9a-f]{16}");
+    assertThat(Secure.getString(contentResolver, Secure.ANDROID_ID)).isEqualTo(androidId);
+  }
+
+  @Test
+  public void settingsSecure_androidId_canBeOverriddenAndIsReset() {
+    String defaultAndroidId = Secure.getString(contentResolver, Secure.ANDROID_ID);
+
+    Secure.putString(contentResolver, Secure.ANDROID_ID, "0123456789abcdef");
+    assertThat(Secure.getString(contentResolver, Secure.ANDROID_ID)).isEqualTo("0123456789abcdef");
+
+    ShadowSettings.ShadowSecure.reset();
+
+    assertThat(Secure.getString(contentResolver, Secure.ANDROID_ID)).isEqualTo(defaultAndroidId);
+    assertThat(defaultAndroidId).isNotNull();
+  }
+
+  @Test
   public void settingsSecure_remove_removes() {
     String mySetting = "mysetting";
     Secure.putInt(contentResolver, mySetting, 1337);
