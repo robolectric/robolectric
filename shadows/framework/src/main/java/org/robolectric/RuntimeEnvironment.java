@@ -13,13 +13,11 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import com.google.common.base.Supplier;
 import java.nio.file.Path;
-import java.util.Locale;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.shadows.ShadowDisplayManager;
@@ -230,12 +228,8 @@ public class RuntimeEnvironment {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
 
-    if (getApiLevel() >= VERSION_CODES.N) {
-      // LocaleList.setDefault will internally call java.util.Locale.setDefault()
-      LocaleList.setDefault(configuration.getLocales());
-    } else {
-      Locale.setDefault(configuration.locale);
-    }
+    // LocaleList.setDefault will internally call java.util.Locale.setDefault()
+    LocaleList.setDefault(configuration.getLocales());
 
     updateConfiguration(configuration, displayMetrics);
   }

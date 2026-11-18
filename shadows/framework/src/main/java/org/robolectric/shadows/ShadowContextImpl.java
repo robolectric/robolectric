@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -490,8 +489,7 @@ public class ShadowContextImpl {
   }
 
   private boolean isCredentialStorageLocked() {
-    return RuntimeEnvironment.getApiLevel() >= N
-        && !realContextImpl.isDeviceProtectedStorage()
+    return !realContextImpl.isDeviceProtectedStorage()
         && !realContextImpl.getSystemService(UserManager.class).isUserUnlocked();
   }
 
@@ -532,12 +530,10 @@ public class ShadowContextImpl {
 
   @Resetter
   public static void reset() {
-    String prefsCacheFieldName =
-        RuntimeEnvironment.getApiLevel() >= N ? "sSharedPrefsCache" : "sSharedPrefs";
     Class<?> contextImplClass =
         ReflectionHelpers.loadClass(
             ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
-    ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, null);
+    ReflectionHelpers.setStaticField(contextImplClass, "sSharedPrefsCache", null);
   }
 
   private ShadowInstrumentation getShadowInstrumentation() {

@@ -1073,7 +1073,6 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS status started event. */
-  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatusStarted() {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -1086,7 +1085,6 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS status first fix event. */
-  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatusFirstFix(int ttff) {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -1099,7 +1097,6 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS status event. */
-  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatus(GnssStatus status) {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -1115,13 +1112,11 @@ public class ShadowLocationManager {
    * @deprecated Use {@link #simulateGnssStatus(GnssStatus)} instead.
    */
   @Deprecated
-  @RequiresApi(VERSION_CODES.N)
   public void sendGnssStatus(GnssStatus status) {
     simulateGnssStatus(status);
   }
 
   /** Simulates a GNSS status stopped event. */
-  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatusStopped() {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {

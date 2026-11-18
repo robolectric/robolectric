@@ -5,7 +5,6 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
@@ -560,7 +559,7 @@ public class ShadowPendingIntent {
           listener.onMarshaled(sender, out, 0);
         }
       }
-    } else if (getApiLevel() >= N) {
+    } else {
       ThreadLocal<OnMarshaledListener> sOnMarshaledListener =
           ReflectionHelpers.getStaticField(PendingIntent.class, "sOnMarshaledListener");
       OnMarshaledListener listener = sOnMarshaledListener.get();

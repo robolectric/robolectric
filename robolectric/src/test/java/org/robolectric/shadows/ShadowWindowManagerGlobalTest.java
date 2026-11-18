@@ -17,7 +17,6 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -137,11 +136,7 @@ public class ShadowWindowManagerGlobalTest {
         if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
           ClipData clipData = ClipData.newPlainText("label", "text");
           DragShadowBuilder dragShadowBuilder = new DragShadowBuilder(view);
-          if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.N) {
-            view.startDragAndDrop(clipData, dragShadowBuilder, null, 0);
-          } else {
-            view.startDrag(clipData, dragShadowBuilder, null, 0);
-          }
+          view.startDragAndDrop(clipData, dragShadowBuilder, null, 0);
         }
         return true;
       });

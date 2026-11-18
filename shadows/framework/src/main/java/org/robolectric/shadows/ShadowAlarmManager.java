@@ -7,7 +7,6 @@ import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
-import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
@@ -738,10 +737,8 @@ public class ShadowAlarmManager {
             // only necessary in case this is a repeated alarm and we've already rescheduled
             cancel(operation);
           }
-        } else if (VERSION.SDK_INT >= VERSION_CODES.N) {
-          Objects.requireNonNull(onAlarmListener).onAlarm();
         } else {
-          throw new IllegalStateException();
+          Objects.requireNonNull(onAlarmListener).onAlarm();
         }
       });
     }

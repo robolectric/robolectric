@@ -23,7 +23,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.LocaleList;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
@@ -385,9 +384,7 @@ public class AndroidTestEnvironmentTest {
     assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      assertThat(LocaleList.getDefault().toLanguageTags()).isEqualTo("fr-Cyrl-UK");
-    }
+    assertThat(LocaleList.getDefault().toLanguageTags()).isEqualTo("fr-Cyrl-UK");
   }
 
   @Test
@@ -395,9 +392,7 @@ public class AndroidTestEnvironmentTest {
   public void localeIsSet_differentConfiguration() {
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(Locale.getDefault()).isEqualTo(Locale.forLanguageTag("ja-JP"));
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      assertThat(LocaleList.getDefault().toLanguageTags()).isEqualTo("ja-JP");
-    }
+    assertThat(LocaleList.getDefault().toLanguageTags()).isEqualTo("ja-JP");
   }
 
   @Test

@@ -533,9 +533,7 @@ public class ShadowDevicePolicyManager {
   protected void clearProfileOwner(ComponentName admin) {
     profileOwner = null;
     lastTransferOwnershipBundle = null;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      removeActiveAdmin(admin);
-    }
+    removeActiveAdmin(admin);
   }
 
   @Implementation

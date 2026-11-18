@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -160,9 +158,7 @@ public class ShadowProcess {
     // android.os.Process.myUid(), which persists between tests.
     ShadowProcess.uidOverride = null;
     ShadowProcess.processName = "";
-    if (Build.VERSION.SDK_INT >= N) {
-      reflector(ProcessReflector.class).setStartElapsedRealtime(0L);
-    }
+    reflector(ProcessReflector.class).setStartElapsedRealtime(0L);
   }
 
   static int getRandomApplicationUid() {

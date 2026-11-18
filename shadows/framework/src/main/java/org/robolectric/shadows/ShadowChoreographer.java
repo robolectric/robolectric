@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
@@ -237,9 +236,7 @@ public abstract class ShadowChoreographer {
     if (getApiLevel() > CINNAMON_BUN) {
       Choreographer.setFrameDelay(frameDelay.toMillis());
     }
-    if (getApiLevel() >= N) {
-      ShadowBackdropFrameRenderer.reset();
-    }
+    ShadowBackdropFrameRenderer.reset();
   }
 
   @Implementation(minSdk = CINNAMON_BUN, maxSdk = CINNAMON_BUN)

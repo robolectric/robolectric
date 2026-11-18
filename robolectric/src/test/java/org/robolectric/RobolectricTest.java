@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
@@ -166,9 +165,7 @@ public class RobolectricTest {
     assertThat(asList(classReader.getInterfaces()))
         .contains(ShadowedObject.class.getName().replace('.', '/'));
 
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      assertThat(classReader.getSuperName()).isEqualTo("android/content/res/ComplexColor");
-    }
+    assertThat(classReader.getSuperName()).isEqualTo("android/content/res/ComplexColor");
   }
 
   @Implements(View.class)

@@ -1,6 +1,5 @@
 package android.view;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.ext.truth.view.MotionEventSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerCoordsSubject.assertThat;
@@ -21,7 +20,6 @@ import androidx.test.core.view.MotionEventBuilder;
 import androidx.test.core.view.PointerCoordsBuilder;
 import androidx.test.core.view.PointerPropertiesBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SdkSuppress;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
@@ -440,7 +438,6 @@ public class MotionEventTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = N)
   public void testReadFromParcelWithInvalidSampleSize() {
     Parcel parcel = Parcel.obtain();
     motionEvent2.writeToParcel(parcel, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);

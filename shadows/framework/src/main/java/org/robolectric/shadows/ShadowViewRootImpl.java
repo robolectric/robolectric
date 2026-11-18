@@ -203,7 +203,6 @@ public class ShadowViewRootImpl {
     // SDK >= T
     void windowFocusChanged(boolean hasFocus);
 
-    // SDK >= M
     @Direct
     WindowInsets getWindowInsets(boolean forceConstruct);
 
