@@ -5,6 +5,7 @@ import static java.nio.file.Files.newOutputStream;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
@@ -14,9 +15,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -36,6 +43,9 @@ public class JarInstrumentor {
 
   private static final int ONE_MB = 1024 * 1024;
 
+  /** The maximum number of entries that are read ahead of the one being written. */
+  private static final int MAX_PENDING_ENTRIES = 1024;
+
   private static final Injector INJECTOR = new Injector.Builder().build();
 
   private final ClassInstrumentor classInstrumentor;
@@ -47,6 +57,9 @@ public class JarInstrumentor {
   private boolean hasResourcesToKeepFile;
   private ImmutableSet<String> resourceFilesToKeep = ImmutableSet.of();
   private ImmutableSet<String> resourceDirsToKeep = ImmutableSet.of();
+
+  private int classCount;
+  private int nonClassCount;
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     new JarInstrumentor().processCommandLine(args);
@@ -140,8 +153,8 @@ public class JarInstrumentor {
           }
         };
 
-    int nonClassCount = 0;
-    int classCount = 0;
+    classCount = 0;
+    nonClassCount = 0;
 
     // get the jar's SDK version
     try {
@@ -150,6 +163,11 @@ public class JarInstrumentor {
       throw new AssertionError("Unable to get Android SDK version from Jar file", e);
     }
 
+    // Classes are instrumented on a thread pool while this thread writes the entries in their
+    // original order, so the output does not depend on scheduling.
+    ExecutorService executor =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    Deque<PendingEntry> pendingEntries = new ArrayDeque<>();
     try (JarOutputStream jarOut =
         new JarOutputStream(
             new BufferedOutputStream(newOutputStream(destJarFile.toPath()), ONE_MB))) {
@@ -164,7 +182,7 @@ public class JarInstrumentor {
         }
         if (name.endsWith("/")) {
           // Copy directories
-          jarOut.putNextEntry(createJarEntry(jarEntry));
+          pendingEntries.add(new PendingEntry(jarEntry, null));
         } else if (name.endsWith(".class")) {
           String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
 
@@ -176,22 +194,9 @@ public class JarInstrumentor {
             }
           }
 
-          try {
-            byte[] classBytes = getClassBytes(className, jarFile);
-            ClassDetails classDetails = new ClassDetails(classBytes);
-            byte[] outBytes = classBytes;
-            if (instrumentationConfiguration.shouldInstrument(classDetails)) {
-              outBytes =
-                  classInstrumentor.instrument(
-                      classDetails, instrumentationConfiguration, classNodeProvider);
-            }
-            jarOut.putNextEntry(createJarEntry(jarEntry));
-            jarOut.write(outBytes);
-            classCount++;
-          } catch (NegativeArraySizeException e) {
-            System.err.println(
-                "Skipping instrumenting due to NegativeArraySizeException for class: " + className);
-          }
+          Future<byte[]> instrumentedClass =
+              executor.submit(() -> instrumentClass(className, jarFile, classNodeProvider));
+          pendingEntries.add(new PendingEntry(jarEntry, instrumentedClass));
         } else {
           boolean shouldKeep = true;
           if (hasResourcesToKeepFile) {
@@ -204,12 +209,19 @@ public class JarInstrumentor {
             }
           }
           if (shouldKeep) {
-            jarOut.putNextEntry(createJarEntry(jarEntry));
-            ByteStreams.copy(jarFile.getInputStream(jarEntry), jarOut);
-            nonClassCount++;
+            pendingEntries.add(new PendingEntry(jarEntry, null));
           }
         }
+
+        if (pendingEntries.size() > MAX_PENDING_ENTRIES) {
+          writeEntry(pendingEntries.remove(), jarFile, jarOut);
+        }
       }
+      while (!pendingEntries.isEmpty()) {
+        writeEntry(pendingEntries.remove(), jarFile, jarOut);
+      }
+    } finally {
+      executor.shutdownNow();
     }
 
     long elapsedNs = System.nanoTime() - startNs;
@@ -219,6 +231,64 @@ public class JarInstrumentor {
         classCount,
         nonClassCount,
         elapsedNs / 1000000000.0);
+  }
+
+  private byte[] instrumentClass(
+      String className, JarFile jarFile, ClassNodeProvider classNodeProvider)
+      throws ClassNotFoundException {
+    byte[] classBytes = getClassBytes(className, jarFile);
+    ClassDetails classDetails = new ClassDetails(classBytes);
+    if (instrumentationConfiguration.shouldInstrument(classDetails)) {
+      return classInstrumentor.instrument(
+          classDetails, instrumentationConfiguration, classNodeProvider);
+    }
+    return classBytes;
+  }
+
+  private void writeEntry(PendingEntry pendingEntry, JarFile jarFile, JarOutputStream jarOut)
+      throws IOException, ClassNotFoundException {
+    JarEntry jarEntry = pendingEntry.jarEntry;
+    String name = jarEntry.getName();
+    if (name.endsWith("/")) {
+      jarOut.putNextEntry(createJarEntry(jarEntry));
+    } else if (pendingEntry.instrumentedClass != null) {
+      byte[] outBytes;
+      try {
+        outBytes = pendingEntry.instrumentedClass.get();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IOException("Interrupted while instrumenting " + name, e);
+      } catch (ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof NegativeArraySizeException) {
+          String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+          System.err.println(
+              "Skipping instrumenting due to NegativeArraySizeException for class: " + className);
+          return;
+        }
+        Throwables.throwIfInstanceOf(cause, ClassNotFoundException.class);
+        Throwables.throwIfUnchecked(cause);
+        throw new AssertionError(cause);
+      }
+      jarOut.putNextEntry(createJarEntry(jarEntry));
+      jarOut.write(outBytes);
+      classCount++;
+    } else {
+      jarOut.putNextEntry(createJarEntry(jarEntry));
+      ByteStreams.copy(jarFile.getInputStream(jarEntry), jarOut);
+      nonClassCount++;
+    }
+  }
+
+  /** An entry to write, with its instrumented class bytes if it is a class. */
+  private static final class PendingEntry {
+    final JarEntry jarEntry;
+    final Future<byte[]> instrumentedClass;
+
+    PendingEntry(JarEntry jarEntry, Future<byte[]> instrumentedClass) {
+      this.jarEntry = jarEntry;
+      this.instrumentedClass = instrumentedClass;
+    }
   }
 
   private static byte[] getClassBytes(String className, JarFile jarFile)
