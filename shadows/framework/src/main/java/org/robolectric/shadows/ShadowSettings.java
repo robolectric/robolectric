@@ -121,6 +121,8 @@ public class ShadowSettings {
       } else {
         SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(String.valueOf(LOCATION_MODE_OFF)));
       }
+      // Real devices always have an ANDROID_ID, a 64-bit value rendered as 16 lowercase hex chars.
+      SECURE_DEFAULTS.put(Secure.ANDROID_ID, Optional.of("5e3f1c9a7b2d4e60"));
     }
 
     private static final Map<String, Optional<String>> dataMap =
