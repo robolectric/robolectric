@@ -6,9 +6,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.simulator.pluginapi.ScreenRecorder;
 
 public class ScreenRecorderFrameListener implements FrameListener {
+
+  private static final long STOP_TIMEOUT_SECONDS = 5;
 
   private final float displayWidth;
   private final float displayHeight;
@@ -38,26 +41,42 @@ public class ScreenRecorderFrameListener implements FrameListener {
         (int) this.displayHeight,
         new ScreenRecorder.FrameRate(24, 1));
 
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(() -> {
-              // Make sure that we don't stop the screen recorder in the middle of a write!
-              writingFrame.acquireUninterruptibly();
-              screenRecorder.stop();
-              screenRecorder = null;
-              writingFrame.release();
-            }));
+    Runtime.getRuntime().addShutdownHook(new Thread(this::stopRecording));
+  }
+
+  /** Stops the screen recorder once any in-progress frame is written. Runs at JVM shutdown. */
+  void stopRecording() {
+    // Make sure that we don't stop the screen recorder in the middle of a write, but never block
+    // JVM shutdown forever on a frame that does not finish.
+    try {
+      if (!writingFrame.tryAcquire(STOP_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+        System.err.println("Timed out waiting for a frame to be written; not stopping recorder");
+        return;
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return;
+    }
+    try {
+      screenRecorder.stop();
+      screenRecorder = null;
+    } finally {
+      writingFrame.release();
+    }
   }
 
   @Override
   public void onFrame(Bitmap bitmap) {
     writingFrame.acquireUninterruptibly();
-    if (screenRecorder != null) {
-      screenRecorder.recordFrame(bitmap);
-    } else {
-      bitmap.recycle();
+    try {
+      if (screenRecorder != null) {
+        screenRecorder.recordFrame(bitmap);
+      } else {
+        bitmap.recycle();
+      }
+    } finally {
+      writingFrame.release();
     }
-    writingFrame.release();
   }
 
   private Path getVideoPath() throws IOException {
