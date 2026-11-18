@@ -47,7 +47,7 @@ internal class AndroidTestProject(
       android {
         namespace = "org.robolectric.simulator.testproject"
         compileSdk = 36
-        defaultConfig { minSdk = 23 }
+        defaultConfig { minSdk = 24 }
         testOptions { unitTests.isIncludeAndroidResources = $includeAndroidResources }
       $appBuildScript
       }
