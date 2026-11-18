@@ -83,6 +83,35 @@ class SimulatorPluginTest {
   }
 
   @Test
+  fun simulate_withDependencyLocking_resolvesTheSimulatorOutsideTheTestClasspath() {
+    val project =
+      AndroidTestProject(
+        tempFolder.root,
+        extraBuildScript =
+          """
+          dependencyLocking { lockAllConfigurations() }
+
+          tasks.register("printClasspaths") {
+            val simulate = tasks.named<JavaExec>("simulateDebug").map { it.classpath }
+            val unitTest = tasks.named<Test>("testDebugUnitTest").map { it.classpath }
+            doLast {
+              simulate.get().forEach { println("Simulate classpath: " + it.name) }
+              unitTest.get().forEach { println("Unit test classpath: " + it.name) }
+            }
+          }
+          """,
+      )
+    // Lock the app's own dependencies, as a project that uses locking would have.
+    project.build(":app:dependencies", "--write-locks")
+
+    val result = project.build("printClasspaths")
+
+    assertThat(result.output).contains("Simulate classpath: simulator-4.17.jar")
+    assertThat(result.output).contains("Unit test classpath: robolectric-4.17.jar")
+    assertThat(result.output).doesNotContain("Unit test classpath: simulator-4.17.jar")
+  }
+
+  @Test
   fun simulate_variantWithoutUnitTests_explainsWhy() {
     val project = AndroidTestProject(tempFolder.root, appBuildScript = FLAVORS)
 

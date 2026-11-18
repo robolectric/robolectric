@@ -52,33 +52,45 @@ class SimulatorPlugin : Plugin<Project> {
     }
     val testTask = project.provider { project.tasks.getByName<Test>("test${variantName}UnitTest") }
 
-    // Variants without unit tests don't have these configurations. Apps usually declare
-    // Robolectric in 'testImplementation', which 'test<Variant>Implementation' doesn't extend, so
-    // look for it in the unit test runtime classpath, which extends all the variant's test
-    // configurations.
+    // Apps usually declare Robolectric in 'testImplementation', which 'test<Variant>Implementation'
+    // doesn't extend, so look for it in the unit test runtime classpath, which extends all the
+    // variant's test configurations.
     val unitTestRuntimeClasspath =
       "${variantName.replaceFirstChar { it.lowercase() }}UnitTestRuntimeClasspath"
-    project.configurations
-      .matching { it.name == "test${variantName}Implementation" }
-      .configureEach {
-        val robolectricDependencies =
-          project.configurations.getByName(unitTestRuntimeClasspath).allDependencies.filter {
-            it.group == "org.robolectric"
+
+    // Resolve the simulator in its own configuration rather than adding it to the app's unit test
+    // dependencies, so the app's test classpath stays as it is. Dependency locking only writes lock
+    // state for builds that succeed, which a simulator session never does, so don't lock it. It
+    // isn't transitive: the simulator's dependencies, Robolectric and its own, come from the test
+    // classpath, at the Robolectric version the simulator is picked to match.
+    val simulatorClasspath =
+      project.configurations.register("simulator${variantName}Classpath") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+        isTransitive = false
+        resolutionStrategy.deactivateDependencyLocking()
+        withDependencies {
+          val robolectricDependencies =
+            project.configurations.getByName(unitTestRuntimeClasspath).allDependencies.filter {
+              it.group == "org.robolectric"
+            }
+
+          if (robolectricDependencies.none { it.name == "simulator" }) {
+            val robolectricVersion =
+              robolectricDependencies
+                .maxOfOrNull { Version(it.version.orEmpty()) }
+                ?.takeIf { it >= REQUIRED_VERSION }
+            if (robolectricVersion == null) {
+              project.logger.warn(
+                "No compatible Robolectric version found. Using $REQUIRED_VERSION.",
+              )
+            }
+
+            val simulatorDependency =
+              "org.robolectric:simulator:${robolectricVersion ?: REQUIRED_VERSION}"
+
+            add(project.dependencies.create(simulatorDependency))
           }
-
-        if (robolectricDependencies.none { it.name == "simulator" }) {
-          val robolectricVersion =
-            robolectricDependencies
-              .maxOfOrNull { Version(it.version.orEmpty()) }
-              ?.takeIf { it >= REQUIRED_VERSION }
-          if (robolectricVersion == null) {
-            project.logger.warn("No compatible Robolectric version found. Using $REQUIRED_VERSION.")
-          }
-
-          val simulatorDependency =
-            "org.robolectric:simulator:${robolectricVersion ?: REQUIRED_VERSION}"
-
-          dependencies.add(project.dependencies.create(simulatorDependency))
         }
       }
 
@@ -95,7 +107,7 @@ class SimulatorPlugin : Plugin<Project> {
 
     task.apply {
       // The test task's classpath carries the tasks that build it, but not the test task itself.
-      classpath = project.files(testTask.map { it.classpath })
+      classpath = project.files(testTask.map { it.classpath }, simulatorClasspath)
       // Capture only values, not tasks, which the configuration cache can't store.
       val jvmArgs = testTask.map { test ->
         // Gradle keeps the heap sizes apart from the other JVM arguments.
