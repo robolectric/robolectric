@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -686,12 +685,12 @@ public class ShadowWindowManagerGlobal {
         /* newMergedConfiguration */ args.add(
             MergedConfiguration.class, getMergedConfiguration(windowInfo.displayId));
       }
-      /* backDropFrame */ args.addIf(sdk >= N && sdk <= R, Rect.class, new Rect());
+      /* backDropFrame */ args.addIf(sdk <= R, Rect.class, new Rect());
       if (sdk >= TIRAMISU) {
         /* insetsState */ args.add(InsetsState.class, windowInfo.insetsState);
       }
-      /* forceLayout */ args.addIf(sdk >= N, boolean.class, false);
-      /* alwaysConsumeNavBar */ args.addIf(sdk >= N, boolean.class, false);
+      /* forceLayout */ args.add(boolean.class, false);
+      /* alwaysConsumeNavBar */ args.add(boolean.class, false);
       /* displayId */ args.addIf(sdk >= O, int.class, windowInfo.displayId);
       if (sdk >= P && sdk <= R) {
         /* displayCutout */ args.add(

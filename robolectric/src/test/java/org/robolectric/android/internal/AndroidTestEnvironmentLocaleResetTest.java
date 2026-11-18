@@ -2,7 +2,6 @@ package org.robolectric.android.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.os.Build;
 import android.os.LocaleList;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
@@ -10,7 +9,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /**
@@ -36,18 +34,14 @@ public class AndroidTestEnvironmentLocaleResetTest {
   @Test
   public void locale_changed() {
     assertThat(Locale.getDefault()).isEqualTo(Locale.forLanguageTag("ar-EG"));
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ar-EG"));
-    }
+    assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ar-EG"));
   }
 
   @Config(qualifiers = "ja-rJP")
   @Test
   public void locale_changed_differentConfig() {
     assertThat(Locale.getDefault()).isEqualTo(Locale.forLanguageTag("ja-JP"));
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ja-JP"));
-    }
+    assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ja-JP"));
   }
 
   @Test

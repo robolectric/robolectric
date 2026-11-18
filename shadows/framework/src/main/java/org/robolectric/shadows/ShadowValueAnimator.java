@@ -1,12 +1,10 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.animation.AnimationHandler;
 import android.animation.ValueAnimator;
 import android.app.UiAutomation;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -34,16 +32,9 @@ public class ShadowValueAnimator {
      * cause the AnimationHandler not to post a callback. We reset the thread local here so a new
      * one will be created for each test with a fresh state.
      */
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      ThreadLocal<AnimationHandler> animatorHandlerTL =
-          ReflectionHelpers.getStaticField(AnimationHandler.class, "sAnimatorHandler");
-      animatorHandlerTL.remove();
-    } else {
-      ReflectionHelpers.callStaticMethod(ValueAnimator.class, "clearAllAnimations");
-      ThreadLocal<AnimationHandler> animatorHandlerTL =
-          ReflectionHelpers.getStaticField(ValueAnimator.class, "sAnimationHandler");
-      animatorHandlerTL.remove();
-    }
+    ThreadLocal<AnimationHandler> animatorHandlerTL =
+        ReflectionHelpers.getStaticField(AnimationHandler.class, "sAnimatorHandler");
+    animatorHandlerTL.remove();
 
     setDurationScale(1);
   }

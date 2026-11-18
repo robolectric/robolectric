@@ -248,12 +248,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
-    if (apiLevel >= VERSION_CODES.N) {
-      // LocaleList.setDefault will internally call java.util.Locale.setDefault()
-      LocaleList.setDefault(androidConfiguration.getLocales());
-    } else {
-      Locale.setDefault(androidConfiguration.locale);
-    }
+    // LocaleList.setDefault will internally call java.util.Locale.setDefault()
+    LocaleList.setDefault(androidConfiguration.getLocales());
 
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       if (Looper.myLooper() == null) {
@@ -757,10 +753,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     applicationInfo.dataDir = createTempDir(applicationInfo.packageName + "-dataDir");
 
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
-      applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
-    }
+    applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
+    applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
   }
 
   private String createTempDir(String name) {

@@ -92,7 +92,7 @@ public final class StorageVolumeBuilder {
 
   public StorageVolume build() throws IllegalStateException {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel >= VERSION_CODES.N && apiLevel < VERSION_CODES.P) {
+    if (apiLevel < VERSION_CODES.P) {
       return ReflectionHelpers.callConstructor(
           StorageVolume.class,
           from(String.class, id), // String id,

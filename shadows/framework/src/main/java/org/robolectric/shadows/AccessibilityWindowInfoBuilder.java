@@ -129,7 +129,7 @@ public class AccessibilityWindowInfoBuilder {
     if (type != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID) {
       windowInfo.setType(type);
     }
-    if (title != null && RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+    if (title != null) {
       ReflectionHelpers.setField(windowInfo, "mTitle", title);
     }
     windowInfo.setFocused(focused);

@@ -28,7 +28,6 @@ import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Arrays.asList;
@@ -701,10 +700,8 @@ public class ShadowPackageManager {
     if (applicationInfo.publicSourceDir == null) {
       applicationInfo.publicSourceDir = applicationInfo.sourceDir;
     }
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
-      applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
-    }
+    applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
+    applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
   }
 
   private static String createTempDir(String name) {

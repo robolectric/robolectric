@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -17,7 +16,6 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
@@ -190,7 +188,6 @@ public class ShadowAudioTrack {
    *
    * @param routedDevice The route device, or null to reset it to unknown.
    */
-  @RequiresApi(N)
   public static void setRoutedDevice(@Nullable AudioDeviceInfo routedDevice) {
     if (Objects.equals(routedDevice, ShadowAudioTrack.routedDevice)) {
       return;

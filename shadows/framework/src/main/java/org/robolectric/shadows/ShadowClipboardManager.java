@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -60,14 +59,8 @@ public class ShadowClipboardManager {
         }
       }
     }
-    if (getApiLevel() >= N) {
-      if (clip != null) {
-        clip.prepareToLeaveProcess(true);
-      }
-    } else {
-      if (clip != null) {
-        ReflectionHelpers.callInstanceMethod(ClipData.class, clip, "prepareToLeaveProcess");
-      }
+    if (clip != null) {
+      clip.prepareToLeaveProcess(true);
     }
 
     ShadowClipboardManager.clip = clip;
