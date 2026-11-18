@@ -17,11 +17,13 @@ java {
 
 dependencies {
   implementation(libs.guava)
+  implementation(libs.zipflinger)
   implementation(project(":sandbox"))
 
   testImplementation(libs.junit4)
   testImplementation(libs.mockito)
   testImplementation(libs.mockito.subclass)
+  testImplementation(libs.truth)
 }
 
 val androidAllMavenLocal =
