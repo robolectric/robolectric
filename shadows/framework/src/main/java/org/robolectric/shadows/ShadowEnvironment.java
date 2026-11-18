@@ -237,6 +237,16 @@ public class ShadowEnvironment {
   }
 
   /**
+   * Checks the primary external storage directory, {@link #getExternalStorageDirectory()}. The
+   * framework reads the first entry of {@link ShadowUserEnvironment#getExternalDirs()}, which is
+   * empty unless {@link #addExternalDir(String)} was called.
+   */
+  @Implementation(minSdk = R)
+  protected static boolean isExternalStorageManager() {
+    return Environment.isExternalStorageManager(getExternalStorageDirectory());
+  }
+
+  /**
    * Sets the "isRemovable" flag of a particular file.
    *
    * @param file Target file.

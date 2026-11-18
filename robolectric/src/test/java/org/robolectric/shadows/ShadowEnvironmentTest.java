@@ -6,6 +6,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import android.app.AppOpsManager;
+import android.content.Context;
 import android.os.Environment;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -281,5 +283,20 @@ public class ShadowEnvironmentTest {
 
     ShadowEnvironment.setIsExternalStorageEmulated(false);
     assertThat(Environment.isExternalStorageEmulated()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isExternalStorageManager_reflectsManageExternalStorageAppOp() {
+    Context context = ApplicationProvider.getApplicationContext();
+    AppOpsManager appOps = context.getSystemService(AppOpsManager.class);
+    int uid = context.getApplicationInfo().uid;
+    String op = AppOpsManager.OPSTR_MANAGE_EXTERNAL_STORAGE;
+
+    appOps.setMode(op, uid, context.getPackageName(), AppOpsManager.MODE_ERRORED);
+    assertThat(Environment.isExternalStorageManager()).isFalse();
+
+    appOps.setMode(op, uid, context.getPackageName(), AppOpsManager.MODE_ALLOWED);
+    assertThat(Environment.isExternalStorageManager()).isTrue();
   }
 }
