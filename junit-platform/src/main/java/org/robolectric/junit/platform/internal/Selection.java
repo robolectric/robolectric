@@ -91,7 +91,11 @@ public final class Selection {
       if (!uniqueId.hasPrefix(engineId)) {
         continue;
       }
-      selection.uniqueIds.add(uniqueId);
+      // A class's own ID selects the whole class; only IDs within a sandbox need pruning.
+      if (uniqueId.getSegments().stream()
+          .anyMatch(segment -> segment.getType().equals(SandboxDescriptor.SEGMENT_TYPE))) {
+        selection.uniqueIds.add(uniqueId);
+      }
       for (UniqueId.Segment segment : uniqueId.getSegments()) {
         if (segment.getType().equals("class")) {
           ReflectionSupport.tryToLoadClass(segment.getValue())

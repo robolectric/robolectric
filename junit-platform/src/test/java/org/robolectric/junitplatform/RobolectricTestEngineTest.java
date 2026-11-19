@@ -43,6 +43,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -86,6 +87,21 @@ class RobolectricTestEngineTest {
 
     results.testEvents().assertStatistics(stats -> stats.started(2).succeeded(2));
     assertThat(reportedSdkBySandbox(results)).containsExactly("sdk=33", "33", "sdk=34", "34");
+  }
+
+  @Test
+  void classOnSeveralSdks_isReportedOnce() {
+    EngineExecutionResults results = executeTests(selectClass(MultipleSdks.class));
+
+    List<TestDescriptor> classes =
+        results.containerEvents().started().stream()
+            .map(Event::getTestDescriptor)
+            .filter(descriptor -> descriptor.getSource().orElse(null) instanceof ClassSource)
+            .toList();
+    assertThat(classes).hasSize(1);
+    assertThat(classes.get(0).getDisplayName()).isEqualTo("RobolectricTestEngineTest$MultipleSdks");
+    assertThat(classes.get(0).getChildren()).hasSize(2);
+    results.containerEvents().assertStatistics(stats -> stats.started(2).succeeded(2));
   }
 
   @Test
@@ -203,13 +219,38 @@ class RobolectricTestEngineTest {
   }
 
   @Test
-  void unsupportedSdk_failsClass() {
-    EngineTestKit.engine(new RobolectricTestEngine())
-        .selectors(selectClass(UnsupportedSdk.class))
-        .execute()
-        .allEvents()
+  void uniqueIdSelector_ofClass_runsClassOnEverySdk() {
+    UniqueId classId =
+        executeTests(selectClass(MultipleSdks.class))
+            .testEvents()
+            .succeeded()
+            .list()
+            .get(0)
+            .getTestDescriptor()
+            .getParent()
+            .get()
+            .getUniqueId();
+
+    executeTests(selectUniqueId(classId))
+        .testEvents()
+        .assertStatistics(stats -> stats.started(2).succeeded(2));
+  }
+
+  @Test
+  void unsupportedSdk_failsEachTestOnThatSdk() {
+    EngineExecutionResults results = executeTests(selectClass(UnsupportedSdk.class));
+
+    results.containerEvents().assertStatistics(stats -> stats.failed(0));
+    results.testEvents().assertStatistics(stats -> stats.started(4).succeeded(2).failed(2));
+    assertThat(
+            results.testEvents().failed().stream()
+                .map(event -> event.getTestDescriptor().getDisplayName())
+                .toList())
+        .containsExactly("first()[1]", "second()[1]");
+    results
+        .testEvents()
         .assertThatEvents()
-        .haveAtLeastOne(finishedWithFailure());
+        .haveExactly(2, finishedWithFailure(message("API level 1 is not available")));
   }
 
   @Test
@@ -512,9 +553,12 @@ class RobolectricTestEngineTest {
   }
 
   @ExtendWith(RobolectricExtension.class)
-  @Config(sdk = 1)
+  @Config(sdk = {1, 34})
   static class UnsupportedSdk {
     @Test
-    void test() {}
+    void first() {}
+
+    @Test
+    void second() {}
   }
 }

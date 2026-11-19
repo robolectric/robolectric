@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.EngineDiscoveryRequest;
+import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
@@ -24,8 +26,8 @@ import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 /**
- * Builds the robolectric engine's test plan: one {@link SandboxDescriptor} per sandbox, containing
- * the tests of JUnit Jupiter classes that use {@code RobolectricExtension} that run in it.
+ * Builds the robolectric engine's test plan: the tests of JUnit Jupiter classes that use {@code
+ * RobolectricExtension}, grouped by the sandbox that runs them, and reported by class.
  */
 public final class Planner {
   private final TestDescriptor engineDescriptor;
@@ -98,6 +100,38 @@ public final class Planner {
       }
     }
     selection.prune(engineDescriptor);
+    groupByClass();
+  }
+
+  /**
+   * Replaces the sandboxes in the test plan by one {@link TestClassDescriptor} per test class, with
+   * the class's tests from all of its sandboxes, which still run them.
+   */
+  private void groupByClass() {
+    Map<String, TestClassDescriptor> classes = new LinkedHashMap<>();
+    for (TestDescriptor child : new ArrayList<>(engineDescriptor.getChildren())) {
+      if (child instanceof SandboxDescriptor sandbox) {
+        engineDescriptor.removeChild(sandbox);
+        for (TestDescriptor jupiterClass : sandbox.getChildren()) {
+          String className = jupiterClass.getUniqueId().getLastSegment().getValue();
+          TestClassDescriptor testClassDescriptor =
+              classes.computeIfAbsent(
+                  className,
+                  unused -> {
+                    TestClassDescriptor descriptor =
+                        new TestClassDescriptor(
+                            engineDescriptor
+                                .getUniqueId()
+                                .append(TestClassDescriptor.SEGMENT_TYPE, className),
+                            jupiterClass);
+                    engineDescriptor.addChild(descriptor);
+                    return descriptor;
+                  });
+          testClassDescriptor.sandboxes.add(sandbox);
+          sandbox.reportUnder(jupiterClass, testClassDescriptor);
+        }
+      }
+    }
   }
 
   private void planJupiterClass(Class<?> testClass, List<Selection.Item> items) {
@@ -169,20 +203,37 @@ public final class Planner {
         });
   }
 
-  /** Runs one child of the engine descriptor. */
-  public static void execute(TestDescriptor child, ExecutionRequest request) {
-    if (child instanceof SandboxDescriptor) {
-      ((SandboxDescriptor) child)
-          .execute(
-              request,
-              new JupiterDelegate(
-                  request.getConfigurationParameters(), request.getOutputDirectoryCreator()));
-    } else if (child instanceof InvalidClassDescriptor) {
-      Throwable error = ((InvalidClassDescriptor) child).error;
-      request.getEngineExecutionListener().executionStarted(child);
-      request
-          .getEngineExecutionListener()
-          .executionFinished(child, TestExecutionResult.failed(error));
+  /**
+   * Runs the children of the engine descriptor: the sandboxes one after the other, finishing each
+   * class after the last sandbox that runs it.
+   */
+  public static void execute(TestDescriptor root, ExecutionRequest request) {
+    EngineExecutionListener listener = request.getEngineExecutionListener();
+    Set<SandboxDescriptor> sandboxes = new LinkedHashSet<>();
+    for (TestDescriptor child : new ArrayList<>(root.getChildren())) {
+      if (child instanceof TestClassDescriptor testClassDescriptor) {
+        sandboxes.addAll(testClassDescriptor.sandboxes);
+      } else if (child instanceof InvalidClassDescriptor invalidClass) {
+        listener.executionStarted(child);
+        listener.executionFinished(child, TestExecutionResult.failed(invalidClass.error));
+      }
+    }
+    Map<TestClassDescriptor, Integer> remainingSandboxes = new HashMap<>();
+    JupiterDelegate jupiter =
+        new JupiterDelegate(
+            request.getConfigurationParameters(), request.getOutputDirectoryCreator());
+    for (SandboxDescriptor sandbox : sandboxes) {
+      sandbox.execute(request, jupiter);
+      for (TestClassDescriptor testClassDescriptor : sandbox.classes()) {
+        int remaining =
+            remainingSandboxes.merge(
+                testClassDescriptor,
+                testClassDescriptor.sandboxes.size() - 1,
+                (a, unused) -> a - 1);
+        if (remaining == 0) {
+          testClassDescriptor.finish(listener);
+        }
+      }
     }
   }
 }
