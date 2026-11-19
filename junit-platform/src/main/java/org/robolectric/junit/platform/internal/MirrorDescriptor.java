@@ -18,13 +18,25 @@ final class MirrorDescriptor extends AbstractTestDescriptor {
   private final Set<TestTag> tags;
   private final String legacyReportingName;
   private final boolean mayRegisterTests;
+  private final String variantMarker;
 
-  MirrorDescriptor(UniqueId uniqueId, TestIdentifier identifier) {
-    super(uniqueId, identifier.getDisplayName(), identifier.getSource().orElse(null));
+  /**
+   * @param variantMarker appended to the names of the test, such as {@code "[34]"} for one of the
+   *     SDKs of a test that runs on several, or empty
+   */
+  MirrorDescriptor(UniqueId uniqueId, TestIdentifier identifier, String variantMarker) {
+    super(
+        uniqueId, identifier.getDisplayName() + variantMarker, identifier.getSource().orElse(null));
     this.type = identifier.getType();
     this.tags = identifier.getTags();
-    this.legacyReportingName = identifier.getLegacyReportingName();
+    this.legacyReportingName = identifier.getLegacyReportingName() + variantMarker;
     this.mayRegisterTests = isDynamicContainer(identifier.getUniqueIdObject());
+    this.variantMarker = variantMarker;
+  }
+
+  /** The marker appended to the names of this test and of the tests it contains. */
+  String getVariantMarker() {
+    return variantMarker;
   }
 
   @Override

@@ -3,9 +3,11 @@ package org.robolectric.junit.platform.internal;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.engine.DiscoverySelector;
@@ -32,6 +34,9 @@ public final class Planner {
   private final Map<SandboxSpec, SandboxDescriptor> sandboxes = new LinkedHashMap<>();
   private final Map<SandboxSpec, List<DiscoverySelector>> jupiterSelectors = new LinkedHashMap<>();
   private final Map<String, Integer> keyCounts = new HashMap<>();
+  private final boolean alwaysIncludeVariantMarkersInTestName =
+      Boolean.parseBoolean(
+          System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName", "false"));
 
   public Planner(TestDescriptor engineDescriptor, EngineDiscoveryRequest request) {
     this.engineDescriptor = engineDescriptor;
@@ -100,6 +105,7 @@ public final class Planner {
     List<TestMethod> tests = TestMethod.collect(testClass);
     Map<SandboxSpec, List<TestMethod>> testsBySandbox = new LinkedHashMap<>();
     Map<SandboxSpec, Configuration> configurations = new LinkedHashMap<>();
+    Map<SandboxSpec, Set<TestMethod>> namedWithSdk = new HashMap<>();
     int selectedTests = 0;
     for (TestMethod test : tests) {
       if (!Selection.selects(items, test)) {
@@ -109,22 +115,32 @@ public final class Planner {
       Configuration configuration =
           runtime.getConfiguration(test.configurationClass(), test.method);
       AndroidManifest manifest = runtime.getAppManifest(configuration);
-      for (Sdk sdk : runtime.selectSdks(configuration, manifest)) {
+      List<Sdk> sdks = runtime.selectSdks(configuration, manifest);
+      for (int i = 0; i < sdks.size(); i++) {
         SandboxSpec spec =
             runtime.createSpec(
                 configuration,
-                sdk,
+                sdks.get(i),
                 runtime.createClassLoaderConfig(
                     configuration, test.configurationClass(), test.method));
         testsBySandbox.computeIfAbsent(spec, unused -> new ArrayList<>()).add(test);
         configurations.putIfAbsent(spec, configuration);
+        // Like RobolectricTestRunner, name a test that runs on several SDKs after the SDK, except
+        // on the last one, which keeps the plain name.
+        if (alwaysIncludeVariantMarkersInTestName || i < sdks.size() - 1) {
+          namedWithSdk.computeIfAbsent(spec, unused -> new HashSet<>()).add(test);
+        }
       }
     }
     // Only add the class to the plan once all of its tests could be planned.
     boolean wholeClass = Selection.selectsWholeClass(items) && selectedTests == tests.size();
     for (Map.Entry<SandboxSpec, List<TestMethod>> entry : testsBySandbox.entrySet()) {
       SandboxSpec spec = entry.getKey();
-      sandbox(spec).offerConfiguration(configurations.get(spec));
+      SandboxDescriptor sandbox = sandbox(spec);
+      sandbox.offerConfiguration(configurations.get(spec));
+      for (TestMethod test : namedWithSdk.getOrDefault(spec, Set.of())) {
+        sandbox.nameWithSdk(test.source());
+      }
       List<DiscoverySelector> selectors =
           jupiterSelectors.computeIfAbsent(spec, unused -> new ArrayList<>());
       if (wholeClass && entry.getValue().size() == tests.size()) {

@@ -12,6 +12,7 @@ import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ReflectionSupport;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 
 /**
  * A JUnit Jupiter test method ({@code @Test}, {@code @TestTemplate}, {@code @TestFactory}, ...) of
@@ -33,6 +34,11 @@ final class TestMethod {
   /** The class whose configuration applies to this test: the top-level class. */
   Class<?> configurationClass() {
     return enclosingClasses.isEmpty() ? testClass : enclosingClasses.get(0);
+  }
+
+  /** The source Jupiter gives this test's descriptor. */
+  MethodSource source() {
+    return MethodSource.from(testClass, method);
   }
 
   DiscoverySelector selector() {
