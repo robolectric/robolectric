@@ -1236,15 +1236,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected void getPackageSizeInfoAsUser(
-      String pkgName,
-      int uid,
-      final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
+      String pkgName, int uid, final IPackageStatsObserver observer) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper())
         .post(() -> {
           try {
-            ((IPackageStatsObserver) observer)
-                .onGetStatsCompleted(packageStats, packageStats != null);
+            observer.onGetStatsCompleted(packageStats, packageStats != null);
           } catch (RemoteException remoteException) {
             remoteException.rethrowFromSystemServer();
           }
@@ -1421,14 +1418,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected @ClassName("android.content.pm.PackageInfo") Object getPackageInfoAsUser(
-      String packageName, int flags, int userId) throws NameNotFoundException {
+  protected PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
+      throws NameNotFoundException {
     return getPackageInfo(packageName, flags);
   }
 
   /** In Android T, an overloaded one which has parameter type of {@link PackageInfoFlags}. */
   @Implementation(minSdk = TIRAMISU)
-  protected @ClassName("android.content.pm.PackageInfo") Object getPackageInfoAsUser(
+  protected PackageInfo getPackageInfoAsUser(
       String packageName,
       @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flagsObject,
       int userId)
@@ -1972,16 +1969,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected void addOnPermissionsChangeListener(
-      @ClassName("android.content.pm.PackageManager$OnPermissionsChangedListener")
-          Object listener) {
+  protected void addOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
     permissionListeners.add(listener);
   }
 
   @Implementation
-  protected void removeOnPermissionsChangeListener(
-      @ClassName("android.content.pm.PackageManager$OnPermissionsChangedListener")
-          Object listener) {
+  protected void removeOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
     permissionListeners.remove(listener);
   }
 
@@ -2044,23 +2037,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected void registerMoveCallback(
-      @ClassName("android.content.pm.PackageManager$MoveCallback") Object callback,
-      Handler handler) {}
+  protected void registerMoveCallback(PackageManager.MoveCallback callback, Handler handler) {}
 
   @Implementation
-  protected void unregisterMoveCallback(
-      @ClassName("android.content.pm.PackageManager$MoveCallback") Object callback) {}
+  protected void unregisterMoveCallback(PackageManager.MoveCallback callback) {}
 
   @Implementation
-  protected int movePackage(
-      String packageName, @ClassName("android.os.storage.VolumeInfo") Object vol) {
+  protected int movePackage(String packageName, VolumeInfo vol) {
     return 0;
   }
 
   @Implementation
-  protected @ClassName("android.os.storage.VolumeInfo") Object getPackageCurrentVolume(
-      @ClassName("android.content.pm.ApplicationInfo") Object app) {
+  protected VolumeInfo getPackageCurrentVolume(ApplicationInfo app) {
     return null;
   }
 
@@ -2070,13 +2058,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected int movePrimaryStorage(@ClassName("android.os.storage.VolumeInfo") Object vol) {
+  protected int movePrimaryStorage(VolumeInfo vol) {
     return 0;
   }
 
   @Implementation
-  protected @Nullable @ClassName("android.os.storage.VolumeInfo") Object
-      getPrimaryStorageCurrentVolume() {
+  protected @Nullable VolumeInfo getPrimaryStorageCurrentVolume() {
     return null;
   }
 

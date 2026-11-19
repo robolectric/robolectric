@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.HardwareRenderer;
 import android.graphics.RenderNode;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -58,8 +57,7 @@ public class ShadowHardwareRenderer {
   }
 
   @Implementation
-  protected static Bitmap createHardwareBitmap(
-      @ClassName("android.graphics.RenderNode") RenderNode node, int width, int height) {
+  protected static Bitmap createHardwareBitmap(RenderNode node, int width, int height) {
     return createHardwareBitmap(width, height);
   }
 

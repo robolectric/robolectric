@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.S;
 
+import android.app.IApplicationThread;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -15,7 +16,6 @@ import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.internal.WindowConfigurations;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -91,11 +91,7 @@ class WindowManagerServiceDelegate implements ShadowServiceManager.ResettableSer
   /** As above, for VANILLA_ICE_CREAM and later. */
   @Nullable
   public Object attachWindowContextToDisplayArea(
-      @ClassName("android.app.IApplicationThread") Object appThread,
-      IBinder clientToken,
-      int type,
-      int displayId,
-      Bundle options) {
+      IApplicationThread appThread, IBinder clientToken, int type, int displayId, Bundle options) {
     Configuration configuration = WindowConfigurations.getDisplayOverrideConfiguration(displayId);
     if (configuration == null) {
       return null;

@@ -8,6 +8,7 @@ import android.app.time.Capabilities;
 import android.app.time.Capabilities.CapabilityState;
 import android.app.time.ExternalTimeSuggestion;
 import android.app.time.TimeCapabilities;
+import android.app.time.TimeCapabilitiesAndConfig;
 import android.app.time.TimeConfiguration;
 import android.app.time.TimeManager;
 import android.app.time.TimeZoneCapabilities;
@@ -208,14 +209,13 @@ public class ShadowTimeManager {
 
   @Implementation
   @SystemApi
-  protected @ClassName("android.app.time.TimeCapabilitiesAndConfig") Object
-      getTimeCapabilitiesAndConfig() throws ClassNotFoundException {
+  protected TimeCapabilitiesAndConfig getTimeCapabilitiesAndConfig() throws ClassNotFoundException {
     if (timeConfiguration == null) {
       timeConfiguration = new TimeConfiguration.Builder().setAutoDetectionEnabled(true).build();
     }
 
     return ReflectionHelpers.callConstructor(
-        Class.forName("android.app.time.TimeCapabilitiesAndConfig"),
+        TimeCapabilitiesAndConfig.class,
         ClassParameter.from(TimeCapabilities.class, timeCapabilities),
         ClassParameter.from(TimeConfiguration.class, timeConfiguration));
   }
