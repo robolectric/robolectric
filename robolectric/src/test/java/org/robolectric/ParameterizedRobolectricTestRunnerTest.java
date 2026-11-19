@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +40,19 @@ public class ParameterizedRobolectricTestRunnerTest {
   }
 
   @Test
+  public void singleSdkParametersAreComputedOnce() throws Throwable {
+    properties.set(PROVIDER_CALLS, "0");
+    ParameterizedRobolectricTestRunner runner =
+        new ParameterizedRobolectricTestRunner(SingleSdkFixture.class);
+    assertThat(runner.getDescription().getChildren()).hasSize(2);
+    Result result = new JUnitCore().run(runner);
+    assertThat(result.getFailures()).isEmpty();
+    assumeTrue(result.getRunCount() > 0);
+    assertThat(result.getRunCount()).isEqualTo(4);
+    assertThat(System.getProperty(PROVIDER_CALLS)).isEqualTo("1");
+  }
+
+  @Test
   public void parametersAreRecomputedWhenRunnerRunsAgain() throws Throwable {
     properties.set(PROVIDER_CALLS, "0");
     ParameterizedRobolectricTestRunner runner =
@@ -49,7 +63,7 @@ public class ParameterizedRobolectricTestRunnerTest {
       assertThat(result.getFailures()).isEmpty();
       assertThat(result.getRunCount()).isAtLeast(4);
       assertThat(System.getProperty(PROVIDER_CALLS))
-          .isEqualTo(Integer.toString(1 + run * result.getRunCount() / 4));
+          .isEqualTo(Integer.toString(run * result.getRunCount() / 4));
     }
   }
 
@@ -62,7 +76,8 @@ public class ParameterizedRobolectricTestRunnerTest {
     assertThat(result.getRunCount()).isAtLeast(testsPerSandbox);
     int sandboxCount = testsPerSandbox == 0 ? 0 : result.getRunCount() / testsPerSandbox;
     assertThat(result.getRunCount()).isEqualTo(testsPerSandbox * sandboxCount);
-    assertThat(System.getProperty(PROVIDER_CALLS)).isEqualTo(Integer.toString(1 + sandboxCount));
+    assertThat(System.getProperty(PROVIDER_CALLS))
+        .isEqualTo(Integer.toString(Math.max(1, sandboxCount)));
   }
 
   private static List<Value> values() {
@@ -106,6 +121,14 @@ public class ParameterizedRobolectricTestRunnerTest {
     @Test
     public void second() {
       assertThat(value).isInstanceOf(Value.class);
+    }
+  }
+
+  @Ignore
+  @Config(sdk = Config.NEWEST_SDK)
+  public static class SingleSdkFixture extends ConstructorFixture {
+    public SingleSdkFixture(Value value) {
+      super(value);
     }
   }
 
