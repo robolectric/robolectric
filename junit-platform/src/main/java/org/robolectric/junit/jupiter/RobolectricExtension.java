@@ -1,7 +1,12 @@
 package org.robolectric.junit.jupiter;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -102,8 +107,48 @@ public class RobolectricExtension
 
   @Override
   public void beforeEach(ExtensionContext context) {
+    checkNoJUnit4Rules(context);
     // With the PER_CLASS lifecycle, the test instance is created before any test method's context.
     scope(context);
+  }
+
+  /** Fails the test if its class has JUnit 4 rules, which JUnit Jupiter would silently not run. */
+  private static void checkNoJUnit4Rules(ExtensionContext context) {
+    Set<String> rules = new LinkedHashSet<>();
+    for (Object testInstance : context.getRequiredTestInstances().getAllInstances()) {
+      for (Class<?> c = testInstance.getClass(); c != null; c = c.getSuperclass()) {
+        for (Field field : c.getDeclaredFields()) {
+          if (isJUnit4Rule(field)) {
+            rules.add("'" + field.getName() + "'");
+          }
+        }
+        // Kotlin's @get:Rule annotates the getter.
+        for (Method method : c.getDeclaredMethods()) {
+          if (isJUnit4Rule(method)) {
+            rules.add("'" + method.getName() + "()'");
+          }
+        }
+      }
+    }
+    if (!rules.isEmpty()) {
+      throw new ExtensionConfigurationException(
+          context.getRequiredTestClass().getName()
+              + " has JUnit 4 rules, which JUnit Jupiter does not run: "
+              + String.join(", ", rules)
+              + ". Keep the class on JUnit 4, which JUnit Vintage runs alongside JUnit Jupiter"
+              + " classes, or replace the rules with JUnit Jupiter extensions.");
+    }
+  }
+
+  /** Checks by name, since JUnit 4 does not have to be on the classpath. */
+  private static boolean isJUnit4Rule(AnnotatedElement element) {
+    for (Annotation annotation : element.getAnnotations()) {
+      String name = annotation.annotationType().getName();
+      if (name.equals("org.junit.Rule") || name.equals("org.junit.ClassRule")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
