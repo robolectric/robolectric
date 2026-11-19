@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -8,6 +9,7 @@ import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.Choreographer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
@@ -145,6 +147,60 @@ public class ShadowChoreographerTest {
 
     assertThat(ShadowSystem.nanoTime()).isEqualTo(startTime + Duration.ofMillis(15).toNanos());
     assertThat(didRun.get()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void postFrameCallback_duringFrame_advancesClockAfterFrame() {
+    ShadowChoreographer.setPaused(false);
+    ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+    Choreographer choreographer = Choreographer.getInstance();
+    // post an initial callback which depending on API version may execute at current time
+    choreographer.postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
+
+    AtomicLong frameTimeNanos = new AtomicLong(-1);
+    AtomicLong uptimeNanosAfterScheduling = new AtomicLong(-1);
+    AtomicLong nextFrameTimeNanos = new AtomicLong(-1);
+    choreographer.postFrameCallback(time -> {
+      frameTimeNanos.set(time);
+      // Scheduling the next frame, as a view that changes while it is laid out does, must not
+      // move the clock past this frame before it is drawn.
+      choreographer.postFrameCallback(nextFrameTimeNanos::set);
+      uptimeNanosAfterScheduling.set(SystemClock.uptimeNanos());
+    });
+    ShadowLooper.idleMainLooper();
+
+    assertThat(uptimeNanosAfterScheduling.get()).isEqualTo(frameTimeNanos.get());
+    assertThat(nextFrameTimeNanos.get())
+        .isEqualTo(frameTimeNanos.get() + Duration.ofMillis(15).toNanos());
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void postFrameCallback_duringFrame_optedOut_advancesClockDuringFrame() {
+    ShadowChoreographer.setPaused(false);
+    ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+    setSystemPropertyRule.set("robolectric.advanceClockAfterFrame", "false");
+    Choreographer choreographer = Choreographer.getInstance();
+    // post an initial callback which depending on API version may execute at current time
+    choreographer.postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
+
+    AtomicLong frameTimeNanos = new AtomicLong(-1);
+    AtomicLong uptimeNanosAfterScheduling = new AtomicLong(-1);
+    AtomicLong nextFrameTimeNanos = new AtomicLong(-1);
+    choreographer.postFrameCallback(time -> {
+      frameTimeNanos.set(time);
+      choreographer.postFrameCallback(nextFrameTimeNanos::set);
+      uptimeNanosAfterScheduling.set(SystemClock.uptimeNanos());
+    });
+    ShadowLooper.idleMainLooper();
+
+    assertThat(uptimeNanosAfterScheduling.get())
+        .isEqualTo(frameTimeNanos.get() + Duration.ofMillis(15).toNanos());
+    assertThat(nextFrameTimeNanos.get())
+        .isEqualTo(frameTimeNanos.get() + Duration.ofMillis(15).toNanos());
   }
 
   @Test
