@@ -103,15 +103,14 @@ public class ShadowContextHubManager {
   @Implementation(minSdk = VERSION_CODES.P)
   @HiddenApi
   protected @ClassName("android.hardware.location.ContextHubClient") Object createClient(
-      @ClassName("android.hardware.location.ContextHubInfo") Object contextHubInfo,
+      ContextHubInfo contextHubInfo,
       @ClassName("android.hardware.location.ContextHubClientCallback") Object callback) {
 
     ContextHubClient client;
 
     if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
       client =
-          reflector(ContextHubClientReflector.class)
-              .newContextHubClient((ContextHubInfo) contextHubInfo, false);
+          reflector(ContextHubClientReflector.class).newContextHubClient(contextHubInfo, false);
     } else {
       client = reflector(ContextHubClientReflector.class).newContextHubClient();
     }
@@ -128,14 +127,13 @@ public class ShadowContextHubManager {
   @Implementation(minSdk = VERSION_CODES.P)
   @HiddenApi
   protected @ClassName("android.hardware.location.ContextHubClient") Object createClient(
-      @ClassName("android.hardware.location.ContextHubInfo") Object contextHubInfo,
+      ContextHubInfo contextHubInfo,
       @ClassName("android.hardware.location.ContextHubClientCallback") Object callback,
       Executor executor) {
     ContextHubClient client;
     if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
       client =
-          reflector(ContextHubClientReflector.class)
-              .newContextHubClient((ContextHubInfo) contextHubInfo, false);
+          reflector(ContextHubClientReflector.class).newContextHubClient(contextHubInfo, false);
     } else {
       client = reflector(ContextHubClientReflector.class).newContextHubClient();
     }
@@ -152,14 +150,11 @@ public class ShadowContextHubManager {
   @Implementation(minSdk = VERSION_CODES.Q)
   @HiddenApi
   protected @ClassName("android.hardware.location.ContextHubClient") Object createClient(
-      @ClassName("android.hardware.location.ContextHubInfo") Object contextHubInfo,
-      PendingIntent pendingIntent,
-      long nanoAppId) {
+      ContextHubInfo contextHubInfo, PendingIntent pendingIntent, long nanoAppId) {
     ContextHubClient client;
     if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
       client =
-          reflector(ContextHubClientReflector.class)
-              .newContextHubClient((ContextHubInfo) contextHubInfo, false);
+          reflector(ContextHubClientReflector.class).newContextHubClient(contextHubInfo, false);
     } else {
       client = reflector(ContextHubClientReflector.class).newContextHubClient();
     }
@@ -171,12 +166,11 @@ public class ShadowContextHubManager {
   @HiddenApi
   protected @ClassName("android.hardware.location.ContextHubClient") Object createClient(
       Context context,
-      @ClassName("android.hardware.location.ContextHubInfo") Object contextHubInfo,
+      ContextHubInfo contextHubInfo,
       Executor executor,
       @ClassName("android.hardware.location.ContextHubClientCallback") Object callback) {
     ContextHubClient client =
-        reflector(ContextHubClientReflector.class)
-            .newContextHubClient((ContextHubInfo) contextHubInfo, false);
+        reflector(ContextHubClientReflector.class).newContextHubClient(contextHubInfo, false);
     if (context != null && context.getAttributionTag() != null) {
       attributionTagToClientMap.put(context.getAttributionTag(), client);
     }

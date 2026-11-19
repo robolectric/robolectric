@@ -244,7 +244,8 @@ public final class ShadowTimeManagerTest {
         ShadowTimeManager.CONFIGURE_TIME_AUTO_DETECTION_ENABLED_CAPABILITY, CAPABILITY_SUPPORTED);
 
     assertThat(
-            ((TimeCapabilitiesAndConfig) shadowTimeManager.getTimeCapabilitiesAndConfig())
+            shadowTimeManager
+                .getTimeCapabilitiesAndConfig()
                 .getCapabilities()
                 .getConfigureAutoDetectionEnabledCapability())
         .isEqualTo(CAPABILITY_SUPPORTED);
@@ -421,7 +422,8 @@ public final class ShadowTimeManagerTest {
 
     // 2. Capture default values
     int defaultAutoTimeCapability =
-        ((TimeCapabilitiesAndConfig) shadowTimeManager.getTimeCapabilitiesAndConfig())
+        shadowTimeManager
+            .getTimeCapabilitiesAndConfig()
             .getCapabilities()
             .getConfigureAutoDetectionEnabledCapability();
     boolean defaultAutoTimeEnabled =
@@ -454,7 +456,8 @@ public final class ShadowTimeManagerTest {
           }
         });
     assertThat(
-            ((TimeCapabilitiesAndConfig) shadowTimeManager.getTimeCapabilitiesAndConfig())
+            shadowTimeManager
+                .getTimeCapabilitiesAndConfig()
                 .getCapabilities()
                 .getConfigureAutoDetectionEnabledCapability())
         .isEqualTo(defaultAutoTimeCapability);

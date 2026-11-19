@@ -1210,8 +1210,8 @@ public class ShadowLocationManager {
   protected boolean registerGnssMeasurementsCallback(
       @ClassName("android.location.GnssRequest") Object request,
       Executor executor,
-      @ClassName("android.location.GnssMeasurementsEvent$Callback") Object callback) {
-    return registerGnssMeasurementsCallback(executor, (GnssMeasurementsEvent.Callback) callback);
+      GnssMeasurementsEvent.Callback callback) {
+    return registerGnssMeasurementsCallback(executor, callback);
   }
 
   @Implementation(minSdk = VERSION_CODES.S, methodName = "registerGnssMeasurementsCallback")
@@ -1219,8 +1219,8 @@ public class ShadowLocationManager {
   protected boolean registerGnssMeasurementsCallbackFromS(
       @ClassName("android.location.GnssMeasurementRequest") Object request,
       Executor executor,
-      @ClassName("android.location.GnssMeasurementsEvent$Callback") Object callback) {
-    return registerGnssMeasurementsCallback(executor, (GnssMeasurementsEvent.Callback) callback);
+      GnssMeasurementsEvent.Callback callback) {
+    return registerGnssMeasurementsCallback(executor, callback);
   }
 
   @Implementation(minSdk = VERSION_CODES.R)

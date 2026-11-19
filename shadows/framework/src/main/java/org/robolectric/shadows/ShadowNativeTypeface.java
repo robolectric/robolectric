@@ -93,7 +93,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
   }
 
   @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static @ClassName("android.graphics.FontFamily") Object makeFamilyFromParsed(
+  protected static FontFamily makeFamilyFromParsed(
       @ClassName("android.text.FontConfig$Family") Object family,
       Map<String, ByteBuffer> bufferForPath) {
     FontConfigFamilyReflector reflector = reflector(FontConfigFamilyReflector.class, family);

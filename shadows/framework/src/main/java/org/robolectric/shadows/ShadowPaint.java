@@ -480,12 +480,9 @@ public class ShadowPaint {
     return nGetFontMetricsInt(nativePaint, fmi);
   }
 
-  @Implementation(maxSdk = N_MR1)
-  protected int nGetFontMetricsInt(
-      long nativePaint,
-      long nativeTypeface,
-      @ClassName("android.graphics.Paint$FontMetricsInt") Object fmi) {
-    return nGetFontMetricsInt(nativePaint, (FontMetricsInt) fmi);
+  @Implementation(maxSdk = N_MR1, methodName = "nGetFontMetricsInt")
+  protected int nGetFontMetricsIntN(long nativePaint, long nativeTypeface, FontMetricsInt fmi) {
+    return nGetFontMetricsInt(nativePaint, fmi);
   }
 
   @Implementation(minSdk = P)
