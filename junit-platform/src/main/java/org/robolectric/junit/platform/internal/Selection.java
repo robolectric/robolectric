@@ -32,23 +32,9 @@ public final class Selection {
   /** Selects tests of one top-level class. */
   interface Item {
     boolean selects(TestMethod test);
-
-    /** For JUnit 4 classes, which only know method names. */
-    boolean selectsMethodNamed(String methodName);
   }
 
-  private static final Item WHOLE_CLASS =
-      new Item() {
-        @Override
-        public boolean selects(TestMethod test) {
-          return true;
-        }
-
-        @Override
-        public boolean selectsMethodNamed(String methodName) {
-          return true;
-        }
-      };
+  private static final Item WHOLE_CLASS = test -> true;
 
   private final Map<Class<?>, List<Item>> itemsByClass = new LinkedHashMap<>();
   private final List<UniqueId> uniqueIds = new ArrayList<>();
@@ -107,9 +93,8 @@ public final class Selection {
       }
       selection.uniqueIds.add(uniqueId);
       for (UniqueId.Segment segment : uniqueId.getSegments()) {
-        if (segment.getType().equals("class") || segment.getType().equals("junit4-class")) {
-          String className = segment.getValue().split("#", 2)[0];
-          ReflectionSupport.tryToLoadClass(className)
+        if (segment.getType().equals("class")) {
+          ReflectionSupport.tryToLoadClass(segment.getValue())
               .toOptional()
               .filter(accept)
               .ifPresent(c -> selection.add(c, WHOLE_CLASS));
@@ -131,15 +116,6 @@ public final class Selection {
   static boolean selects(List<Item> items, TestMethod test) {
     for (Item item : items) {
       if (item.selects(test)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  static boolean selectsMethodNamed(List<Item> items, String methodName) {
-    for (Item item : items) {
-      if (item.selectsMethodNamed(methodName)) {
         return true;
       }
     }
@@ -187,35 +163,18 @@ public final class Selection {
   }
 
   private static Item methodItem(List<Class<?>> enclosing, Class<?> testClass, Method method) {
-    return new Item() {
-      @Override
-      public boolean selects(TestMethod test) {
-        return test.enclosingClasses.equals(enclosing)
+    return test ->
+        test.enclosingClasses.equals(enclosing)
             && test.testClass.equals(testClass)
             && test.method.equals(method);
-      }
-
-      @Override
-      public boolean selectsMethodNamed(String methodName) {
-        return enclosing.isEmpty() && method.getName().equals(methodName);
-      }
-    };
   }
 
   private static Item nestedClassItem(List<Class<?>> selectedChain) {
-    return new Item() {
-      @Override
-      public boolean selects(TestMethod test) {
-        List<Class<?>> chain = new ArrayList<>(test.enclosingClasses);
-        chain.add(test.testClass);
-        return chain.size() >= selectedChain.size()
-            && chain.subList(0, selectedChain.size()).equals(selectedChain);
-      }
-
-      @Override
-      public boolean selectsMethodNamed(String methodName) {
-        return false;
-      }
+    return test -> {
+      List<Class<?>> chain = new ArrayList<>(test.enclosingClasses);
+      chain.add(test.testClass);
+      return chain.size() >= selectedChain.size()
+          && chain.subList(0, selectedChain.size()).equals(selectedChain);
     };
   }
 
