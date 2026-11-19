@@ -86,6 +86,30 @@ class RobolectricTestEngineTest {
   }
 
   @Test
+  void testOnSeveralSdks_isNamedAfterSdkExceptOnLast() {
+    assertThat(testNames(MultipleSdks.class, false))
+        .containsExactly("reportsSdk(TestReporter)[33]", "reportsSdk(TestReporter)");
+  }
+
+  @Test
+  void testOnSeveralSdks_alwaysIncludeVariantMarkers_isNamedAfterEverySdk() {
+    assertThat(testNames(MultipleSdks.class, true))
+        .containsExactly("reportsSdk(TestReporter)[33]", "reportsSdk(TestReporter)[34]");
+  }
+
+  @Test
+  void testOnOneSdk_keepsItsName() {
+    assertThat(testNames(MethodLevelConfig.class, false))
+        .containsExactly("usesClassConfig(TestReporter)", "usesMethodConfig(TestReporter)");
+  }
+
+  @Test
+  void parameterizedTestOnSeveralSdks_invocationsAreNamedAfterSdk() {
+    assertThat(testNames(ParameterizedOnSeveralSdks.class, false))
+        .containsExactly("[1] 1[33]", "[2] 2[33]", "[1] 1", "[2] 2");
+  }
+
+  @Test
   void methodLevelConfig_usesItsOwnSandbox() {
     EngineExecutionResults results = executeTests(selectClass(MethodLevelConfig.class));
 
@@ -210,6 +234,33 @@ class RobolectricTestEngineTest {
     return EngineTestKit.engine(new RobolectricTestEngine()).selectors(selector).execute();
   }
 
+  /**
+   * Runs {@code testClass} and returns the display names of its tests, checking that their legacy
+   * reporting names, which some build tools use instead, carry the same SDK marker.
+   */
+  private static List<String> testNames(
+      Class<?> testClass, boolean alwaysIncludeVariantMarkersInTestName) {
+    String property = "robolectric.alwaysIncludeVariantMarkersInTestName";
+    String previous = System.getProperty(property);
+    System.setProperty(property, String.valueOf(alwaysIncludeVariantMarkersInTestName));
+    try {
+      List<String> names = new ArrayList<>();
+      for (Event event : executeTests(selectClass(testClass)).testEvents().succeeded().list()) {
+        TestDescriptor test = event.getTestDescriptor();
+        String marker = test.getDisplayName().replaceAll("^.*?((\\[\\d+])?)$", "$1");
+        assertThat(test.getLegacyReportingName()).endsWith(marker);
+        names.add(test.getDisplayName());
+      }
+      return names;
+    } finally {
+      if (previous == null) {
+        System.clearProperty(property);
+      } else {
+        System.setProperty(property, previous);
+      }
+    }
+  }
+
   /** Maps the sandbox of each test (its SDK) to the SDK the test reported. */
   private static Map<String, String> reportedSdkBySandbox(EngineExecutionResults results) {
     Map<String, String> result = new TreeMap<>();
@@ -280,6 +331,16 @@ class RobolectricTestEngineTest {
     @Test
     void reportsSdk(TestReporter reporter) {
       reporter.publishEntry("sdk", String.valueOf(Build.VERSION.SDK_INT));
+    }
+  }
+
+  @ExtendWith(RobolectricExtension.class)
+  @Config(sdk = {33, 34})
+  static class ParameterizedOnSeveralSdks {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2})
+    void runs(int value) {
+      assertTrue(value > 0);
     }
   }
 
