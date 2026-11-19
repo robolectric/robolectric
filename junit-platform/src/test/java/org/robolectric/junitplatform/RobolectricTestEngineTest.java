@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Stream;
+import org.junit.Rule;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -50,6 +51,8 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestWatcher;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
@@ -135,6 +138,25 @@ class RobolectricTestEngineTest {
         .failed()
         .assertThatEvents()
         .haveExactly(1, finishedWithFailure(message("expected: <1> but was: <2>")));
+  }
+
+  @Test
+  void junit4Rules_failEachTest() {
+    EngineExecutionResults results = executeTests(selectClass(JUnit4Rules.class));
+
+    results.testEvents().assertStatistics(stats -> stats.started(2).failed(2));
+    results
+        .testEvents()
+        .assertThatEvents()
+        .haveExactly(
+            2,
+            finishedWithFailure(
+                message(
+                    JUnit4Rules.class.getName()
+                        + " has JUnit 4 rules, which JUnit Jupiter does not run: 'getWatcher()',"
+                        + " 'folder'. Keep the class on JUnit 4, which JUnit Vintage runs"
+                        + " alongside JUnit Jupiter classes, or replace the rules with JUnit"
+                        + " Jupiter extensions.")));
   }
 
   @Test
@@ -397,6 +419,25 @@ class RobolectricTestEngineTest {
         assertTrue(getClass().getClassLoader() instanceof SandboxClassLoader);
       }
     }
+  }
+
+  abstract static class JUnit4RuleBase {
+    @Rule public TemporaryFolder folder = new TemporaryFolder();
+  }
+
+  @ExtendWith(RobolectricExtension.class)
+  @Config(sdk = 34)
+  static class JUnit4Rules extends JUnit4RuleBase {
+    @Rule
+    public TestWatcher getWatcher() {
+      return new TestWatcher() {};
+    }
+
+    @Test
+    void first() {}
+
+    @Test
+    void second() {}
   }
 
   @ExtendWith(RobolectricExtension.class)
