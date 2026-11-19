@@ -62,6 +62,7 @@ include(
   ":integration_tests:simulator:app",
   ":integration_tests:simulator:test",
   ":integration_tests:sparsearray",
+  ":integration_tests:split-apk",
   ":integration_tests:testparameterinjector",
   ":integration_tests:versioning",
   ":junit",
