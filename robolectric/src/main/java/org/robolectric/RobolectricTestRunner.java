@@ -33,6 +33,7 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.config.AndroidConfigurer;
 import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.internal.AndroidSandbox;
+import org.robolectric.internal.DefaultInjector;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
@@ -67,7 +68,6 @@ import org.robolectric.util.inject.Injector;
 public class RobolectricTestRunner extends SandboxTestRunner {
   private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
   private static final Pattern SANITIZE_DIR_PATTERN = Pattern.compile("[^a-zA-Z0-9.-]");
-  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
   private static final ImmutableList<RunListener> RUN_LISTENERS = loadRunListeners();
 
@@ -105,7 +105,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected static Injector.Builder defaultInjector() {
-    return SandboxTestRunner.defaultInjector().bind(Properties.class, System.getProperties());
+    return DefaultInjector.builder();
   }
 
   private final SandboxManager sandboxManager;
@@ -124,7 +124,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @throws InitializationError if junit says so
    */
   public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
-    this(testClass, DEFAULT_INJECTOR);
+    this(testClass, DefaultInjector.get());
   }
 
   @SuppressWarnings("StaticAssignmentInConstructor")

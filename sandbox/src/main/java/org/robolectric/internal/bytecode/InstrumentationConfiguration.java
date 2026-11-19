@@ -41,9 +41,15 @@ public class InstrumentationConfiguration {
           "java.",
           "javax.",
           "jdk.",
+          "org.apiguardian.",
           "org.junit.",
+          "org.opentest4j.",
           "org.robolectric.annotation.",
           "org.robolectric.internal.",
+          // Robolectric's JUnit Platform engine and its extension keep state that is shared with
+          // the sandboxed tests.
+          "org.robolectric.junit.jupiter.",
+          "org.robolectric.junit.platform.",
           "org.robolectric.pluginapi.",
           "org.robolectric.simulator.pluginapi.",
           "org.robolectric.util.",

@@ -19,6 +19,7 @@ import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.config.AndroidConfigurer;
 import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.internal.AndroidSandbox;
+import org.robolectric.internal.DefaultInjector;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
@@ -43,22 +44,9 @@ import org.robolectric.util.inject.Injector;
  * The parts of {@code RobolectricTestRunner} that do not depend on JUnit 4: resolving a test's
  * configuration, choosing and configuring its sandbox.
  *
- * <p>Shared by the Jupiter integration and the JUnit 4 compatibility mode of the {@code
- * robolectric} engine.
+ * <p>Used by the {@code robolectric} engine and {@code RobolectricExtension}.
  */
 public final class RobolectricRuntime {
-  /**
-   * Packages that must be loaded by the application class loader, not by sandboxes: the engine and
-   * extension (their state is shared between the engine and the sandboxed tests), and the exception
-   * types JUnit uses to classify results.
-   */
-  private static final List<String> PACKAGES_TO_NOT_ACQUIRE =
-      Arrays.asList(
-          "org.robolectric.junit.platform.",
-          "org.robolectric.junit.jupiter.",
-          "org.opentest4j.",
-          "org.apiguardian.");
-
   private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
   private static volatile RobolectricRuntime instance;
 
@@ -85,8 +73,9 @@ public final class RobolectricRuntime {
   private final Map<String, Configuration> configurations = new ConcurrentHashMap<>();
 
   private RobolectricRuntime() {
-    Injector injector =
-        new Injector.Builder().bind(Properties.class, System.getProperties()).build();
+    // RobolectricTestRunner's default injector: JUnit 4 tests run by JUnit Vintage and the tests
+    // run by this engine get their sandboxes from the same SandboxManager, so they share them.
+    Injector injector = DefaultInjector.get();
     configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
     sdkPicker = injector.getInstance(SdkPicker.class);
     sandboxManager = injector.getInstance(SandboxManager.class);
@@ -166,16 +155,6 @@ public final class RobolectricRuntime {
     }
     androidConfigurer.configure(builder, interceptors);
     androidConfigurer.withConfig(builder, configuration.get(Config.class));
-    return withEnginePackagesNotAcquired(builder.build());
-  }
-
-  /** Adds the packages that must not be loaded by sandboxes to {@code config}. */
-  public static InstrumentationConfiguration withEnginePackagesNotAcquired(
-      InstrumentationConfiguration config) {
-    InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(config);
-    for (String pkg : PACKAGES_TO_NOT_ACQUIRE) {
-      builder.doNotAcquirePackage(pkg);
-    }
     return builder.build();
   }
 
