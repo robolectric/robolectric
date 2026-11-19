@@ -15,7 +15,9 @@ tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
 dependencies {
   api(project(":robolectric"))
-  api(platform(libs.junit.jupiter.bom))
+  // Built against the oldest supported JUnit, which the published metadata then asks for, so that
+  // apps on a newer JUnit 5 or on JUnit 6 keep their own version.
+  api(platform(libs.junit5.bom))
   api(libs.junit.jupiter.api)
   api(libs.junit.platform.engine)
   implementation(libs.junit.platform.launcher)
@@ -23,6 +25,8 @@ dependencies {
 
   compileOnly(libs.findbugs.jsr305)
 
+  // The tests run on JUnit 6, and CI also runs them on JUnit 5.
+  testImplementation(platform(libs.junit.jupiter.bom))
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.junit.platform.testkit)
   testImplementation(libs.truth)

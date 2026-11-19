@@ -85,6 +85,8 @@ javax-inject = "1"
 junit4 = "4.13.2"
 # https://github.com/junit-team/junit-framework/releases
 junit-jupiter = "6.1.3"
+# The oldest JUnit the junit-platform engine supports, which it is built against.
+junit5 = "5.14.4"
 
 # https://github.com/google/libphonenumber/releases
 libphonenumber = "9.0.43"
@@ -190,6 +192,7 @@ icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupiter" }
+junit5-bom = { module = "org.junit:junit-bom", version.ref = "junit5" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
