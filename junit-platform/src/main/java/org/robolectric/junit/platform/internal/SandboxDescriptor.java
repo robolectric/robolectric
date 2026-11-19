@@ -228,8 +228,7 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
             }
             return mirror;
           }
-        },
-        request.getCancellationToken());
+        });
 
     // A planned test that the sandboxed discovery did not find is reported, not dropped.
     if (failure.get() == null) {

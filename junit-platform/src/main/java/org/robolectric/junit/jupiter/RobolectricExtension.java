@@ -157,10 +157,14 @@ public class RobolectricExtension
    * Jupiter closes the test method's store, after all {@code @AfterEach} methods.
    */
   private RobolectricTestScope scope(ExtensionContext context) {
-    return context
-        .getStore(NAMESPACE)
-        .computeIfAbsent(
-            RobolectricTestScope.class, unused -> setUp(context), RobolectricTestScope.class);
+    // Store.computeIfAbsent is only in JUnit 6, and JUnit 6 deprecates getOrComputeIfAbsent.
+    ExtensionContext.Store store = context.getStore(NAMESPACE);
+    RobolectricTestScope scope = store.get(RobolectricTestScope.class, RobolectricTestScope.class);
+    if (scope == null) {
+      scope = setUp(context);
+      store.put(RobolectricTestScope.class, scope);
+    }
+    return scope;
   }
 
   private RobolectricTestScope setUp(ExtensionContext context) {

@@ -2,7 +2,6 @@ package org.robolectric.junit.platform.internal;
 
 import java.util.List;
 import java.util.ServiceLoader;
-import org.junit.platform.engine.CancellationToken;
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.DiscoveryIssue;
 import org.junit.platform.engine.DiscoverySelector;
@@ -17,7 +16,6 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherExecutionRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
 /**
@@ -60,18 +58,15 @@ final class JupiterDelegate {
     return createLauncher().discover(request(selectors, forwardingListener));
   }
 
-  /** Discovers and runs the tests selected by {@code selectors}. */
-  void execute(
-      List<? extends DiscoverySelector> selectors,
-      TestExecutionListener listener,
-      CancellationToken cancellationToken) {
-    LauncherDiscoveryRequest request = request(selectors, new LauncherDiscoveryListener() {});
-    createLauncher()
-        .execute(
-            LauncherExecutionRequestBuilder.request(request)
-                .listeners(listener)
-                .cancellationToken(cancellationToken)
-                .build());
+  /**
+   * Discovers and runs the tests selected by {@code selectors}.
+   *
+   * <p>Cancellation is not forwarded: ExecutionRequest.getCancellationToken() is only in JUnit 6,
+   * and the engine also supports JUnit 5. Gradle does not cancel test runs; its fail-fast mode
+   * stops the test worker instead.
+   */
+  void execute(List<? extends DiscoverySelector> selectors, TestExecutionListener listener) {
+    createLauncher().execute(request(selectors, new LauncherDiscoveryListener() {}), listener);
   }
 
   private LauncherDiscoveryRequest request(

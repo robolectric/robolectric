@@ -61,11 +61,7 @@ public final class RobolectricTestEngine implements TestEngine {
     TestDescriptor root = request.getRootTestDescriptor();
     listener.executionStarted(root);
     for (TestDescriptor child : new ArrayList<>(root.getChildren())) {
-      if (request.getCancellationToken().isCancellationRequested()) {
-        listener.executionSkipped(child, "Execution cancelled");
-      } else {
-        Planner.execute(child, request);
-      }
+      Planner.execute(child, request);
     }
     listener.executionFinished(root, TestExecutionResult.successful());
   }

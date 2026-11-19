@@ -113,6 +113,50 @@ jobs:
           name: test_results_${{ matrix.api-versions }}
           path: '**/build/test-results/**/TEST-*.xml'
 
+  junit5-tests:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Empty, so the default, except when called by the release workflow.
+          ref: ${{ inputs.ref }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version-file: .github/.java-version
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # The android-all jars (about 2 GB) are downloaded from Maven Central, not cached.
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/org.robolectric/android-all
+            caches/modules-2/files-2.1/org.robolectric/android-all-instrumented
+
+      # The junit-platform engine is built against JUnit 6 but supports JUnit 5 from 5.14.
+      - name: Run junit-platform tests on JUnit 5
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: >
+          ./gradlew :junit-platform:test :integration_tests:junit-platform-engine:test
+          --stacktrace --continue
+          -PjunitVersion=5.14.4
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test_results_junit5
+          path: |
+            junit-platform/build/test-results/**/TEST-*.xml
+            integration_tests/junit-platform-engine/build/test-results/**/TEST-*.xml
+
   instrumentation-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 90
