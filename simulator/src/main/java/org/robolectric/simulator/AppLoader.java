@@ -67,7 +67,7 @@ public class AppLoader implements Runnable {
 
     FixedConfiguration configuration =
         FixedConfiguration.newBuilder()
-            .put(ConscryptMode.Mode.class, ConscryptMode.Mode.OFF)
+            .put(ConscryptMode.Mode.class, ConscryptMode.Mode.ON)
             .put(LooperMode.Mode.class, LooperMode.Mode.PAUSED)
             .put(LazyApplication.LazyLoad.class, LazyApplication.LazyLoad.OFF)
             .put(GraphicsMode.Mode.class, GraphicsMode.Mode.NATIVE)
