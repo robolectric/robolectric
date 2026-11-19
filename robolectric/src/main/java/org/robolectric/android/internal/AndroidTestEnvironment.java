@@ -203,9 +203,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     ConscryptMode.Mode conscryptMode = configuration.get(ConscryptMode.Mode.class);
     Security.removeProvider(CONSCRYPT_PROVIDER);
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
     if (conscryptMode != ConscryptMode.Mode.OFF) {
-
-      Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         OpenSSLProvider conscryptProvider = cachedConscryptProvider.get();
         if (conscryptProvider == null) {
@@ -233,7 +232,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
           });
     }
 
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+    if (conscryptMode != ConscryptMode.Mode.OFF) {
+      // Like Android, use Bouncy Castle for what Conscrypt does not implement, not the JDK's
+      // providers, which can behave differently, e.g. SunJCE only allows 8-byte PBE salts.
+      Security.insertProviderAt(BOUNCY_CASTLE_PROVIDER, 2);
+    } else {
       Security.addProvider(BOUNCY_CASTLE_PROVIDER);
     }
 
