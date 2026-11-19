@@ -1,6 +1,5 @@
 package org.robolectric.junit.platform;
 
-import java.util.ArrayList;
 import java.util.Optional;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -60,9 +59,7 @@ public final class RobolectricTestEngine implements TestEngine {
     EngineExecutionListener listener = request.getEngineExecutionListener();
     TestDescriptor root = request.getRootTestDescriptor();
     listener.executionStarted(root);
-    for (TestDescriptor child : new ArrayList<>(root.getChildren())) {
-      Planner.execute(child, request);
-    }
+    Planner.execute(root, request);
     listener.executionFinished(root, TestExecutionResult.successful());
   }
 }

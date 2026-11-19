@@ -1,6 +1,7 @@
 package org.robolectric.junit.platform.internal;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,9 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 /**
  * The tests that run in one Robolectric sandbox: one SDK, looper, graphics and resources mode, and
  * class loader configuration. Tests from different classes share the sandbox.
+ *
+ * <p>The test plan reports the tests by class, so sandboxes are not part of it: the JUnit Jupiter
+ * classes of a sandbox report their tests and events under their {@link TestClassDescriptor}.
  */
 public final class SandboxDescriptor extends AbstractTestDescriptor {
   static final String SEGMENT_TYPE = "sandbox";
@@ -36,6 +40,7 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
   private final SandboxSpec spec;
   private final Set<MethodSource> testsNamedWithSdk = new HashSet<>();
   @Nullable private Configuration representativeConfiguration;
+  private final Map<TestDescriptor, TestClassDescriptor> classes = new HashMap<>();
 
   SandboxDescriptor(UniqueId uniqueId, SandboxSpec spec) {
     super(uniqueId, spec.displayName());
@@ -104,9 +109,20 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
     }
   }
 
+  /** Reports the tests of {@code jupiterClass}, a class of this sandbox, under {@code parent}. */
+  void reportUnder(TestDescriptor jupiterClass, TestClassDescriptor parent) {
+    classes.put(jupiterClass, parent);
+    for (TestDescriptor child : jupiterClass.getChildren()) {
+      parent.addChild(child);
+    }
+  }
+
+  Collection<TestClassDescriptor> classes() {
+    return classes.values();
+  }
+
   void execute(ExecutionRequest request, JupiterDelegate jupiter) {
     EngineExecutionListener listener = request.getEngineExecutionListener();
-    listener.executionStarted(this);
     AndroidSandbox sandbox;
     try {
       RobolectricRuntime runtime = RobolectricRuntime.get();
@@ -115,26 +131,39 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
         runtime.configureSandbox(sandbox, representativeConfiguration);
       }
     } catch (Throwable t) {
-      // Also fail each test class: build tools report failures by class.
-      for (TestDescriptor child : getChildren()) {
-        listener.executionStarted(child);
-        listener.executionFinished(child, TestExecutionResult.failed(t));
+      // Like RobolectricTestRunner, fail each test, e.g. with "API level 23 is not available".
+      for (Map.Entry<TestDescriptor, TestClassDescriptor> entry : classes.entrySet()) {
+        entry.getValue().start(listener);
+        for (TestDescriptor child : entry.getKey().getChildren()) {
+          failTests(child, t, listener);
+        }
       }
-      listener.executionFinished(this, TestExecutionResult.failed(t));
       return;
     }
-    TestExecutionResult result;
+    AtomicReference<Throwable> failure = new AtomicReference<>();
     try {
-      AtomicReference<Throwable> failure = new AtomicReference<>();
       sandbox.runOnMainThreadWithClassLoader(() -> executeJupiterTests(request, jupiter, failure));
-      result =
-          failure.get() == null
-              ? TestExecutionResult.successful()
-              : TestExecutionResult.failed(failure.get());
     } catch (Throwable t) {
-      result = TestExecutionResult.failed(t);
+      failure.set(t);
     }
-    listener.executionFinished(this, result);
+    if (failure.get() != null) {
+      for (TestClassDescriptor testClassDescriptor : classes.values()) {
+        testClassDescriptor.fail(failure.get());
+      }
+    }
+  }
+
+  private static void failTests(
+      TestDescriptor descriptor, Throwable failure, EngineExecutionListener listener) {
+    listener.executionStarted(descriptor);
+    if (descriptor.getChildren().isEmpty()) {
+      listener.executionFinished(descriptor, TestExecutionResult.failed(failure));
+      return;
+    }
+    for (TestDescriptor child : descriptor.getChildren()) {
+      failTests(child, failure, listener);
+    }
+    listener.executionFinished(descriptor, TestExecutionResult.successful());
   }
 
   /**
@@ -170,7 +199,16 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
           public void executionSkipped(TestIdentifier identifier, String reason) {
             if (!isRoot(identifier)) {
               reported.add(toOuter(identifier.getUniqueIdObject()));
-              listener.executionSkipped(mirror(identifier), reason);
+              TestDescriptor mirror = mirror(identifier);
+              TestClassDescriptor testClassDescriptor = classes.get(mirror);
+              if (testClassDescriptor == null) {
+                listener.executionSkipped(mirror, reason);
+              } else {
+                testClassDescriptor.start(listener);
+                for (TestDescriptor child : mirror.getChildren()) {
+                  listener.executionSkipped(child, reason);
+                }
+              }
             }
           }
 
@@ -178,7 +216,13 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
           public void executionStarted(TestIdentifier identifier) {
             if (!isRoot(identifier)) {
               reported.add(toOuter(identifier.getUniqueIdObject()));
-              listener.executionStarted(mirror(identifier));
+              TestDescriptor mirror = mirror(identifier);
+              TestClassDescriptor testClassDescriptor = classes.get(mirror);
+              if (testClassDescriptor == null) {
+                listener.executionStarted(mirror);
+              } else {
+                testClassDescriptor.start(listener);
+              }
             }
           }
 
@@ -190,20 +234,34 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
               if (result.getStatus() == TestExecutionResult.Status.SUCCESSFUL) {
                 succeeded.add(toOuter(identifier.getUniqueIdObject()));
               }
-              listener.executionFinished(mirror(identifier), result);
+              TestDescriptor mirror = mirror(identifier);
+              TestClassDescriptor testClassDescriptor = classes.get(mirror);
+              if (testClassDescriptor == null) {
+                listener.executionFinished(mirror, result);
+              } else {
+                // Finished once all of its sandboxes ran it.
+                result.getThrowable().ifPresent(testClassDescriptor::fail);
+              }
             }
           }
 
           @Override
           public void reportingEntryPublished(TestIdentifier identifier, ReportEntry entry) {
-            listener.reportingEntryPublished(
-                isRoot(identifier) ? SandboxDescriptor.this : mirror(identifier), entry);
+            listener.reportingEntryPublished(reported(identifier), entry);
           }
 
           @Override
           public void fileEntryPublished(TestIdentifier identifier, FileEntry file) {
-            listener.fileEntryPublished(
-                isRoot(identifier) ? SandboxDescriptor.this : mirror(identifier), file);
+            listener.fileEntryPublished(reported(identifier), file);
+          }
+
+          // The descriptor that events of the identifier are reported on.
+          private TestDescriptor reported(TestIdentifier identifier) {
+            if (isRoot(identifier)) {
+              return request.getRootTestDescriptor();
+            }
+            TestDescriptor mirror = mirror(identifier);
+            return classes.containsKey(mirror) ? classes.get(mirror) : mirror;
           }
 
           private boolean isRoot(TestIdentifier identifier) {
@@ -222,7 +280,7 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
                       .orElse(SandboxDescriptor.this);
               mirror =
                   new MirrorDescriptor(uniqueId, identifier, variantMarker(identifier, parent));
-              parent.addChild(mirror);
+              (classes.containsKey(parent) ? classes.get(parent) : parent).addChild(mirror);
               mirrors.put(uniqueId, mirror);
               listener.dynamicTestRegistered(mirror);
             }
@@ -232,9 +290,19 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
 
     // A planned test that the sandboxed discovery did not find is reported, not dropped.
     if (failure.get() == null) {
-      for (TestDescriptor child : new ArrayList<>(getChildren())) {
-        if (child instanceof MirrorDescriptor) {
-          reportUnexecuted(child, reported, succeeded, listener);
+      for (Map.Entry<TestDescriptor, TestClassDescriptor> entry : classes.entrySet()) {
+        UniqueId uniqueId = entry.getKey().getUniqueId();
+        if (!reported.contains(uniqueId)) {
+          entry.getValue().start(listener);
+          entry
+              .getValue()
+              .fail(
+                  new IllegalStateException(
+                      uniqueId + " was not found when running in the sandbox"));
+        } else if (succeeded.contains(uniqueId)) {
+          for (TestDescriptor child : new ArrayList<>(entry.getKey().getChildren())) {
+            reportUnexecuted(child, reported, succeeded, listener);
+          }
         }
       }
     }
