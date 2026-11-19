@@ -32,6 +32,8 @@ import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Rule;
 import org.junit.Test;
@@ -163,6 +166,27 @@ public class AndroidTestEnvironmentTest {
     bootstrapWrapper.callSetUpApplicationState();
     Cipher aesCipher = Cipher.getInstance("RSA/None/OAEPWithSHA-256AndMGF1Padding");
     assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+  }
+
+  @Test
+  @ConscryptMode(ON)
+  public void testWhenConscryptModeOn_BouncyCastlePreferredToJdkProviders()
+      throws GeneralSecurityException {
+    bootstrapWrapper.callSetUpApplicationState();
+    assertThat(Security.getProviders()[1].getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+
+    // Conscrypt does not implement PBKDF2, and on Android Bouncy Castle provides it, not SunJCE.
+    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+    assertThat(factory.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+  }
+
+  @Test
+  @ConscryptMode(OFF)
+  public void testWhenConscryptModeOff_BouncyCastleIsLastProvider() {
+    bootstrapWrapper.callSetUpApplicationState();
+    Provider[] providers = Security.getProviders();
+    assertThat(providers[providers.length - 1].getName())
+        .isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
   }
 
   @Test
