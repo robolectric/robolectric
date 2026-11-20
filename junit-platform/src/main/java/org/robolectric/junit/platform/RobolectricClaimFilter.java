@@ -26,9 +26,15 @@ public final class RobolectricClaimFilter implements PostDiscoveryFilter {
         .isPresent()) {
       return FilterResult.included("Run by the robolectric engine");
     }
-    String className = className(descriptor.getSource().orElse(null));
-    if (className != null && ClaimRegistry.isClaimed(className)) {
-      return FilterResult.excluded("Run by the robolectric engine");
+    // Check the ancestors too: a test can have another class as its source, such as the "warning"
+    // tests that JUnit 3 adds to a TestCase subclass, which JUnit Vintage reports under the class.
+    for (TestDescriptor current = descriptor;
+        current != null;
+        current = current.getParent().orElse(null)) {
+      String className = className(current.getSource().orElse(null));
+      if (className != null && ClaimRegistry.isClaimed(className)) {
+        return FilterResult.excluded("Run by the robolectric engine");
+      }
     }
     return FilterResult.included("Not a Robolectric test class");
   }
