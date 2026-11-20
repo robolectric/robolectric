@@ -4,9 +4,11 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -32,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
@@ -386,6 +389,35 @@ public class ShadowCameraManagerTest {
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
 
     verify(mockCallback, never()).onCameraUnavailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.CINNAMON_BUN)
+  public void removeCamera_fromCinnamonBun_invokesOnCameraUnavailableBeforeOnCameraRemoved() {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    InOrder inOrder = inOrder(mockCallback);
+    inOrder.verify(mockCallback).onCameraUnavailable(CAMERA_ID_0);
+    inOrder.verify(mockCallback).onCameraRemoved(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.BAKLAVA)
+  public void removeCamera_onBaklava_invokesOnCameraUnavailableWithoutOnCameraRemoved() {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    verify(mockCallback).onCameraUnavailable(CAMERA_ID_0);
+    verifyNoMoreInteractions(mockCallback);
   }
 
   @Test
