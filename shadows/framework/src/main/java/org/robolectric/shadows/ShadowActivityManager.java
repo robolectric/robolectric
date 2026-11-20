@@ -676,6 +676,12 @@ public class ShadowActivityManager {
     }
 
     @CanIgnoreReturnValue
+    public ApplicationExitInfoBuilder setSubReason(int subReason) {
+      instance.setSubReason(subReason);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setTimestamp(long timestamp) {
       instance.setTimestamp(timestamp);
       return this;

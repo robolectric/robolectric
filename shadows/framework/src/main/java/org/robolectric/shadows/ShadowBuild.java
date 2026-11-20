@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -154,6 +155,16 @@ public class ShadowBuild {
    */
   public static void setVersionRelease(String release) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "RELEASE", release);
+  }
+
+  /**
+   * Sets the value of the {@link Build.VERSION#SDK_INT_FULL} field. Available in Android Baklava+.
+   *
+   * <p>It will be reset for the next test.
+   */
+  @RequiresApi(BAKLAVA)
+  public static void setVersionSdkIntFull(int sdkIntFull) {
+    reflector(VersionReflector.class).setSdkIntFull(sdkIntFull);
   }
 
   /**
@@ -317,5 +328,9 @@ public class ShadowBuild {
 
     @Static
     void __staticInitializer__();
+
+    @Static
+    @Accessor("SDK_INT_FULL")
+    void setSdkIntFull(int sdkIntFull);
   }
 }
