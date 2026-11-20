@@ -16,6 +16,7 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
+  testImplementation(project(":robolectric"))
   testImplementation(project(":junit-platform"))
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)

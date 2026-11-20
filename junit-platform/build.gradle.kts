@@ -14,7 +14,9 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
 dependencies {
-  api(project(":robolectric"))
+  // Apps declare org.robolectric:robolectric themselves, often with excludes (e.g. of a Bouncy
+  // Castle variant); depending on it here would add it back without them.
+  compileOnly(project(":robolectric"))
   // Built against the oldest supported JUnit, which the published metadata then asks for, so that
   // apps on a newer JUnit 5 or on JUnit 6 keep their own version.
   api(platform(libs.junit5.bom))
@@ -26,6 +28,7 @@ dependencies {
   compileOnly(libs.findbugs.jsr305)
 
   // The tests run on JUnit 6, and CI also runs them on JUnit 5.
+  testImplementation(project(":robolectric"))
   testImplementation(platform(libs.junit.jupiter.bom))
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.junit.platform.testkit)
