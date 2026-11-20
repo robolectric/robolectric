@@ -103,6 +103,7 @@ public class ShadowShortcutManager {
     for (String shortcutId : shortcutIds) {
       ShortcutInfo shortcut = activePinnedShortcuts.remove(shortcutId);
       if (shortcut != null) {
+        shortcut.addFlags(ShortcutInfo.FLAG_DISABLED);
         disabledPinnedShortcuts.put(shortcutId, shortcut);
       }
     }
@@ -113,6 +114,7 @@ public class ShadowShortcutManager {
     for (String shortcutId : shortcutIds) {
       ShortcutInfo shortcut = disabledPinnedShortcuts.remove(shortcutId);
       if (shortcut != null) {
+        shortcut.clearFlags(ShortcutInfo.FLAG_DISABLED);
         activePinnedShortcuts.put(shortcutId, shortcut);
       }
     }
