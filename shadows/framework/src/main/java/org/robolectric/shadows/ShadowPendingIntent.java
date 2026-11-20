@@ -607,11 +607,7 @@ public class ShadowPendingIntent {
       if (pendingIntent != null && (flags & FLAG_UPDATE_CURRENT) != 0) {
         ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
         Intent intent = shadowPendingIntent.getSavedIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null) {
-          extras.clear();
-        }
-        intent.putExtras(intents[intents.length - 1]);
+        intent.replaceExtras(intents[intents.length - 1]);
         return pendingIntent;
       }
 
