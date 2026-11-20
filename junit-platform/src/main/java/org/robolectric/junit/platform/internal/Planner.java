@@ -127,7 +127,6 @@ public final class Planner {
                     engineDescriptor.addChild(descriptor);
                     return descriptor;
                   });
-          testClassDescriptor.sandboxes.add(sandbox);
           sandbox.reportUnder(jupiterClass, testClassDescriptor);
         }
       }

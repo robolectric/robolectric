@@ -105,6 +105,55 @@ class RobolectricTestEngineTest {
   }
 
   @Test
+  void nestedClassOnSeveralSdks_isReportedOnce() {
+    EngineExecutionResults results = executeTests(selectClass(NestedOnSeveralSdks.class));
+
+    results.testEvents().assertStatistics(stats -> stats.started(6).succeeded(6));
+    List<String> classes =
+        results.containerEvents().started().stream()
+            .map(Event::getTestDescriptor)
+            .filter(descriptor -> descriptor.getSource().orElse(null) instanceof ClassSource)
+            .map(TestDescriptor::getDisplayName)
+            .toList();
+    assertThat(classes)
+        .containsExactly("RobolectricTestEngineTest$NestedOnSeveralSdks", "Inner", "Innermost")
+        .inOrder();
+    results.containerEvents().assertStatistics(stats -> stats.started(4).succeeded(4));
+  }
+
+  @Test
+  void uniqueIdSelector_ofNestedClass_runsItsTestsOnEverySdk() {
+    UniqueId nestedClassId =
+        executeTests(selectClass(NestedOnSeveralSdks.class)).containerEvents().started().stream()
+            .map(Event::getTestDescriptor)
+            .filter(descriptor -> descriptor.getDisplayName().equals("Inner"))
+            .findFirst()
+            .get()
+            .getUniqueId();
+
+    String property = "robolectric.alwaysIncludeVariantMarkersInTestName";
+    String previous = System.getProperty(property);
+    System.setProperty(property, "true");
+    EngineExecutionResults results;
+    try {
+      results = executeTests(selectUniqueId(nestedClassId));
+    } finally {
+      if (previous == null) {
+        System.clearProperty(property);
+      } else {
+        System.setProperty(property, previous);
+      }
+    }
+
+    results.testEvents().assertStatistics(stats -> stats.started(4).succeeded(4));
+    assertThat(
+            results.testEvents().started().stream()
+                .map(event -> event.getTestDescriptor().getDisplayName())
+                .toList())
+        .containsExactly("inner()[33]", "innermost()[33]", "inner()[34]", "innermost()[34]");
+  }
+
+  @Test
   void testOnSeveralSdks_isNamedAfterSdkExceptOnLast() {
     assertThat(testNames(MultipleSdks.class, false))
         .containsExactly("reportsSdk(TestReporter)[33]", "reportsSdk(TestReporter)");
@@ -394,6 +443,25 @@ class RobolectricTestEngineTest {
     @Test
     void reportsSdk(TestReporter reporter) {
       reporter.publishEntry("sdk", String.valueOf(Build.VERSION.SDK_INT));
+    }
+  }
+
+  @ExtendWith(RobolectricExtension.class)
+  @Config(sdk = {33, 34})
+  static class NestedOnSeveralSdks {
+    @Test
+    void outer() {}
+
+    @Nested
+    class Inner {
+      @Test
+      void inner() {}
+
+      @Nested
+      class Innermost {
+        @Test
+        void innermost() {}
+      }
     }
   }
 
