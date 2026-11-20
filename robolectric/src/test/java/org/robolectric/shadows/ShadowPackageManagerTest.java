@@ -306,21 +306,21 @@ public class ShadowPackageManagerTest {
    * by calling {@link ShadowPackageManager#addPackage}.
    */
   @Test
-  public void testCheckPermission_otherPackages_grantedByDefault() {
+  public void testCheckPermission_otherPackages_grantedLikeAtInstallByDefault() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
     packageInfo.requestedPermissions =
         new String[] {"android.permission.INTERNET", "android.permission.SEND_SMS"};
     shadowOf(packageManager).installPackage(packageInfo);
 
-    // Because we didn't specify permission grant state in the PackageInfo object, all requested
-    // permissions are automatically granted. See ShadowPackageManager.grantPermissionsByDefault()
-    // for the explanation.
+    // Because we didn't specify permission grant state in the PackageInfo object, the requested
+    // permissions are granted as a device grants them at install time: normal permissions such as
+    // INTERNET are granted, but runtime permissions such as SEND_SMS are not.
     assertEquals(
         PERMISSION_GRANTED,
         packageManager.checkPermission("android.permission.INTERNET", TEST_PACKAGE_NAME));
     assertEquals(
-        PERMISSION_GRANTED,
+        PERMISSION_DENIED,
         packageManager.checkPermission("android.permission.SEND_SMS", TEST_PACKAGE_NAME));
     assertEquals(
         PERMISSION_DENIED,
@@ -2377,7 +2377,7 @@ public class ShadowPackageManagerTest {
         packageManager.getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNotNull();
-    assertThat(permissions.length).isEqualTo(4);
+    assertThat(permissions.length).isEqualTo(5);
   }
 
   @Test
@@ -2421,7 +2421,7 @@ public class ShadowPackageManagerTest {
             context.getPackageName(), PackageInfoFlags.of(PackageManager.GET_PERMISSIONS));
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNotNull();
-    assertThat(permissions).hasLength(4);
+    assertThat(permissions).hasLength(5);
   }
 
   @Test

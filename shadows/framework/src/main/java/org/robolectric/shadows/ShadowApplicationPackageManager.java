@@ -22,6 +22,7 @@ import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -39,6 +40,7 @@ import android.annotation.DrawableRes;
 import android.annotation.RequiresPermission;
 import android.annotation.StringRes;
 import android.annotation.UserIdInt;
+import android.app.ActivityThread;
 import android.app.ApplicationPackageManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
@@ -76,6 +78,7 @@ import android.content.pm.Signature;
 import android.content.pm.VerifierDeviceIdentity;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build.VERSION;
@@ -84,18 +87,23 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
 import android.telecom.TelecomManager;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Xml;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -112,6 +120,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.GetInstallerPackageNameMode;
@@ -120,9 +129,12 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 /** Shadow for {@link ApplicationPackageManager}. */
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
@@ -861,27 +873,223 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected int checkPermission(String permName, String pkgName) {
     PackageInfo permissionsInfo = getInternalMutablePackageInfo(pkgName);
-    if (permissionsInfo == null || permissionsInfo.requestedPermissions == null) {
+    if (permissionsInfo == null) {
       return PackageManager.PERMISSION_DENIED;
     }
+    // A permission granted or denied explicitly, e.g. by Context or UiAutomation, takes precedence.
+    Boolean decision = permissionDecision(permissionsInfo, permName);
+    if (decision != null) {
+      return decision ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED;
+    }
+    return isGrantedByDefault(permissionsInfo, permName)
+        ? PackageManager.PERMISSION_GRANTED
+        : PackageManager.PERMISSION_DENIED;
+  }
 
-    String permission;
-    for (int i = 0; i < permissionsInfo.requestedPermissions.length; i++) {
-      permission = permissionsInfo.requestedPermissions[i];
-      if (permission != null && permission.equals(permName)) {
-        // The package requests this permission. Now check if it's been granted to the package.
-        if (isGrantedForBackwardsCompatibility(pkgName, permissionsInfo)) {
-          return PackageManager.PERMISSION_GRANTED;
-        }
-
-        if ((permissionsInfo.requestedPermissionsFlags[i] & REQUESTED_PERMISSION_GRANTED)
-            == REQUESTED_PERMISSION_GRANTED) {
-          return PackageManager.PERMISSION_GRANTED;
+  /**
+   * Returns whether {@code permission} is granted to a package of {@code uid} when no test granted
+   * or denied it. {@code Context.checkPermission} uses this, so that it agrees with {@code
+   * PackageManager.checkPermission}.
+   */
+  static boolean isGrantedByDefault(int uid, String permission) {
+    if (uid == 0) {
+      return false;
+    }
+    List<PackageInfo> packages = new ArrayList<>();
+    synchronized (lock) {
+      for (PackageInfo packageInfo : packageInfos.values()) {
+        if (packageInfo.applicationInfo != null && packageInfo.applicationInfo.uid == uid) {
+          packages.add(packageInfo);
         }
       }
     }
+    for (PackageInfo packageInfo : packages) {
+      if (isGrantedByDefault(packageInfo, permission)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-    return PackageManager.PERMISSION_DENIED;
+  /**
+   * Returns whether {@code permission} is granted to the package when no test granted or denied it.
+   *
+   * <p>The package has to request the permission. Its {@code requestedPermissionsFlags} say whether
+   * it was granted, as on a device. If tests don't set them, or for the test application, the
+   * permission is granted as a device grants it at install time: all permissions but runtime
+   * ({@code dangerous}) ones, which the app has to be granted, e.g. with {@code
+   * grantRuntimePermission}.
+   */
+  private static boolean isGrantedByDefault(PackageInfo packageInfo, String permission) {
+    int index = -1;
+    if (packageInfo.requestedPermissions != null) {
+      for (int i = 0; i < packageInfo.requestedPermissions.length; i++) {
+        if (permission.equals(packageInfo.requestedPermissions[i])) {
+          index = i;
+          break;
+        }
+      }
+    }
+    if (index == -1) {
+      return false;
+    }
+    if (packageInfo.requestedPermissionsFlags != null
+        && index < packageInfo.requestedPermissionsFlags.length
+        && (packageInfo.requestedPermissionsFlags[index] & REQUESTED_PERMISSION_GRANTED) != 0) {
+      return true;
+    }
+    return isGrantedForBackwardsCompatibility(packageInfo.packageName, packageInfo)
+        && isGrantedAtInstall(packageInfo, permission);
+  }
+
+  /**
+   * Returns whether a device grants {@code permission} when the package is installed. Runtime
+   * permissions are only granted at install time to apps that target an SDK before M. A permission
+   * whose definition is unknown is granted, as before.
+   */
+  private static boolean isGrantedAtInstall(PackageInfo packageInfo, String permission) {
+    int targetSdk =
+        packageInfo.applicationInfo == null ? 0 : packageInfo.applicationInfo.targetSdkVersion;
+    if (targetSdk != 0 && targetSdk < M) {
+      return true;
+    }
+    Integer protectionLevel = protectionLevel(permission);
+    return protectionLevel == null
+        || (protectionLevel & PermissionInfo.PROTECTION_MASK_BASE)
+            != PermissionInfo.PROTECTION_DANGEROUS;
+  }
+
+  @Nullable
+  private static Integer protectionLevel(String permission) {
+    try {
+      return RuntimeEnvironment.getApplication()
+          .getPackageManager()
+          .getPermissionInfo(permission, /* flags= */ 0)
+          .protectionLevel;
+    } catch (NameNotFoundException e) {
+      return frameworkProtectionLevels().get(permission);
+    }
+  }
+
+  @GuardedBy("ShadowApplicationPackageManager.class")
+  @Nullable
+  private static Map<String, Integer> frameworkProtectionLevels;
+
+  /** The protection levels of the permissions defined in the framework's AndroidManifest.xml. */
+  private static synchronized Map<String, Integer> frameworkProtectionLevels() {
+    if (frameworkProtectionLevels == null) {
+      try {
+        frameworkProtectionLevels =
+            RuntimeEnvironment.getApiLevel() >= O
+                ? compiledFrameworkProtectionLevels()
+                : sourceFrameworkProtectionLevels();
+      } catch (IOException | XmlPullParserException e) {
+        throw new IllegalStateException("Couldn't read the framework's permissions", e);
+      }
+    }
+    return frameworkProtectionLevels;
+  }
+
+  private static Map<String, Integer> compiledFrameworkProtectionLevels()
+      throws IOException, XmlPullParserException {
+    Map<String, Integer> levels = new HashMap<>();
+    try (XmlResourceParser parser =
+        Resources.getSystem().getAssets().openXmlResourceParser("AndroidManifest.xml")) {
+      for (int event = parser.next(); event != XmlPullParser.END_DOCUMENT; event = parser.next()) {
+        if (event == XmlPullParser.START_TAG && parser.getName().equals("permission")) {
+          levels.put(
+              parser.getAttributeValue(ANDROID_NAMESPACE, "name"),
+              parser.getAttributeIntValue(ANDROID_NAMESPACE, "protectionLevel", 0));
+        }
+      }
+    }
+    return levels;
+  }
+
+  /**
+   * Before O, android-all only has the framework's AndroidManifest.xml as source, where protection
+   * levels are names such as "dangerous" or "signature|privileged". Only the base level is kept.
+   */
+  private static Map<String, Integer> sourceFrameworkProtectionLevels()
+      throws IOException, XmlPullParserException {
+    Map<String, Integer> levels = new HashMap<>();
+    try (InputStream in =
+        android.R.class.getClassLoader().getResourceAsStream("raw-res/AndroidManifest.xml")) {
+      if (in == null) {
+        throw new FileNotFoundException("raw-res/AndroidManifest.xml");
+      }
+      XmlPullParser parser = Xml.newPullParser();
+      parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+      parser.setInput(in, "UTF-8");
+      for (int event = parser.next(); event != XmlPullParser.END_DOCUMENT; event = parser.next()) {
+        if (event == XmlPullParser.START_TAG && parser.getName().equals("permission")) {
+          String level = parser.getAttributeValue(ANDROID_NAMESPACE, "protectionLevel");
+          levels.put(
+              parser.getAttributeValue(ANDROID_NAMESPACE, "name"), baseProtectionLevel(level));
+        }
+      }
+    }
+    return levels;
+  }
+
+  private static int baseProtectionLevel(@Nullable String level) {
+    if (level == null) {
+      return PermissionInfo.PROTECTION_NORMAL;
+    }
+    for (String name : level.split("\\|")) {
+      switch (name) {
+        case "dangerous":
+          return PermissionInfo.PROTECTION_DANGEROUS;
+        case "signature":
+          return PermissionInfo.PROTECTION_SIGNATURE;
+        case "signatureOrSystem":
+          return PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
+        default:
+          break;
+      }
+    }
+    return PermissionInfo.PROTECTION_NORMAL;
+  }
+
+  private static final String ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android";
+
+  /**
+   * Returns the decision for {@code permission} in the {@link PermissionsTable} shared with {@code
+   * Context.checkPermission}, or {@code null} if there is none or the package has no uid.
+   *
+   * <p>A package's permissions apply to every process of its uid, except for the test application,
+   * which runs in this process. A uid of 0 is treated as unset, since packages that tests add often
+   * don't set one, and they would otherwise share their permissions.
+   */
+  @Nullable
+  private static Boolean permissionDecision(PackageInfo packageInfo, String permission) {
+    int uid = packageInfo.applicationInfo == null ? 0 : packageInfo.applicationInfo.uid;
+    PermissionsTable table = permissionsTable();
+    if (uid == 0 || table == null) {
+      return null;
+    }
+    int pid = uid == Process.myUid() ? Process.myPid() : PermissionsTable.ANY_PID;
+    return table.get(Context.DEVICE_ID_DEFAULT, pid, uid, permission);
+  }
+
+  /** Records a runtime permission grant or revocation in the shared {@link PermissionsTable}. */
+  private static void setPermissionDecision(
+      PackageInfo packageInfo, String permission, boolean granted) {
+    int uid = packageInfo.applicationInfo == null ? 0 : packageInfo.applicationInfo.uid;
+    PermissionsTable table = permissionsTable();
+    if (uid != 0 && table != null) {
+      table.set(Context.DEVICE_ID_DEFAULT, PermissionsTable.ANY_PID, uid, permission, granted);
+    }
+  }
+
+  @Nullable
+  private static PermissionsTable permissionsTable() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    if (activityThread == null || activityThread.getInstrumentation() == null) {
+      return null;
+    }
+    ShadowInstrumentation instrumentation = Shadow.extract(activityThread.getInstrumentation());
+    return instrumentation.getPermissionsTable();
   }
 
   /**
@@ -899,7 +1107,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * we assume that the test is configuring the permission grant state, and we don't override this
    * setting.
    */
-  private boolean isGrantedForBackwardsCompatibility(String pkgName, PackageInfo permissionsInfo) {
+  private static boolean isGrantedForBackwardsCompatibility(
+      String pkgName, PackageInfo permissionsInfo) {
     // Note: it might be cleaner to auto-grant these permissions when the package is added to the
     // PackageManager. But many existing tests modify the requested permissions _after_ adding the
     // package to the PackageManager, without updating the requestedPermissionsFlags.
@@ -1647,6 +1856,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       packageInfo.requestedPermissionsFlags[permissionIndex] |= REQUESTED_PERMISSION_GRANTED;
+      setPermissionDecision(packageInfo, permissionName, true);
 
       uid = uidForPackage.get(packageName);
     }
@@ -1676,6 +1886,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       packageInfo.requestedPermissionsFlags[permissionIndex] &= ~REQUESTED_PERMISSION_GRANTED;
+      setPermissionDecision(packageInfo, permissionName, false);
 
       uid = uidForPackage.get(packageName);
     }
