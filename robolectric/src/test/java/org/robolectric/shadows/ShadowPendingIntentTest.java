@@ -28,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -328,19 +329,67 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  public void updatePendingIntent() {
-    Intent intent = new Intent().putExtra("whatever", 5);
+  public void updatePendingIntent() throws CanceledException {
+    AtomicReference<Intent> received = new AtomicReference<>();
+    context.registerReceiver(
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            received.set(intent);
+          }
+        },
+        new IntentFilter("foo"));
+
+    Intent intent = new Intent("foo").putExtra("whatever", 5).putExtra("removed", 10);
     PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-    ShadowPendingIntent shadowPendingIntent = shadowOf(pendingIntent);
 
     // Absent FLAG_UPDATE_CURRENT, this should fail to update the Intent extra.
-    intent = new Intent().putExtra("whatever", 77);
-    PendingIntent.getBroadcast(context, 0, intent, 0);
-    assertThat(shadowPendingIntent.getSavedIntent().getIntExtra("whatever", -1)).isEqualTo(5);
+    intent = new Intent("foo").putExtra("whatever", 77).putExtra("added", 23);
+    assertThat(PendingIntent.getBroadcast(context, 0, intent, 0)).isSameInstanceAs(pendingIntent);
+    pendingIntent.send();
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(received.get()).isNotNull();
+    assertThat(received.get().getIntExtra("whatever", -1)).isEqualTo(5);
+    assertThat(received.get().getIntExtra("removed", -1)).isEqualTo(10);
+    assertThat(received.get().hasExtra("added")).isFalse();
 
     // With FLAG_UPDATE_CURRENT, this should succeed in updating the Intent extra.
-    PendingIntent.getBroadcast(context, 0, intent, FLAG_UPDATE_CURRENT);
-    assertThat(shadowPendingIntent.getSavedIntent().getIntExtra("whatever", -1)).isEqualTo(77);
+    assertThat(PendingIntent.getBroadcast(context, 0, intent, FLAG_UPDATE_CURRENT))
+        .isSameInstanceAs(pendingIntent);
+    received.set(null);
+    pendingIntent.send();
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(received.get()).isNotNull();
+    assertThat(received.get().getIntExtra("whatever", -1)).isEqualTo(77);
+    assertThat(received.get().getIntExtra("added", -1)).isEqualTo(23);
+    assertThat(received.get().hasExtra("removed")).isFalse();
+  }
+
+  @Test
+  public void updateImmutablePendingIntent_clearsExtrasWhenReplacementHasNone()
+      throws CanceledException {
+    AtomicReference<Intent> received = new AtomicReference<>();
+    context.registerReceiver(
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            received.set(intent);
+          }
+        },
+        new IntentFilter("foo"));
+
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(
+            context, 0, new Intent("foo").putExtra("whatever", 5), FLAG_IMMUTABLE);
+    assertThat(
+            PendingIntent.getBroadcast(
+                context, 0, new Intent("foo"), FLAG_IMMUTABLE | FLAG_UPDATE_CURRENT))
+        .isSameInstanceAs(pendingIntent);
+
+    pendingIntent.send();
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(received.get()).isNotNull();
+    assertThat(received.get().getExtras()).isNull();
   }
 
   @Test
