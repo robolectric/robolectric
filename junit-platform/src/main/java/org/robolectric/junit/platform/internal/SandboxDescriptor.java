@@ -1,9 +1,10 @@
 package org.robolectric.junit.platform.internal;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,8 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
   private final SandboxSpec spec;
   private final Set<MethodSource> testsNamedWithSdk = new HashSet<>();
   @Nullable private Configuration representativeConfiguration;
-  private final Map<TestDescriptor, TestClassDescriptor> classes = new HashMap<>();
+  // The Jupiter classes of this sandbox, top-level and nested, each before its nested classes.
+  private final Map<TestDescriptor, TestClassDescriptor> classes = new LinkedHashMap<>();
 
   SandboxDescriptor(UniqueId uniqueId, SandboxSpec spec) {
     super(uniqueId, spec.displayName());
@@ -109,16 +111,27 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
     }
   }
 
-  /** Reports the tests of {@code jupiterClass}, a class of this sandbox, under {@code parent}. */
+  /**
+   * Reports the tests of {@code jupiterClass}, a class of this sandbox, under {@code parent}, and
+   * those of its {@code @Nested} classes under the corresponding children of {@code parent}.
+   */
   void reportUnder(TestDescriptor jupiterClass, TestClassDescriptor parent) {
     classes.put(jupiterClass, parent);
+    parent.sandboxes.add(this);
     for (TestDescriptor child : jupiterClass.getChildren()) {
-      parent.addChild(child);
+      if (TestClassDescriptor.isNestedClass(child)) {
+        reportUnder(child, parent.nestedClass(child));
+      } else {
+        parent.addChild(child);
+      }
     }
   }
 
-  Collection<TestClassDescriptor> classes() {
-    return classes.values();
+  /** The classes of this sandbox, each nested class before its enclosing class. */
+  List<TestClassDescriptor> classes() {
+    List<TestClassDescriptor> result = new ArrayList<>(classes.values());
+    Collections.reverse(result);
+    return result;
   }
 
   void execute(ExecutionRequest request, JupiterDelegate jupiter) {
@@ -132,11 +145,8 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
       }
     } catch (Throwable t) {
       // Like RobolectricTestRunner, fail each test, e.g. with "API level 23 is not available".
-      for (Map.Entry<TestDescriptor, TestClassDescriptor> entry : classes.entrySet()) {
-        entry.getValue().start(listener);
-        for (TestDescriptor child : entry.getKey().getChildren()) {
-          failTests(child, t, listener);
-        }
+      for (TestDescriptor jupiterClass : getChildren()) {
+        failTests(jupiterClass, t, listener);
       }
       return;
     }
@@ -153,8 +163,17 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
     }
   }
 
-  private static void failTests(
+  private void failTests(
       TestDescriptor descriptor, Throwable failure, EngineExecutionListener listener) {
+    TestClassDescriptor testClassDescriptor = classes.get(descriptor);
+    if (testClassDescriptor != null) {
+      // Finished once all of its sandboxes ran it.
+      testClassDescriptor.start(listener);
+      for (TestDescriptor child : descriptor.getChildren()) {
+        failTests(child, failure, listener);
+      }
+      return;
+    }
     listener.executionStarted(descriptor);
     if (descriptor.getChildren().isEmpty()) {
       listener.executionFinished(descriptor, TestExecutionResult.failed(failure));
@@ -199,16 +218,7 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
           public void executionSkipped(TestIdentifier identifier, String reason) {
             if (!isRoot(identifier)) {
               reported.add(toOuter(identifier.getUniqueIdObject()));
-              TestDescriptor mirror = mirror(identifier);
-              TestClassDescriptor testClassDescriptor = classes.get(mirror);
-              if (testClassDescriptor == null) {
-                listener.executionSkipped(mirror, reason);
-              } else {
-                testClassDescriptor.start(listener);
-                for (TestDescriptor child : mirror.getChildren()) {
-                  listener.executionSkipped(child, reason);
-                }
-              }
+              skip(mirror(identifier), reason, listener);
             }
           }
 
@@ -308,6 +318,18 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
     }
   }
 
+  private void skip(TestDescriptor descriptor, String reason, EngineExecutionListener listener) {
+    TestClassDescriptor testClassDescriptor = classes.get(descriptor);
+    if (testClassDescriptor == null) {
+      listener.executionSkipped(descriptor, reason);
+    } else {
+      testClassDescriptor.start(listener);
+      for (TestDescriptor child : descriptor.getChildren()) {
+        skip(child, reason, listener);
+      }
+    }
+  }
+
   private UniqueId toOuter(UniqueId jupiterId) {
     return JupiterDelegate.toOuter(jupiterId, getUniqueId());
   }
@@ -329,11 +351,14 @@ public final class SandboxDescriptor extends AbstractTestDescriptor {
     }
   }
 
-  private static void reportUnexecuted(
+  private void reportUnexecuted(
       TestDescriptor descriptor,
       Set<UniqueId> reported,
       Set<UniqueId> succeeded,
       EngineExecutionListener listener) {
+    if (classes.containsKey(descriptor)) {
+      return; // Checked as a class of this sandbox.
+    }
     UniqueId uniqueId = descriptor.getUniqueId();
     if (!reported.contains(uniqueId)) {
       listener.executionStarted(descriptor);

@@ -96,17 +96,40 @@ public final class Selection {
           .anyMatch(segment -> segment.getType().equals(SandboxDescriptor.SEGMENT_TYPE))) {
         selection.uniqueIds.add(uniqueId);
       }
-      for (UniqueId.Segment segment : uniqueId.getSegments()) {
-        if (segment.getType().equals("class")) {
-          ReflectionSupport.tryToLoadClass(segment.getValue())
-              .toOptional()
-              .filter(accept)
-              .ifPresent(c -> selection.add(c, WHOLE_CLASS));
-          break;
-        }
+      List<Class<?>> chain = classChain(uniqueId);
+      if (!chain.isEmpty() && accept.test(chain.get(0))) {
+        selection.add(chain.get(0), chain.size() == 1 ? WHOLE_CLASS : nestedClassItem(chain));
       }
     }
     return selection;
+  }
+
+  /**
+   * The test class of {@code uniqueId}: its top-level class followed by the {@code @Nested} classes
+   * it is in, or empty if it has no class segment or the classes cannot be loaded.
+   */
+  private static List<Class<?>> classChain(UniqueId uniqueId) {
+    List<Class<?>> chain = new ArrayList<>();
+    String className = null;
+    for (UniqueId.Segment segment : uniqueId.getSegments()) {
+      if (segment.getType().equals(TestClassDescriptor.SEGMENT_TYPE)) {
+        className = segment.getValue();
+      } else if (className != null
+          && segment.getType().equals(TestClassDescriptor.NESTED_SEGMENT_TYPE)) {
+        // Jupiter names nested classes by their simple name.
+        className += "$" + segment.getValue();
+      } else if (className == null) {
+        continue;
+      } else {
+        break;
+      }
+      Optional<Class<?>> testClass = ReflectionSupport.tryToLoadClass(className).toOptional();
+      if (testClass.isEmpty()) {
+        return List.of();
+      }
+      chain.add(testClass.get());
+    }
+    return chain;
   }
 
   Map<Class<?>, List<Item>> itemsByClass() {
