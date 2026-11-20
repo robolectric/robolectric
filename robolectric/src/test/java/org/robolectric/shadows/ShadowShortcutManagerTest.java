@@ -203,6 +203,25 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void testDisableAndEnablePinnedShortcut() {
+    ShortcutInfo shortcut = createShortcut("id1");
+    shortcutManager.requestPinShortcut(shortcut, null /* resultIntent */);
+
+    shortcutManager.disableShortcuts(ImmutableList.of("id1"));
+
+    assertThat(shortcutManager.getPinnedShortcuts()).hasSize(1);
+    assertThat(shortcutManager.getPinnedShortcuts().get(0).isEnabled()).isFalse();
+    assertThat(shortcutManager.getPinnedShortcuts().get(0).isPinned()).isTrue();
+
+    shortcutManager.enableShortcuts(ImmutableList.of("id1"));
+
+    assertThat(shortcutManager.getPinnedShortcuts()).hasSize(1);
+    assertThat(shortcutManager.getPinnedShortcuts().get(0).isEnabled()).isTrue();
+    assertThat(shortcutManager.getPinnedShortcuts().get(0).isPinned()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void testSetMaxShortcutCountPerActivity() {
     ShadowShortcutManager shadowShortcutManager = Shadow.extract(shortcutManager);
