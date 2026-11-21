@@ -81,6 +81,9 @@ dependencies {
   testImplementation(libs.androidx.test.espresso.core)
   testImplementation(libs.truth)
   testImplementation(libs.guava)
+  testImplementation(platform(libs.okhttp.bom))
+  testImplementation(libs.okhttp.mockwebserver)
+  testRuntimeOnly(libs.cronet.fallback)
 
   // Testing dependencies
   androidTestImplementation(project(":shadowapi"))
@@ -89,8 +92,11 @@ dependencies {
   androidTestImplementation(libs.androidx.test.rules)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.ext.truth)
+  androidTestImplementation(libs.androidx.test.core)
   androidTestImplementation(libs.androidx.test.espresso.core)
   androidTestImplementation(libs.truth)
   androidTestImplementation(libs.guava)
+  androidTestImplementation(platform(libs.okhttp.bom))
+  androidTestImplementation(libs.okhttp.mockwebserver)
   androidTestUtil(libs.androidx.test.services)
 }
