@@ -7,8 +7,8 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.SystemClock;
 import android.view.Choreographer;
+import android.view.DisplayEventReceiver;
 import java.util.concurrent.TimeUnit;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -102,12 +102,9 @@ public class ShadowPausedNoVsyncChoreographer extends ShadowPausedChoreographer 
     }
   }
 
-  @Override
   @Implementation(minSdk = CINNAMON_BUN)
   protected void doFrame(
-      long frameTimeNanos,
-      int frame,
-      @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData) {
+      long frameTimeNanos, int frame, DisplayEventReceiver.VsyncEventData vsyncEventData) {
     boolean wasInFrame = inFrame;
     inFrame = true;
     try {
