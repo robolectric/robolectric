@@ -13,12 +13,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
+import org.junit.AssumptionViolatedException;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized;
@@ -28,7 +30,9 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.SandboxTestRunner;
+import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Util;
 
 /**
  * A Parameterized test runner for Robolectric. Copied from the {@link Parameterized} class, then
@@ -42,8 +46,8 @@ import org.robolectric.util.ReflectionHelpers;
  * from different class loaders and therefore parameter objects created by one cannot be assigned to
  * instances of the other.
  *
- * <p>Parameters are computed once for discovery and once per sandbox class loader. Tests in the
- * same sandbox share the parameter objects.
+ * <p>Parameters are computed once per sandbox class loader, reusing discovery results when the
+ * sandbox matches. Tests in the same sandbox share the parameter objects.
  *
  * <p>See also {@link RobolectricTestParameterInjector} for a more modern alternative.
  */
@@ -130,14 +134,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       // created by the test runner are not compatible with the parameters required by the test.
       // Instead, we compute the parameters within the test's class loader.
       try {
-        List<Object> parametersList;
-        synchronized (parametersByClassLoader) {
-          parametersList = parametersByClassLoader.get(classLoader);
-          if (parametersList == null) {
-            parametersList = getParametersList(getTestClass(), classLoader);
-            parametersByClassLoader.put(classLoader, parametersList);
-          }
-        }
+        List<Object> parametersList = getCachedParameters(classLoader);
 
         if (parametersIndex >= parametersList.size()) {
           throw new Exception(
@@ -157,6 +154,46 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       } catch (Throwable throwable) {
         throw new Exception(throwable);
       }
+    }
+
+    private List<Object> getCachedParameters(ClassLoader classLoader) throws Throwable {
+      synchronized (parametersByClassLoader) {
+        List<Object> parametersList = parametersByClassLoader.get(classLoader);
+        if (parametersList == null) {
+          parametersList = getParametersList(getTestClass(), classLoader);
+          parametersByClassLoader.put(classLoader, parametersList);
+        }
+        return parametersList;
+      }
+    }
+
+    private List<String> discoverParameterNames(String namePattern) throws Throwable {
+      for (FrameworkMethod method : super.getChildren()) {
+        if (isIgnored(method)) {
+          continue;
+        }
+        Sandbox sandbox;
+        try {
+          sandbox = getSandbox(method);
+        } catch (IllegalArgumentException | AssumptionViolatedException e) {
+          continue;
+        }
+        configureSandbox(sandbox, method);
+        AtomicReference<List<String>> names = new AtomicReference<>();
+        sandbox.runOnMainThreadWithClassLoader(() -> {
+          try {
+            names.set(
+                formatParameterNames(
+                    namePattern, getCachedParameters(sandbox.getRobolectricClassLoader())));
+          } catch (Throwable throwable) {
+            throw Util.sneakyThrow(throwable);
+          }
+        });
+        return names.get();
+      }
+      return formatParameterNames(
+          namePattern,
+          getParametersList(getTestClass(), getTestClass().getJavaClass().getClassLoader()));
     }
 
     @SuppressWarnings("unchecked")
@@ -300,7 +337,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
   }
 
   private final ArrayList<Runner> runners = new ArrayList<>();
-  private final Map<ClassLoader, List<Object>> parametersByClassLoader = new HashMap<>();
+  private final Map<ClassLoader, List<Object>> parametersByClassLoader = new WeakHashMap<>();
 
   /*
    * Only called reflectively. Do not use programmatically.
@@ -311,19 +348,13 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     ClassLoader classLoader = getClass().getClassLoader();
     Parameters parameters =
         getParametersMethod(testClass, classLoader).getAnnotation(Parameters.class);
-    List<Object> parametersList = getParametersList(testClass, classLoader);
-    for (int i = 0; i < parametersList.size(); i++) {
-      Object parametersObj = parametersList.get(i);
-      Object[] parameterArray =
-          (parametersObj instanceof Object[])
-              ? (Object[]) parametersObj
-              : new Object[] {parametersObj};
+    TestClassRunnerForParameters discoveryRunner =
+        new TestClassRunnerForParameters(klass, 0, "", parametersByClassLoader);
+    List<String> parameterNames = discoveryRunner.discoverParameterNames(parameters.name());
+    for (int i = 0; i < parameterNames.size(); i++) {
       runners.add(
           new TestClassRunnerForParameters(
-              testClass.getJavaClass(),
-              i,
-              nameFor(parameters.name(), i, parameterArray),
-              parametersByClassLoader));
+              testClass.getJavaClass(), i, parameterNames.get(i), parametersByClassLoader));
     }
   }
 
@@ -365,6 +396,20 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     throw new Exception("No public static parameters method on class " + testClass.getName());
+  }
+
+  private static List<String> formatParameterNames(
+      String namePattern, List<Object> parametersList) {
+    List<String> names = new ArrayList<>(parametersList.size());
+    for (int i = 0; i < parametersList.size(); i++) {
+      Object parametersObj = parametersList.get(i);
+      Object[] parameterArray =
+          (parametersObj instanceof Object[])
+              ? (Object[]) parametersObj
+              : new Object[] {parametersObj};
+      names.add(nameFor(namePattern, i, parameterArray));
+    }
+    return names;
   }
 
   private static String nameFor(String namePattern, int index, Object[] parameters) {

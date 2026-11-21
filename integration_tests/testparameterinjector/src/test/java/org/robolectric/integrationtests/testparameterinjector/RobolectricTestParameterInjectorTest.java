@@ -6,7 +6,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build.VERSION;
 import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider;
+import com.google.testing.junit.testparameterinjector.TestParameters;
+import com.google.testing.junit.testparameterinjector.TestParameters.TestParametersValues;
+import com.google.testing.junit.testparameterinjector.TestParametersValuesProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -247,5 +253,124 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
 
     assertThat(runner.testCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void customProvidersAreComputedOnce() throws Exception {
+    for (Class<?> fixture :
+        Arrays.asList(
+            FieldProvider.class,
+            ConstructorProvider.class,
+            MethodProvider.class,
+            IgnoredMethodProvider.class,
+            ParametersProvider.class)) {
+      setSystemPropertyRule.set(PROVIDER_CALLS, "0");
+      Runner runner = new RobolectricTestParameterInjector(fixture);
+      runner.run(runNotifier);
+      assertThat(runner.testCount()).isEqualTo(2);
+      assertThat(System.getProperty(PROVIDER_CALLS)).isEqualTo("1");
+    }
+  }
+
+  @Test
+  public void customProvidersAreComputedOncePerSandbox() throws Exception {
+    setSystemPropertyRule.set(PROVIDER_CALLS, "0");
+    Runner runner = new RobolectricTestParameterInjector(MultiSdkProvider.class);
+    runner.run(runNotifier);
+    assertThat(runner.testCount()).isEqualTo(4);
+    assertThat(System.getProperty(PROVIDER_CALLS)).isEqualTo("2");
+  }
+
+  private static final String PROVIDER_CALLS =
+      "JavaRobolectricTestParameterInjectorTest.providerCalls";
+
+  private static void incrementProviderCalls() {
+    System.setProperty(
+        PROVIDER_CALLS, Integer.toString(Integer.parseInt(System.getProperty(PROVIDER_CALLS)) + 1));
+  }
+
+  public static class Value {
+    final int number;
+
+    Value(int number) {
+      this.number = number;
+    }
+  }
+
+  public static class ValuesProvider extends TestParameterValuesProvider {
+    @Override
+    protected List<?> provideValues(Context context) {
+      incrementProviderCalls();
+      return Arrays.asList(new Value(1), new Value(2));
+    }
+  }
+
+  @Ignore
+  @Config(sdk = P)
+  public static class FieldProvider {
+    @TestParameter(valuesProvider = ValuesProvider.class)
+    public Value value;
+
+    @Test
+    public void test() {
+      assertThat(value.number).isAnyOf(1, 2);
+    }
+  }
+
+  @Ignore
+  @Config(sdk = {P, S})
+  public static class MultiSdkProvider extends FieldProvider {}
+
+  @Ignore
+  @Config(sdk = P)
+  public static class ConstructorProvider {
+    private final Value value;
+
+    public ConstructorProvider(@TestParameter(valuesProvider = ValuesProvider.class) Value value) {
+      this.value = value;
+    }
+
+    @Test
+    public void test() {
+      assertThat(value.number).isAnyOf(1, 2);
+    }
+  }
+
+  @Ignore
+  @Config(sdk = P)
+  public static class MethodProvider {
+    @Test
+    public void test(@TestParameter(valuesProvider = ValuesProvider.class) Value value) {
+      assertThat(value.number).isAnyOf(1, 2);
+    }
+  }
+
+  @Ignore
+  public static class IgnoredMethodProvider extends MethodProvider {
+    @Ignore
+    @Test
+    @Override
+    public void test(@TestParameter(valuesProvider = ValuesProvider.class) Value value) {}
+  }
+
+  public static class ParametersValuesProvider extends TestParametersValuesProvider {
+    @Override
+    protected List<TestParametersValues> provideValues(Context context) {
+      incrementProviderCalls();
+      return Arrays.asList(
+          TestParametersValues.builder().name("first").addParameter("number", 1).build(),
+          TestParametersValues.builder().name("second").addParameter("number", 2).build());
+    }
+  }
+
+  @Ignore
+  @Config(sdk = P)
+  public static class ParametersProvider {
+    @Test
+    @TestParameters(valuesProvider = ParametersValuesProvider.class)
+    public void test(int number) {
+      assertThat(number).isAnyOf(1, 2);
+      assertThat(VERSION.SDK_INT).isEqualTo(P);
+    }
   }
 }

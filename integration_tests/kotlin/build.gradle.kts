@@ -20,4 +20,5 @@ dependencies {
   testImplementation(libs.kotlinx.coroutines.android)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
+  testImplementation(variantOf(libs.test.parameter.injector) { artifactType("jar") })
 }
