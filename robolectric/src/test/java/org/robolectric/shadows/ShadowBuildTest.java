@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -8,6 +9,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import android.os.Build;
 import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES_FULL;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,6 +71,18 @@ public class ShadowBuildTest {
   public void setVersionMediaPerformanceClass() {
     ShadowBuild.setVersionMediaPerformanceClass(R);
     assertThat(VERSION.MEDIA_PERFORMANCE_CLASS).isEqualTo(R);
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  @SuppressWarnings("TruthConstantAsserts") // VERSION.SDK_INT_FULL is mutated by ShadowBuild
+  public void setVersionSdkIntFull() {
+    int defaultSdkIntFull = VERSION.SDK_INT_FULL;
+    ShadowBuild.setVersionSdkIntFull(VERSION_CODES_FULL.BAKLAVA_1);
+    assertThat(VERSION.SDK_INT_FULL).isEqualTo(VERSION_CODES_FULL.BAKLAVA_1);
+
+    ShadowBuild.reset();
+    assertThat(VERSION.SDK_INT_FULL).isEqualTo(defaultSdkIntFull);
   }
 
   @Test
