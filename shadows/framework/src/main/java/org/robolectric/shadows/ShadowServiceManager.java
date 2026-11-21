@@ -98,7 +98,9 @@ import android.security.IFileIntegrityService;
 import android.security.advancedprotection.IAdvancedProtectionService;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
 import android.security.intrusiondetection.IIntrusionDetectionService;
+import android.service.gatekeeper.IGateKeeperService;
 import android.speech.IRecognitionServiceManager;
+import android.system.keystore2.IKeystoreService;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
 import android.view.contentcapture.IContentCaptureManager;
@@ -358,6 +360,18 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.FILE_INTEGRITY_SERVICE, IFileIntegrityService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= S) {
+      addBinderService(
+          binderServices,
+          KeystoreServiceDelegate.SERVICE_NAME,
+          IKeystoreService.class,
+          BinderType.CONCRETE,
+          new KeystoreServiceDelegate());
+      addBinderService(
+          binderServices,
+          Context.GATEKEEPER_SERVICE,
+          IGateKeeperService.class,
+          BinderType.CONCRETE,
+          new GateKeeperServiceDelegate());
       addBinderService(binderServices, "permissionmgr", IPermissionManager.class);
       addBinderService(
           binderServices, Context.TIME_ZONE_DETECTOR_SERVICE, ITimeZoneDetectorService.class);
