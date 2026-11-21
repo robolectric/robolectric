@@ -36,6 +36,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.provider.FontsContract;
 import android.provider.MediaStore;
+import android.security.keystore2.AndroidKeyStoreProvider;
 import android.util.DisplayMetrics;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.internal.os.ApplicationSharedMemory;
@@ -238,6 +239,16 @@ public class AndroidTestEnvironment implements TestEnvironment {
       Security.insertProviderAt(BOUNCY_CASTLE_PROVIDER, 2);
     } else {
       Security.addProvider(BOUNCY_CASTLE_PROVIDER);
+    }
+
+    // Like Android, install the AndroidKeyStore provider, which Robolectric backs with a software
+    // keystore2 daemon.
+    Security.removeProvider("AndroidKeyStore");
+    Security.removeProvider("AndroidKeyStoreBCWorkaround");
+    if (apiLevel >= S) {
+      AndroidKeyStoreProvider.install();
+      Security.getProvider("AndroidKeyStore")
+          .put("KeyStore.AndroidKeyStore", AndroidKeyStoreSpiOnJvm.class.getName());
     }
 
     android.content.res.Configuration androidConfiguration =

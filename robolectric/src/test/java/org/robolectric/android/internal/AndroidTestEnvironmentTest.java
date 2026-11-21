@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -173,7 +174,7 @@ public class AndroidTestEnvironmentTest {
   public void testWhenConscryptModeOn_BouncyCastlePreferredToJdkProviders()
       throws GeneralSecurityException {
     bootstrapWrapper.callSetUpApplicationState();
-    assertThat(Security.getProviders()[1].getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+    assertThat(softwareProviderNames().get(1)).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
 
     // Conscrypt does not implement PBKDF2, and on Android Bouncy Castle provides it, not SunJCE.
     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
@@ -184,9 +185,33 @@ public class AndroidTestEnvironmentTest {
   @ConscryptMode(OFF)
   public void testWhenConscryptModeOff_BouncyCastleIsLastProvider() {
     bootstrapWrapper.callSetUpApplicationState();
-    Provider[] providers = Security.getProviders();
-    assertThat(providers[providers.length - 1].getName())
-        .isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+    List<String> providers = softwareProviderNames();
+    assertThat(providers.get(providers.size() - 1)).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testAndroidKeyStoreIsInstalledLikeOnAndroid() {
+    bootstrapWrapper.callSetUpApplicationState();
+    List<String> providers = new ArrayList<>();
+    for (Provider provider : Security.getProviders()) {
+      providers.add(provider.getName());
+    }
+
+    assertThat(providers.get(providers.size() - 1)).isEqualTo("AndroidKeyStore");
+    assertThat(providers.get(providers.indexOf(BouncyCastleProvider.PROVIDER_NAME) - 1))
+        .isEqualTo("AndroidKeyStoreBCWorkaround");
+  }
+
+  /** Returns the names of the installed providers, without the AndroidKeyStore ones. */
+  private static List<String> softwareProviderNames() {
+    List<String> names = new ArrayList<>();
+    for (Provider provider : Security.getProviders()) {
+      if (!provider.getName().startsWith("AndroidKeyStore")) {
+        names.add(provider.getName());
+      }
+    }
+    return names;
   }
 
   @Test
