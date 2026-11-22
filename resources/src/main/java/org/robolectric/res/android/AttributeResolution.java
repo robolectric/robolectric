@@ -487,7 +487,7 @@ public class AttributeResolution {
 
       // Try to find a value for this attribute...
       // Skip through XML attributes until the end or the next possible match.
-      while (ix < xmlAttrCount && curIdent > curXmlAttr) {
+      while (ix < xmlAttrCount && Integer.compareUnsigned(curIdent, curXmlAttr) > 0) {
         ix++;
         curXmlAttr = xmlParser.getAttributeNameResID(ix);
       }

@@ -93,6 +93,16 @@ public class DynamicRefTableTest {
   }
 
   @Test
+  public void testLoadLibraryTableWithNegativePackageId() {
+    final ByteBuffer buf = createLibraryTableBuffer(0x80000000, "com.example.lib");
+    final ResTable_lib_header header = new ResTable_lib_header(buf, 0);
+
+    DynamicRefTable dynamicRefTable = new DynamicRefTable((byte) 0x01, false);
+    assertThat(dynamicRefTable.load(header)).isEqualTo(UNKNOWN_ERROR);
+    assertThat(dynamicRefTable.entries()).isEmpty();
+  }
+
+  @Test
   public void testLoadLibraryTableWithInvalidSize() {
     // Create a library table header that claims more entries than the buffer contains
     final ByteBuffer buf = ByteBuffer.allocate(1024);
@@ -181,6 +191,41 @@ public class DynamicRefTableTest {
     assertThat(result).isEqualTo(NO_ERROR);
     Map<String, Byte> entries = dynamicRefTable.entries();
     assertThat(entries).isEmpty();
+  }
+
+  @Test
+  public void addMapping_packageIdAbove0x7f_mapsResourceIds() {
+    // AGP assigns dynamic feature modules build-time package IDs starting at 0x80 when minSdk >=
+    // 26.
+    final String[] packageNames = {
+      "com.example.app.feature0", "com.example.app.feature3", "com.example.app.featureMax"
+    };
+    final int[] packageIds = {0x80, 0x83, 0xfe};
+    final ByteBuffer buf = createLibraryTableBuffer(packageIds, packageNames);
+    DynamicRefTable dynamicRefTable = new DynamicRefTable((byte) 0x80, false);
+    assertThat(dynamicRefTable.load(new ResTable_lib_header(buf, 0))).isEqualTo(NO_ERROR);
+
+    assertThat(dynamicRefTable.addMapping(packageNames[0], (byte) 0x85)).isEqualTo(NO_ERROR);
+    assertThat(dynamicRefTable.addMapping(packageNames[1], (byte) 0x83)).isEqualTo(NO_ERROR);
+    assertThat(dynamicRefTable.addMapping(packageNames[2], (byte) 0xfe)).isEqualTo(NO_ERROR);
+
+    Ref<Integer> remappedId = new Ref<>(0x80010001);
+    assertThat(dynamicRefTable.lookupResourceId(remappedId)).isEqualTo(NO_ERROR);
+    assertThat(remappedId.get()).isEqualTo(0x85010001);
+
+    Ref<Integer> identityId = new Ref<>(0x83010002);
+    assertThat(dynamicRefTable.lookupResourceId(identityId)).isEqualTo(NO_ERROR);
+    assertThat(identityId.get()).isEqualTo(0x83010002);
+
+    Ref<Integer> maxId = new Ref<>(0xfe010003);
+    assertThat(dynamicRefTable.lookupResourceId(maxId)).isEqualTo(NO_ERROR);
+    assertThat(maxId.get()).isEqualTo(0xfe010003);
+
+    Ref<Res_value> dynamicRef =
+        new Ref<>(new Res_value(DataType.DYNAMIC_REFERENCE.code(), 0x80010001));
+    assertThat(dynamicRefTable.lookupResourceValue(dynamicRef)).isEqualTo(NO_ERROR);
+    assertThat(dynamicRef.get().dataType).isEqualTo(DataType.REFERENCE.code());
+    assertThat(dynamicRef.get().data).isEqualTo(0x85010001);
   }
 
   // Helper method to create a library table buffer with a single entry

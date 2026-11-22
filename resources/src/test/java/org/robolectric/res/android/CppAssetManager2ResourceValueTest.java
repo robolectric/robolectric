@@ -2,6 +2,8 @@ package org.robolectric.res.android;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.ResourceTypes.RES_STRING_POOL_TYPE;
+import static org.robolectric.res.android.ResourceTypes.RES_TABLE_LIBRARY_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_TABLE_PACKAGE_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE_SPEC_TYPE;
@@ -195,6 +197,109 @@ public class CppAssetManager2ResourceValueTest {
     assertThat(child.entries[2].value.data).isEqualTo(60);
   }
 
+  @Test
+  public void highPackageId_loadsDynamicRefTableAndResolvesResources() {
+    byte[] tableBytes =
+        encodeTable(
+            0x80,
+            "com.example.feature",
+            true,
+            simple(TYPE_INT_DEC, 42),
+            simple(TYPE_DYNAMIC_REFERENCE, 0x80010000));
+
+    CppAssetManager2 assets = assetsFromTable(tableBytes, false);
+    assertThat(assets.GetDynamicRefTableForPackage(0x80)).isNotNull();
+    assertThat(assets.GetDynamicRefTableForPackage(0x99)).isNull();
+
+    Ref<Res_value> value = new Ref<>(null);
+    Ref<ResTable_config> config = new Ref<>(null);
+    Ref<Integer> flags = new Ref<>(0);
+    assertThat(assets.GetResource(0x80010000, false, (short) 0, value, config, flags))
+        .isSameInstanceAs(ApkAssetsCookie.forInt(0));
+    assertThat(value.get().data).isEqualTo(42);
+
+    assertThat(assets.GetResource(0x80010001, false, (short) 0, value, config, flags))
+        .isSameInstanceAs(ApkAssetsCookie.forInt(0));
+    assertThat((int) value.get().dataType).isEqualTo(TYPE_REFERENCE);
+    assertThat(value.get().data).isEqualTo(0x80010000);
+
+    ResTable resTable = new ResTable();
+    assertThat(resTable.addInternal(tableBytes, tableBytes.length, null, 0, false, 1, false, false))
+        .isEqualTo(NO_ERROR);
+    assertThat(resTable.getResourcePackageIndex(0x80010000)).isEqualTo(0x80);
+    assertThat(resTable.getResourcePackageIndexFromPackage((byte) 0x80)).isEqualTo(0);
+
+    Ref<Res_value> resTableValue = new Ref<>(null);
+    assertThat(resTable.getResource(0x80010000, resTableValue, false, 0, null, null)).isEqualTo(0);
+    assertThat(resTableValue.get().data).isEqualTo(42);
+    assertThat(resTable.getResource(0x80010001, resTableValue, false, 0, null, null)).isEqualTo(0);
+    assertThat((int) resTableValue.get().dataType).isEqualTo(TYPE_REFERENCE);
+    assertThat(resTableValue.get().data).isEqualTo(0x80010000);
+  }
+
+  @Test
+  public void inheritedBag_highPackageIdAttributes_mergeAndFindInUnsignedOrder() {
+    int featureParent = 0x82010000;
+    int featureChild = 0x82010001;
+    byte[] tableBytes =
+        encodeTable(
+            0x82,
+            "com.example.feature",
+            true,
+            bag(
+                0,
+                new int[] {0x01010001, TYPE_INT_DEC, 10},
+                new int[] {0x7f020002, TYPE_INT_DEC, 20}),
+            bag(
+                featureParent,
+                new int[] {0x82020001, TYPE_INT_DEC, 30},
+                new int[] {0x82020002, TYPE_INT_DEC, 40}));
+
+    CppAssetManager2 assets = assetsFromTable(tableBytes, false);
+    ResolvedBag child = assets.GetBag(featureChild);
+    assertThat(child.entry_count).isEqualTo(4);
+    assertThat(Arrays.stream(child.entries).mapToInt(entry -> entry.key).toArray())
+        .asList()
+        .containsExactly(0x01010001, 0x7f020002, 0x82020001, 0x82020002)
+        .inOrder();
+    assertThat(values(child)).asList().containsExactly(10, 20, 30, 40).inOrder();
+
+    // Verify binary search over unsigned attribute IDs in AttributeResolution9/10.
+    // Note 0x01010001 - 0x82020001 overflows signed 32-bit int to positive.
+    assertThat(AttributeResolution9.BagAttributeFinder.find(child, 0x01010001).value.data)
+        .isEqualTo(10);
+    assertThat(AttributeResolution9.BagAttributeFinder.find(child, 0x82020001).value.data)
+        .isEqualTo(30);
+    assertThat(AttributeResolution9.BagAttributeFinder.find(child, 0x82020002).value.data)
+        .isEqualTo(40);
+    assertThat(AttributeResolution10.BagAttributeFinder.find(child, 0x01010001).value.data)
+        .isEqualTo(10);
+    assertThat(AttributeResolution10.BagAttributeFinder.find(child, 0x82020001).value.data)
+        .isEqualTo(30);
+    assertThat(AttributeResolution10.BagAttributeFinder.find(child, 0x82020002).value.data)
+        .isEqualTo(40);
+
+    // Verify ResTable bag merging also keeps unsigned attribute ID order.
+    ResTable resTable = new ResTable();
+    assertThat(resTable.addInternal(tableBytes, tableBytes.length, null, 0, false, 1, false, false))
+        .isEqualTo(NO_ERROR);
+    Ref<ResTable.bag_entry[]> bagRef = new Ref<>(null);
+    int count = resTable.lockBag(featureChild, bagRef);
+    try {
+      assertThat(count).isEqualTo(4);
+      int[] keys = new int[count];
+      for (int i = 0; i < count; i++) {
+        keys[i] = bagRef.get()[i].map.name.ident;
+      }
+      assertThat(keys)
+          .asList()
+          .containsExactly(0x01010001, 0x7f020002, 0x82020001, 0x82020002)
+          .inOrder();
+    } finally {
+      resTable.unlockBag(bagRef);
+    }
+  }
+
   /** Models a public resource-value subtype whose copy contract owns mutable extension state. */
   private static final class MutableValue extends Res_value {
     int state;
@@ -251,24 +356,11 @@ public class CppAssetManager2ResourceValueTest {
    * Loads one in-memory package so GetResource and GetBag exercise normal decoding and remapping.
    */
   private static CppAssetManager2 assets(boolean shared, byte[]... entries) {
-    ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
-    ResChunk_header.write(
-        buffer,
-        (short) RES_TABLE_TYPE,
-        () -> buffer.putInt(1),
-        () ->
-            ResChunk_header.write(
-                buffer,
-                (short) RES_TABLE_PACKAGE_TYPE,
-                () -> {
-                  buffer.putInt(0x7f);
-                  buffer.put(new byte[256]); // Empty package name.
-                  buffer.put(new byte[20]); // String pool offsets and type ID offset.
-                },
-                () -> writeType(buffer, entries)));
-    ByteBuffer encoded =
-        ByteBuffer.wrap(Arrays.copyOf(buffer.array(), buffer.position()))
-            .order(ByteOrder.LITTLE_ENDIAN);
+    return assetsFromTable(encodeTable(0x7f, "", false, entries), shared);
+  }
+
+  private static CppAssetManager2 assetsFromTable(byte[] tableBytes, boolean shared) {
+    ByteBuffer encoded = ByteBuffer.wrap(tableBytes).order(ByteOrder.LITTLE_ENDIAN);
     LoadedArsc table = LoadedArsc.Load(new StringPiece(encoded, 0), null, false, shared);
     assertThat(table.GetPackages()).hasSize(1);
     CppApkAssets apk =
@@ -281,6 +373,65 @@ public class CppAssetManager2ResourceValueTest {
     CppAssetManager2 assets = new CppAssetManager2();
     assertThat(assets.SetApkAssets(Collections.singletonList(apk), true)).isTrue();
     return assets;
+  }
+
+  private static byte[] encodeTable(
+      int packageId, String packageName, boolean includeLibraryEntry, byte[]... entries) {
+    ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
+    ResChunk_header.write(
+        buffer,
+        (short) RES_TABLE_TYPE,
+        () -> buffer.putInt(1),
+        () -> {
+          writeEmptyStringPool(buffer);
+          ResChunk_header.write(
+              buffer,
+              (short) RES_TABLE_PACKAGE_TYPE,
+              () -> {
+                buffer.putInt(packageId);
+                for (int i = 0; i < 128; i++) {
+                  buffer.putChar(i < packageName.length() ? packageName.charAt(i) : '\0');
+                }
+                // Package header is 288 bytes; empty type/key string pools are 28 bytes each.
+                buffer.putInt(288); // typeStrings
+                buffer.putInt(0); // lastPublicType
+                buffer.putInt(288 + 28); // keyStrings
+                buffer.putInt(0); // lastPublicKey
+                buffer.putInt(0); // typeIdOffset
+              },
+              () -> {
+                writeEmptyStringPool(buffer);
+                writeEmptyStringPool(buffer);
+                if (includeLibraryEntry) {
+                  ResChunk_header.write(
+                      buffer,
+                      (short) RES_TABLE_LIBRARY_TYPE,
+                      () -> buffer.putInt(1),
+                      () -> {
+                        buffer.putInt(packageId);
+                        for (int i = 0; i < 128; i++) {
+                          buffer.putChar(i < packageName.length() ? packageName.charAt(i) : '\0');
+                        }
+                      });
+                }
+                writeType(buffer, entries);
+              });
+        });
+    return Arrays.copyOf(buffer.array(), buffer.position());
+  }
+
+  private static void writeEmptyStringPool(ByteBuffer buffer) {
+    ResChunk_header.write(
+        buffer,
+        (short) RES_STRING_POOL_TYPE,
+        () -> {
+          buffer.putInt(0); // stringCount
+          buffer.putInt(0); // styleCount
+          buffer.putInt(0x100); // UTF8_FLAG
+          buffer.putInt(0); // stringsStart
+          buffer.putInt(0); // stylesStart
+        },
+        () -> {});
   }
 
   /** Supplies one unqualified type with separate flags for each entry and dense entry offsets. */

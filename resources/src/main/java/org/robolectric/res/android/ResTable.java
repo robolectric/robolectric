@@ -107,7 +107,7 @@ public class ResTable {
   }
 
   static int Res_GETPACKAGE(int id) {
-    return ((id >> 24) - 1);
+    return ((id >>> 24) - 1);
   }
 
   public static int Res_GETTYPE(int id) {
@@ -132,7 +132,7 @@ public class ResTable {
   }
 
   int getResourcePackageIndexFromPackage(byte packageID) {
-    return ((int) mPackageMap[packageID]) - 1;
+    return Byte.toUnsignedInt(mPackageMap[Byte.toUnsignedInt(packageID)]) - 1;
   }
 
   //  Errors add(final Object data, int size, final int cookie, boolean copyData) {
@@ -803,7 +803,7 @@ public class ResTable {
     }
 
     boolean isDynamic = false;
-    if (id >= 256) {
+    if (id < 0 || id >= 256) {
       //      LOG_ALWAYS_FATAL("Package id out of range");
       throw new IllegalStateException("Package id out of range");
       //      return NO_ERROR;
@@ -847,13 +847,12 @@ public class ResTable {
       return (mError = err);
     }
 
-    int idx = mPackageMap[id];
+    int idx = Byte.toUnsignedInt(mPackageMap[id]);
     if (idx == 0) {
       idx = mPackageGroups.size() + 1;
 
-      //      char[] tmpName = new char[pkg.name.length /*sizeof(pkg.name)/sizeof(pkg.name[0])*/];
-      //      strcpy16_dtoh(tmpName, pkg.name, sizeof(pkg.name)/sizeof(pkg.name[0]));
-      group = new PackageGroup(this, new String(pkg.name), id, appAsLib, isSystemAsset, isDynamic);
+      String packageName = Util.ReadUtf16StringFromDevice(pkg.name, pkg.name.length);
+      group = new PackageGroup(this, packageName, id, appAsLib, isSystemAsset, isDynamic);
       if (group == NULL) {
         //        delete _package;
         return (mError = NO_MEMORY);
@@ -2975,7 +2974,8 @@ public class ResTable {
       boolean isInside;
       int oldName = 0;
       while ((isInside = (curEntry < set.numAttrs))
-          && (oldName = entries[curEntry].map.name.ident) < newName.get()) {
+          && Integer.compareUnsigned((oldName = entries[curEntry].map.name.ident), newName.get())
+              < 0) {
         if (kDebugTableNoisy) {
           ALOGI(
               "#0x%x: Keeping existing attribute: 0x%08x\n",

@@ -108,7 +108,7 @@ public class Util {
   static String ReadUtf16StringFromDevice(char[] src, int len /*, std::string* out*/) {
     int i = 0;
     StringBuilder strBuf = new StringBuilder();
-    while (src[i] != '\0' && len != 0) {
+    while (len != 0 && src[i] != '\0') {
       char c = dtohs(src[i]);
       // utf16_to_utf8(&c, 1, buf, sizeof(buf));
       // out->append(buf, strlen(buf));
