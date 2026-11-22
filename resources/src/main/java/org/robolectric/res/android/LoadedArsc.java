@@ -788,7 +788,7 @@ public class LoadedArsc {
                     Util.ReadUtf16StringFromDevice(
                         entryIter.packageName, entryIter.packageName.length);
 
-                if (dtohl(entryIter.packageId) >= 255) {
+                if (Integer.compareUnsigned(dtohl(entryIter.packageId), 255) >= 0) {
                   logError(
                       String.format(
                           "Package ID %02x in RES_TABLE_LIBRARY_TYPE too large for package '%s'.",

@@ -64,7 +64,7 @@ public class DynamicRefTable {
       if (kDebugLibNoisy) {
         ALOGV("Found lib entry %s with id %d\n", packageName, packageId);
       }
-      if (packageId >= 256) {
+      if (packageId < 0 || packageId >= 256) {
         ALOGW("Bad package id 0x%08x", packageId);
         return UNKNOWN_ERROR;
       }
@@ -123,7 +123,7 @@ public class DynamicRefTable {
     if (index == null) {
       return UNKNOWN_ERROR;
     }
-    mLookupTable[index] = packageId;
+    mLookupTable[Byte.toUnsignedInt(index)] = packageId;
     return NO_ERROR;
   }
 
@@ -160,7 +160,7 @@ public class DynamicRefTable {
     }
 
     // Do a proper lookup.
-    int translatedId = mLookupTable[packageId];
+    int translatedId = Byte.toUnsignedInt(mLookupTable[packageId]);
     if (translatedId == 0) {
       ALOGW(
           "DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",

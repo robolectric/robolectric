@@ -83,7 +83,7 @@ public class AttributeResolution10 {
       while (low <= high) {
         int mid = (low + high) >>> 1;
         Entry midVal = bagEntries[mid];
-        int cmp = midVal.key - ident;
+        int cmp = Integer.compareUnsigned(midVal.key, ident);
 
         if (cmp < 0) {
           low = mid + 1;
@@ -526,7 +526,7 @@ public class AttributeResolution10 {
 
       // Try to find a value for this attribute...
       // Skip through XML attributes until the end or the next possible match.
-      while (ix < xml_attr_count && cur_ident > cur_xml_attr) {
+      while (ix < xml_attr_count && Integer.compareUnsigned(cur_ident, cur_xml_attr) > 0) {
         ix++;
         cur_xml_attr = xml_parser.getAttributeNameResID(ix);
       }

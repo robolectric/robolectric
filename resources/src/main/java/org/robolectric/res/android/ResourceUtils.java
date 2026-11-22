@@ -42,7 +42,9 @@ class ResourceUtils {
   static int make_resid(byte package_id, byte type_id, short entry_id) {
     //    return (static_cast<int>(package_id) << 24) | (static_cast<int>(type_id) << 16) |
     //        entry_id;
-    return package_id << 24 | type_id << 16 | entry_id;
+    return (Byte.toUnsignedInt(package_id) << 24)
+        | (Byte.toUnsignedInt(type_id) << 16)
+        | Short.toUnsignedInt(entry_id);
   }
 
   //   bool ExtractResourceName(const StringPiece& str, StringPiece* out_package, StringPiece*

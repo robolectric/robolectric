@@ -340,7 +340,7 @@ public class CppAssetManager2 {
 
           package_groups_.add(newPackageGroup);
         }
-        PackageGroup package_group = package_groups_.get(idx);
+        PackageGroup package_group = package_groups_.get(Byte.toUnsignedInt(idx));
 
         // Add the package and to the set of packages with the same ID.
         // package_group->packages_.push_back(ConfiguredPackage{package.get(), {}});
@@ -423,11 +423,11 @@ public class CppAssetManager2 {
   // This may be nullptr if the APK represented by `cookie` has no resource table.
   //  final DynamicRefTable GetDynamicRefTableForPackage(int package_id) const;
   final DynamicRefTable GetDynamicRefTableForPackage(int package_id) {
-    if (package_id >= package_ids_.length) {
+    if (package_id < 0 || package_id >= package_ids_.length) {
       return null;
     }
 
-    final int idx = package_ids_[package_id];
+    final int idx = Byte.toUnsignedInt(package_ids_[package_id]);
     if (idx == 0xff) {
       return null;
     }
@@ -668,7 +668,7 @@ public class CppAssetManager2 {
       return K_INVALID_COOKIE;
     }
 
-    final PackageGroup package_group = package_groups_.get(package_idx);
+    final PackageGroup package_group = package_groups_.get(Byte.toUnsignedInt(package_idx));
     final int package_count = package_group.packages_.size();
 
     ApkAssetsCookie best_cookie = K_INVALID_COOKIE;
@@ -1223,7 +1223,8 @@ public class CppAssetManager2 {
         parent_entry = new Entry();
       }
 
-      if (child_key <= parent_entry.key) {
+      int keyCmp = Integer.compareUnsigned(child_key, parent_entry.key);
+      if (keyCmp <= 0) {
         // Use the child key if it comes before the parent
         // or is equal to the parent (overrides).
         Entry newEntry = new_entry[newEntryIndex] = new Entry(map_entry.value);
@@ -1250,7 +1251,7 @@ public class CppAssetManager2 {
         new_entry[newEntryIndex] = parent_entry.copy();
       }
 
-      if (child_key >= parent_entry.key) {
+      if (keyCmp >= 0) {
         // Move to the next parent entry if we used it or it was overridden.
         // ++parent_entry;
         ++parentEntryIndex;

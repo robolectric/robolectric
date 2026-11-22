@@ -636,7 +636,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
       // env.CallVoidMethod(sparse_array, gSparseArrayOffsets.put, (int) (package_id),
       //     jpackage_name);
-      sparse_array.put(package_id, jpackage_name);
+      sparse_array.put(Byte.toUnsignedInt(package_id), jpackage_name);
     });
     return sparse_array;
   }
