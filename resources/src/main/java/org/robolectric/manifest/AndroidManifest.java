@@ -44,6 +44,7 @@ public class AndroidManifest implements UsesSdk {
   private final String overridePackageName;
   private final List<AndroidManifest> libraryManifests;
   private final Path apkFile;
+  private final List<Path> splitApkFiles;
 
   private boolean manifestIsParsed;
 
@@ -133,6 +134,31 @@ public class AndroidManifest implements UsesSdk {
       @Nonnull List<AndroidManifest> libraryManifests,
       String overridePackageName,
       Path apkFile) {
+    this(
+        androidManifestFile,
+        resDirectory,
+        assetsDirectory,
+        libraryManifests,
+        overridePackageName,
+        apkFile,
+        Collections.emptyList());
+  }
+
+  /**
+   * Creates a Robolectric configuration using specified values.
+   *
+   * @param apkFile Location of the app's resources APK.
+   * @param splitApkFiles Locations of the resources APKs of splits installed with the app, such as
+   *     the dynamic feature module under test.
+   */
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
+      @Nonnull List<AndroidManifest> libraryManifests,
+      String overridePackageName,
+      Path apkFile,
+      @Nonnull List<Path> splitApkFiles) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
@@ -141,6 +167,7 @@ public class AndroidManifest implements UsesSdk {
 
     this.packageName = overridePackageName;
     this.apkFile = apkFile;
+    this.splitApkFiles = splitApkFiles;
   }
 
   public String getThemeRef(String activityClassName) {
@@ -783,7 +810,10 @@ public class AndroidManifest implements UsesSdk {
     if (!Objects.equals(libraryManifests, that.libraryManifests)) {
       return false;
     }
-    return Objects.equals(apkFile, that.apkFile);
+    if (!Objects.equals(apkFile, that.apkFile)) {
+      return false;
+    }
+    return splitApkFiles.equals(that.splitApkFiles);
   }
 
   @Override
@@ -794,6 +824,7 @@ public class AndroidManifest implements UsesSdk {
     result = 31 * result + (overridePackageName != null ? overridePackageName.hashCode() : 0);
     result = 31 * result + (libraryManifests != null ? libraryManifests.hashCode() : 0);
     result = 31 * result + (apkFile != null ? apkFile.hashCode() : 0);
+    result = 31 * result + splitApkFiles.hashCode();
     return result;
   }
 
@@ -845,5 +876,11 @@ public class AndroidManifest implements UsesSdk {
 
   public Path getApkFile() {
     return apkFile;
+  }
+
+  /** Returns the resources APKs of splits installed with the app. */
+  @Nonnull
+  public List<Path> getSplitApkFiles() {
+    return splitApkFiles;
   }
 }

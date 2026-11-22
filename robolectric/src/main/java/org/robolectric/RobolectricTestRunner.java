@@ -460,7 +460,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         manifestIdentifier.getAssetDir(),
         libraryManifests,
         manifestIdentifier.getPackageName(),
-        manifestIdentifier.getApkFile());
+        manifestIdentifier.getApkFile(),
+        manifestIdentifier.getSplitApkFiles());
   }
 
   /** Calculate the configuration for a given test method. */

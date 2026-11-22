@@ -19,6 +19,7 @@ plugins {
   // consistent versioning and compatibility across subprojects.
   alias(libs.plugins.android.application) apply false
   alias(libs.plugins.android.library) apply false
+  alias(libs.plugins.android.dynamic.feature) apply false
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.error.prone)
   alias(libs.plugins.idea)
