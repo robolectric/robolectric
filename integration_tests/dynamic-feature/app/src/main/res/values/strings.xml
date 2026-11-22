@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Dynamic feature</string>
+  <string name="feature1_title">Feature 1</string>
+  <string name="feature2_title">Feature 2</string>
+</resources>

@@ -45,6 +45,9 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -52,8 +55,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -119,6 +124,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
   private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
+
+  /** Cluster package directories for apps with splits, keyed by their base and split APKs. */
+  private static final Map<List<Path>, Path> clusterPackageDirs = new HashMap<>();
+
   // Cache the Conscrypt provider to avoid creating it multiple times across tests. It is
   // initialized lazily as some platforms may not support it.
   private static final AtomicReference<OpenSSLProvider> cachedConscryptProvider =
@@ -510,7 +519,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.setCompileTimeSystemResources(compileSdk::getJarPath);
 
     Path packageFile = appManifest.getApkFile();
-    if (packageFile != null) {
+    if (packageFile != null && !appManifest.getSplitApkFiles().isEmpty()) {
+      parsedPackage =
+          ShadowPackageParser.callParsePackage(
+              getClusterPackageDir(packageFile, appManifest.getSplitApkFiles()));
+    } else if (packageFile != null) {
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
     } else {
       parsedPackage = new Package("org.robolectric.default");
@@ -522,6 +535,36 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
     }
     return parsedPackage;
+  }
+
+  /**
+   * Returns a directory laid out like an installed package with splits, which is what the framework
+   * parses to load a base APK together with its splits.
+   */
+  private static synchronized Path getClusterPackageDir(Path baseApk, List<Path> splitApks) {
+    List<Path> apks = new ArrayList<>();
+    apks.add(baseApk);
+    apks.addAll(splitApks);
+    return clusterPackageDirs.computeIfAbsent(
+        apks,
+        unused -> {
+          try {
+            Path dir = Files.createTempDirectory("robolectric-app-");
+            dir.toFile().deleteOnExit();
+            List<Path> targets = new ArrayList<>();
+            targets.add(dir.resolve("base.apk"));
+            for (int i = 0; i < splitApks.size(); i++) {
+              targets.add(dir.resolve("split_" + i + ".apk"));
+            }
+            for (int i = 0; i < apks.size(); i++) {
+              Files.copy(apks.get(i), targets.get(i));
+              targets.get(i).toFile().deleteOnExit();
+            }
+            return dir;
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+        });
   }
 
   @VisibleForTesting
@@ -751,8 +794,14 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
     // "-dataDir").toAbsolutePath().toString());
 
-    applicationInfo.publicSourceDir = parsedPackage.codePath;
-    applicationInfo.sourceDir = parsedPackage.codePath;
+    applicationInfo.publicSourceDir = parsedPackage.baseCodePath;
+    applicationInfo.sourceDir = parsedPackage.baseCodePath;
+    if (parsedPackage.splitNames != null) {
+      // PackageManagerService does this when it installs a package with splits.
+      applicationInfo.splitNames = parsedPackage.splitNames;
+      applicationInfo.splitSourceDirs = parsedPackage.splitCodePaths;
+      applicationInfo.splitPublicSourceDirs = parsedPackage.splitCodePaths;
+    }
 
     applicationInfo.dataDir = createTempDir(applicationInfo.packageName + "-dataDir");
 

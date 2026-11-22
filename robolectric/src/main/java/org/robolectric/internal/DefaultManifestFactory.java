@@ -1,9 +1,11 @@
 package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
@@ -22,6 +24,16 @@ public class DefaultManifestFactory implements ManifestFactory {
     Path manifestFile = getFileFromProperty("android_merged_manifest");
     Path apkFile = getFileFromProperty("android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
+    List<Path> splitApkFiles = emptyList();
+
+    // A dynamic feature module's resources APK is a split of the base app, so the base app is the
+    // app under test and the feature is installed with it as a split.
+    Path baseApkFile = getFileFromProperty("android_base_resource_apk");
+    if (baseApkFile != null && apkFile != null) {
+      splitApkFiles = singletonList(apkFile);
+      apkFile = baseApkFile;
+      manifestFile = getFileFromProperty("android_base_merged_manifest");
+    }
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
@@ -31,7 +43,8 @@ public class DefaultManifestFactory implements ManifestFactory {
       manifestFile = getResource(manifestConfig);
     }
 
-    return new ManifestIdentifier(packageName, manifestFile, null, null, emptyList(), apkFile);
+    return new ManifestIdentifier(
+        packageName, manifestFile, null, null, emptyList(), apkFile, splitApkFiles);
   }
 
   private Path getResource(String pathStr) {

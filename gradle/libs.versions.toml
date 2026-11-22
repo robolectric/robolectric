@@ -288,6 +288,7 @@ powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermoc
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle" }
 android-library = { id = "com.android.library", version.ref = "android-gradle" }
+android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "android-gradle" }
 android-legacy-kapt = { id = "com.android.legacy-kapt", version.ref = "android-gradle" }
 application = { id = "application" }
 detekt = { id = "dev.detekt", version.ref = "detekt-gradle" }
