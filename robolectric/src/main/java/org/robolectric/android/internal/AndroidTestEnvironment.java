@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -798,7 +799,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     applicationInfo.sourceDir = parsedPackage.baseCodePath;
     if (parsedPackage.splitNames != null) {
       // PackageManagerService does this when it installs a package with splits.
-      applicationInfo.splitNames = parsedPackage.splitNames;
+      if (RuntimeEnvironment.getApiLevel() >= O) {
+        applicationInfo.splitNames = parsedPackage.splitNames;
+      }
       applicationInfo.splitSourceDirs = parsedPackage.splitCodePaths;
       applicationInfo.splitPublicSourceDirs = parsedPackage.splitCodePaths;
     }
