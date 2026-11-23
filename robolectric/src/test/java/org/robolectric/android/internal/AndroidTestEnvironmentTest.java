@@ -190,6 +190,13 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
+  public void setUpApplicationState_installsBouncyCastleProvider() {
+    bootstrapWrapper.callSetUpApplicationState();
+    assertThat(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME))
+        .isInstanceOf(BouncyCastleProvider.class);
+  }
+
+  @Test
   @ConscryptMode(OFF)
   public void testWhenConscryptModeOff_ConscryptNotInstalled()
       throws CertificateException, NoSuchAlgorithmException {

@@ -45,7 +45,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Uninterruptibles;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -60,6 +62,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -124,7 +128,16 @@ import org.robolectric.util.reflector.Static;
 public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
-  private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
+
+  /**
+   * Constructing Bouncy Castle's provider registers its two thousand or so services, which takes
+   * around 80 ms in a fresh JVM. It is started on a background thread as soon as this class is
+   * initialized, so that it overlaps the rest of the sandbox's setup, such as loading the native
+   * runtime and Conscrypt, rather than adding to it. {@link #bouncyCastleProvider()} returns it
+   * once it is done.
+   */
+  private static final FutureTask<BouncyCastleProvider> BOUNCY_CASTLE_PROVIDER =
+      startBouncyCastleProvider();
 
   /** Cluster package directories for apps with splits, keyed by their base and split APKs. */
   private static final Map<List<Path>, Path> clusterPackageDirs = new HashMap<>();
@@ -245,9 +258,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (conscryptMode != ConscryptMode.Mode.OFF) {
       // Like Android, use Bouncy Castle for what Conscrypt does not implement, not the JDK's
       // providers, which can behave differently, e.g. SunJCE only allows 8-byte PBE salts.
-      Security.insertProviderAt(BOUNCY_CASTLE_PROVIDER, 2);
+      Security.insertProviderAt(bouncyCastleProvider(), 2);
     } else {
-      Security.addProvider(BOUNCY_CASTLE_PROVIDER);
+      Security.addProvider(bouncyCastleProvider());
     }
 
     android.content.res.Configuration androidConfiguration =
@@ -301,6 +314,27 @@ public class AndroidTestEnvironment implements TestEnvironment {
     } else {
       // force eager load of the application
       RuntimeEnvironment.getApplication();
+    }
+  }
+
+  private static FutureTask<BouncyCastleProvider> startBouncyCastleProvider() {
+    FutureTask<BouncyCastleProvider> task = new FutureTask<>(BouncyCastleProvider::new);
+    Thread thread = new Thread(task, "Robolectric BouncyCastleProvider initializer");
+    thread.setDaemon(true);
+    thread.start();
+    return task;
+  }
+
+  /** Returns the Bouncy Castle provider, waiting for its construction to finish if need be. */
+  private static BouncyCastleProvider bouncyCastleProvider() {
+    // Constructs it on this thread if the background thread has not started on it yet, and does
+    // nothing otherwise.
+    BOUNCY_CASTLE_PROVIDER.run();
+    try {
+      return Uninterruptibles.getUninterruptibly(BOUNCY_CASTLE_PROVIDER);
+    } catch (ExecutionException e) {
+      Throwables.throwIfUnchecked(e.getCause());
+      throw new IllegalStateException("Unable to create the Bouncy Castle provider", e.getCause());
     }
   }
 
