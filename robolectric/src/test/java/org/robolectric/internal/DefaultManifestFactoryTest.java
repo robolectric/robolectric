@@ -43,12 +43,11 @@ public class DefaultManifestFactoryTest {
   }
 
   @Test
-  public void identify_withBaseResourceApk_installsResourceApkAsSplit() {
+  public void identify_withSingleSplitResourceApk() {
     Properties properties = new Properties();
-    properties.put("android_merged_manifest", "feature/AndroidManifest.xml");
-    properties.put("android_resource_apk", "feature/resources.ap_");
-    properties.put("android_base_merged_manifest", "base/AndroidManifest.xml");
-    properties.put("android_base_resource_apk", "base/resources.ap_");
+    properties.put("android_merged_manifest", "base/AndroidManifest.xml");
+    properties.put("android_resource_apk", "base/resources.ap_");
+    properties.put("android_split_resource_apks", "feature/resources.ap_");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
@@ -56,6 +55,23 @@ public class DefaultManifestFactoryTest {
     assertThat(manifest.getAndroidManifestFile()).isEqualTo(Paths.get("base/AndroidManifest.xml"));
     assertThat(manifest.getApkFile()).isEqualTo(Paths.get("base/resources.ap_"));
     assertThat(manifest.getSplitApkFiles()).containsExactly(Paths.get("feature/resources.ap_"));
+  }
+
+  @Test
+  public void identify_withSplitResourceApks_installsMultipleSplits() {
+    Properties properties = new Properties();
+    properties.put("android_merged_manifest", "base/AndroidManifest.xml");
+    properties.put("android_resource_apk", "base/resources.ap_");
+    properties.put("android_split_resource_apks", "feature1/resources.ap_, feature2/resources.ap_");
+    DefaultManifestFactory factory = new DefaultManifestFactory(properties);
+    ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().build());
+    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
+
+    assertThat(manifest.getAndroidManifestFile()).isEqualTo(Paths.get("base/AndroidManifest.xml"));
+    assertThat(manifest.getApkFile()).isEqualTo(Paths.get("base/resources.ap_"));
+    assertThat(manifest.getSplitApkFiles())
+        .containsExactly(Paths.get("feature1/resources.ap_"), Paths.get("feature2/resources.ap_"))
+        .inOrder();
   }
 
   @Test

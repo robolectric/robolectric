@@ -1,3 +1,5 @@
+import org.robolectric.gradle.AndroidSdk
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.robolectric.spotless)
@@ -26,4 +28,18 @@ android {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
+
+  testOptions {
+    unitTests.isIncludeAndroidResources = true
+  }
 }
+
+dependencies {
+  testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
+  testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)
+  testImplementation(project(":robolectric"))
+  testImplementation(libs.junit4)
+  testImplementation(libs.truth)
+}
+
+apply(from = "../split-apks-test-config.gradle.kts")

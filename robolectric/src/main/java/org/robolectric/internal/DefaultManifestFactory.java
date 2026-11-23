@@ -1,8 +1,9 @@
 package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,16 +25,7 @@ public class DefaultManifestFactory implements ManifestFactory {
     Path manifestFile = getFileFromProperty("android_merged_manifest");
     Path apkFile = getFileFromProperty("android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
-    List<Path> splitApkFiles = emptyList();
-
-    // A dynamic feature module's resources APK is a split of the base app, so the base app is the
-    // app under test and the feature is installed with it as a split.
-    Path baseApkFile = getFileFromProperty("android_base_resource_apk");
-    if (baseApkFile != null && apkFile != null) {
-      splitApkFiles = singletonList(apkFile);
-      apkFile = baseApkFile;
-      manifestFile = getFileFromProperty("android_base_merged_manifest");
-    }
+    List<Path> splitApkFiles = getFilesFromProperty("android_split_resource_apks");
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
@@ -63,5 +55,18 @@ public class DefaultManifestFactory implements ManifestFactory {
     }
 
     return Fs.fromUrl(path);
+  }
+
+  private ImmutableList<Path> getFilesFromProperty(String propertyName) {
+    String paths = properties.getProperty(propertyName);
+    if (paths == null || paths.isEmpty()) {
+      return ImmutableList.of();
+    }
+
+    ImmutableList.Builder<Path> result = ImmutableList.builder();
+    for (String entry : Splitter.on(',').trimResults().omitEmptyStrings().split(paths)) {
+      result.add(Fs.fromUrl(entry));
+    }
+    return result.build();
   }
 }
