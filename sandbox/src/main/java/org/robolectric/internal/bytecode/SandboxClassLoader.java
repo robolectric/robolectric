@@ -3,6 +3,7 @@ package org.robolectric.internal.bytecode;
 import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
 import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import org.robolectric.internal.ClassTracker;
 import org.robolectric.util.Logger;
@@ -103,17 +105,49 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
     if (classloader instanceof URLClassLoader) {
       urls = ((URLClassLoader) classloader).getURLs();
     } else {
-      urls = parseJavaClassPath();
+      urls = parsedJavaClassPath();
     }
     PerfStatsCollector.getInstance()
         .recordCount("SandboxClassLoader.getClassPathUrls", urls.length);
     return urls;
   }
 
+  /**
+   * The last {@code java.class.path} value parsed, and its URLs.
+   *
+   * <p>Parsing a class path entry stats the file (to tell a directory from a jar), so parsing a
+   * class path of a few thousand entries costs milliseconds, and it used to be repeated for every
+   * sandbox. The property does not normally change, but it is re-read every time and the cache only
+   * answers for the value it was computed from.
+   */
+  private static final AtomicReference<ParsedClassPath> parsedClassPath = new AtomicReference<>();
+
+  private static final class ParsedClassPath {
+    final String classPath;
+    final URL[] urls;
+
+    ParsedClassPath(String classPath, URL[] urls) {
+      this.classPath = classPath;
+      this.urls = urls;
+    }
+  }
+
+  @VisibleForTesting
+  static URL[] parsedJavaClassPath() {
+    String classPath = JAVA_CLASS_PATH.value();
+    ParsedClassPath cached = parsedClassPath.get();
+    if (cached == null || !cached.classPath.equals(classPath)) {
+      cached = new ParsedClassPath(classPath, parseJavaClassPath(classPath));
+      parsedClassPath.set(cached);
+    }
+    // URLClassLoader copies the array, but hand out a copy so that no caller can alter the cache.
+    return cached.urls.clone();
+  }
+
   // TODO(https://github.com/google/guava/issues/2956): Use a public API once one is available.
-  private static URL[] parseJavaClassPath() {
+  private static URL[] parseJavaClassPath(String classPath) {
     ImmutableList.Builder<URL> urls = ImmutableList.builder();
-    for (String entry : Splitter.on(PATH_SEPARATOR.value()).split(JAVA_CLASS_PATH.value())) {
+    for (String entry : Splitter.on(PATH_SEPARATOR.value()).split(classPath)) {
       try {
         try {
           urls.add(new File(entry).toURI().toURL());
