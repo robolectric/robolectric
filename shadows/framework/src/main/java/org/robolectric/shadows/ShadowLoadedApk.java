@@ -9,6 +9,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,6 +26,7 @@ public class ShadowLoadedApk {
   @RealObject private LoadedApk realLoadedApk;
   private boolean isClassLoaderInitialized = false;
   private final Object classLoaderLock = new Object();
+  private final Map<String, ClassLoader> splitClassLoaders = new HashMap<>();
 
   @Implementation
   public ClassLoader getClassLoader() {
@@ -38,7 +44,23 @@ public class ShadowLoadedApk {
 
   @Implementation(minSdk = VERSION_CODES.O)
   public ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
-    return this.getClass().getClassLoader();
+    if (splitName == null) {
+      return getClassLoader();
+    }
+    ApplicationInfo appInfo = realLoadedApk.getApplicationInfo();
+    if (appInfo != null && appInfo.splitNames != null && appInfo.splitNames.length > 0) {
+      if (!Arrays.asList(appInfo.splitNames).contains(splitName)) {
+        throw new NameNotFoundException("Unknown split name: " + splitName);
+      }
+      if (appInfo.requestsIsolatedSplitLoading()) {
+        ClassLoader parent = getClassLoader();
+        synchronized (classLoaderLock) {
+          return splitClassLoaders.computeIfAbsent(
+              splitName, k -> new URLClassLoader(new URL[0], parent));
+        }
+      }
+    }
+    return getClassLoader();
   }
 
   private void tryInitAppComponentFactory(LoadedApk realLoadedApk) {
@@ -85,5 +107,7 @@ public class ShadowLoadedApk {
 
     @Accessor("mAppComponentFactory")
     void setAppFactory(Object appFactory);
+
+    ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException;
   }
 }

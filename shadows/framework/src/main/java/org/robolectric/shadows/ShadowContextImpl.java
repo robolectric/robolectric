@@ -121,6 +121,13 @@ public class ShadowContextImpl {
 
   @Implementation
   protected ClassLoader getClassLoader() {
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      ClassLoader classLoader =
+          reflector(ContextImplReflector.class, realContextImpl).getClassLoader();
+      if (classLoader != null) {
+        return classLoader;
+      }
+    }
     return this.getClass().getClassLoader();
   }
 
@@ -613,6 +620,12 @@ public class ShadowContextImpl {
     FileOutputStream openFileOutput(String name, int mode) throws FileNotFoundException;
 
     @Accessor("mClassLoader")
+    ClassLoader getClassLoader();
+
+    @Accessor("mClassLoader")
     void setClassLoader(ClassLoader classLoader);
+
+    @Accessor("mPackageInfo")
+    LoadedApk getPackageInfo();
   }
 }
