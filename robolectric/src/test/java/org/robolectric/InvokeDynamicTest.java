@@ -57,6 +57,35 @@ public class InvokeDynamicTest {
     assertThat(real.x).isEqualTo(2);
   }
 
+  @Test
+  @Config(shadows = {RealShadow1.class})
+  public void rebindCompiledCallSiteShadow1() {
+    assertThat(setXRepeatedly()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(shadows = {RealShadow2.class})
+  public void rebindCompiledCallSiteShadow2() {
+    assertThat(setXRepeatedly()).isEqualTo(2);
+  }
+
+  @Test
+  public void rebindCompiledCallSiteNoShadow() {
+    assertThat(setXRepeatedly()).isEqualTo(0);
+  }
+
+  /**
+   * Calls {@link RealCopy#setX} often enough for the JIT compiler to compile its call site, which
+   * the tests that share this method then bind to different shadows.
+   */
+  private static int setXRepeatedly() {
+    RealCopy real = new RealCopy();
+    for (int i = 0; i < 20_000; i++) {
+      real.setX(42);
+    }
+    return real.x;
+  }
+
   @Instrument
   public static class Real {
     public int x = -1;

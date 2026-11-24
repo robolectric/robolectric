@@ -22,7 +22,6 @@ import static org.robolectric.util.ReflectionHelpers.setStaticField;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -40,7 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Mockito;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AChild;
 import org.robolectric.testing.AClassThatCallsAMethodReturningAForgettableClass;
@@ -700,8 +698,7 @@ public class SandboxClassLoaderTest {
         "SHADOW_IMPL",
         newInstance(classLoader.loadClass(ShadowImpl.class.getName())));
 
-    ShadowInvalidator invalidator = Mockito.mock(ShadowInvalidator.class);
-    when(invalidator.getSwitchPoint(any(Class.class))).thenReturn(new SwitchPoint());
+    ShadowInvalidator invalidator = new ShadowInvalidator();
 
     String className = RobolectricInternals.class.getName();
     Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(classLoader, className);
