@@ -62,7 +62,7 @@ public class SandboxServiceResourcesTest {
           .containsExactlyElementsIn(remaining)
           .inOrder();
       URL secondUrl = secondDirectory.resolve(SERVICE_RESOURCE).toUri().toURL();
-      assertThat(repeated).containsExactly(firstUrl, secondUrl, firstUrl, secondUrl).inOrder();
+      assertThat(repeated).containsExactly(firstUrl, secondUrl).inOrder();
       assertThat(parent.serviceLookups).isEqualTo(1);
     }
   }
@@ -175,10 +175,13 @@ public class SandboxServiceResourcesTest {
     writeResource(directory, SERVICE_RESOURCE, FirstProvider.class.getName());
     try (CountingClassLoader parent = parent(directory)) {
       SandboxClassLoader loader = sandbox(parent);
-      // The inherited lookup visits this directory through both its parent and its own URLs.
-      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(2);
-      loader.close();
       assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(1);
+      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(1);
+      assertThat(parent.serviceLookups).isEqualTo(1);
+      loader.close();
+      // A closed sandbox no longer answers from its cache.
+      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(1);
+      assertThat(parent.serviceLookups).isEqualTo(2);
     }
   }
 
@@ -203,9 +206,11 @@ public class SandboxServiceResourcesTest {
               InstrumentationConfiguration.newBuilder().build(),
               resourceProvider,
               new ClassInstrumentor(new ShadowDecorator()));
-      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(2);
+      assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(1);
+      assertThat(parent.serviceLookups).isEqualTo(1);
       assertThat(assertThrows(IOException.class, loader::close)).isSameInstanceAs(failure);
       assertThat(Collections.list(loader.getResources(SERVICE_RESOURCE))).hasSize(1);
+      assertThat(parent.serviceLookups).isEqualTo(2);
     }
   }
 
