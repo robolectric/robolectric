@@ -16,7 +16,6 @@ import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
 import java.lang.invoke.WrongMethodTypeException;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -211,12 +210,13 @@ public class InvokeDynamicSupport {
 
   private static MethodHandle bindWithFallback(
       RoboCallSite site, MethodHandle mh, MethodHandle fallback) {
-    SwitchPoint switchPoint = getInvalidator(site.getTheClass());
     MethodType type = site.type();
 
-    MethodHandle boundFallback = foldArguments(exactInvoker(type), fallback.bindTo(site));
+    // Called by the site once its class is invalidated: binds the site again, then calls the new
+    // target.
+    MethodHandle rebind = foldArguments(exactInvoker(type), fallback.bindTo(site));
     try {
-      mh = switchPoint.guardWithTest(mh.asType(type), boundFallback);
+      mh = mh.asType(type);
     } catch (WrongMethodTypeException e) {
       if (site instanceof MethodCallSite) {
         MethodCallSite methodCallSite = (MethodCallSite) site;
@@ -227,12 +227,11 @@ public class InvokeDynamicSupport {
       }
     }
 
-    site.setTarget(mh);
+    // The site calls its target directly. A guard in front of the target would be a second method
+    // handle invocation on every call that the JIT compiler has not inlined.
+    RobolectricInternals.getShadowInvalidator()
+        .bind(site.getTheClass().getName(), site, mh, rebind);
     return mh;
-  }
-
-  private static SwitchPoint getInvalidator(Class<?> cl) {
-    return RobolectricInternals.getShadowInvalidator().getSwitchPoint(cl);
   }
 
   private static MethodHandle cleanStackTraces(MethodHandle mh) {
