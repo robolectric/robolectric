@@ -1,17 +1,8 @@
 package org.robolectric.internal.bytecode;
 
-import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
-import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
-
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -27,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.robolectric.internal.ClassTracker;
-import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -81,7 +71,11 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
       InstrumentationConfiguration config,
       ResourceProvider resourceProvider,
       ClassInstrumentor classInstrumentor) {
-    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader);
+    // No URLs of its own: the parent already searches the class path, so the sandbox reads the
+    // bytes of the classes it acquires through the parent and defines them itself. Listing the same
+    // jars here would search the class path a second time on every miss and reopen every jar for
+    // each new sandbox.
+    super(new URL[0], erstwhileClassLoader);
 
     this.config = config;
     this.resourceProvider = resourceProvider;
@@ -96,35 +90,6 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
           }
         };
     this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
-  }
-
-  private static URL[] getClassPathUrls(ClassLoader classloader) {
-    URL[] urls = null;
-    if (classloader instanceof URLClassLoader) {
-      urls = ((URLClassLoader) classloader).getURLs();
-    } else {
-      urls = parseJavaClassPath();
-    }
-    PerfStatsCollector.getInstance()
-        .recordCount("SandboxClassLoader.getClassPathUrls", urls.length);
-    return urls;
-  }
-
-  // TODO(https://github.com/google/guava/issues/2956): Use a public API once one is available.
-  private static URL[] parseJavaClassPath() {
-    ImmutableList.Builder<URL> urls = ImmutableList.builder();
-    for (String entry : Splitter.on(PATH_SEPARATOR.value()).split(JAVA_CLASS_PATH.value())) {
-      try {
-        try {
-          urls.add(new File(entry).toURI().toURL());
-        } catch (SecurityException e) { // File.toURI checks to see if the file is a directory
-          urls.add(new URI("file", null, new File(entry).getAbsolutePath()).toURL());
-        }
-      } catch (MalformedURLException | URISyntaxException e) {
-        Logger.strict("malformed classpath entry: " + entry, e);
-      }
-    }
-    return urls.build().toArray(new URL[0]);
   }
 
   @Override
