@@ -1,5 +1,7 @@
 package org.robolectric.internal.bytecode;
 
+import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
+
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +35,19 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
 
   private static final AtomicInteger DUMP_CLASSES_COUNTER = new AtomicInteger();
 
+  // A lookup takes time in proportion to the length of the class path, so a short class path is
+  // left to the class loader and none of its jars are opened a second time.
+  private static final int MINIMUM_INDEXED_CLASSPATH_ENTRIES = 300;
+
+  private static final IndexedSystemClasspath SYSTEM_CLASSPATH =
+      new IndexedSystemClasspath(
+          JAVA_CLASS_PATH.value(),
+          MINIMUM_INDEXED_CLASSPATH_ENTRIES,
+          urls ->
+              PerfStatsCollector.getInstance()
+                  .measure("index system classpath", () -> ClasspathIndex.create(urls)),
+          IndexedSystemClasspath.daemonThread());
+
   private final InstrumentationConfiguration config;
   private final ResourceProvider resourceProvider;
   private final ClassInstrumentor classInstrumentor;
@@ -47,6 +62,8 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   // Names that isClassLoaded found loaded. A class stays loaded for the life of its loader, and
   // Shadows.reset asks about the same classes after every test.
   private final Set<String> loadedClassNames = ConcurrentHashMap.newKeySet();
+  // Whether the parent searches java.class.path, which is what SYSTEM_CLASSPATH describes.
+  private final boolean parentIsSystemClassLoader;
   private boolean isClosed;
 
   /** Constructor for use by tests. */
@@ -90,6 +107,13 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
           }
         };
     this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
+    // Only the JDK's own system class loader is known to search java.class.path.
+    this.parentIsSystemClassLoader =
+        erstwhileClassLoader == ClassLoader.getSystemClassLoader()
+            && System.getProperty("java.system.class.loader") == null;
+    if (parentIsSystemClassLoader) {
+      SYSTEM_CLASSPATH.startIndexing();
+    }
   }
 
   @Override
@@ -170,6 +194,12 @@ public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
     InputStream fromAlternateClassLoader = getClassBytesFromAlternateClassLoader(resName);
     if (fromAlternateClassLoader != null) {
       return fromAlternateClassLoader;
+    }
+    if (parentIsSystemClassLoader) {
+      InputStream fromSystemClasspath = SYSTEM_CLASSPATH.getResourceAsStream(resName);
+      if (fromSystemClasspath != null) {
+        return fromSystemClasspath;
+      }
     }
     return super.getResourceAsStream(resName);
   }
