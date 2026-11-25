@@ -115,6 +115,8 @@ public abstract class ShadowAssetManager {
     @Accessor("mObject")
     long getObject();
 
+    int addAssetPath(String path);
+
     void ensureValidLocked();
 
     @Direct

@@ -96,5 +96,14 @@ public class ShadowLoadedApk {
 
     @Accessor("mAppComponentFactory")
     void setAppFactory(Object appFactory);
+
+    @Accessor("mSplitNames")
+    void setSplitNames(String[] splitNames);
+
+    @Accessor("mSplitAppDirs")
+    void setSplitAppDirs(String[] splitAppDirs);
+
+    @Accessor("mSplitResDirs")
+    void setSplitResDirs(String[] splitResDirs);
   }
 }

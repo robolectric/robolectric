@@ -28,6 +28,7 @@ import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Arrays.asList;
@@ -39,6 +40,7 @@ import android.Manifest.permission;
 import android.Manifest.permission_group;
 import android.annotation.UserIdInt;
 import android.app.Application;
+import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -87,6 +89,8 @@ import com.google.common.collect.Multimap;
 import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -111,6 +115,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadows.ShadowAssetManager.AssetManagerReflector;
+import org.robolectric.shadows.ShadowContextImpl.ContextImplReflector;
+import org.robolectric.shadows.ShadowLoadedApk.LoadedApkReflector;
 import org.robolectric.shadows.ShadowPackageParser.PackageParserReflector;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -910,6 +917,16 @@ public class ShadowPackageManager {
       appInfo.targetSdkVersion = RuntimeEnvironment.getApiLevel();
     }
     appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      if (packageInfo.splitNames != null && appInfo.splitNames == null) {
+        appInfo.splitNames = packageInfo.splitNames.clone();
+      } else if (appInfo.splitNames != null && packageInfo.splitNames == null) {
+        packageInfo.splitNames = appInfo.splitNames.clone();
+      }
+    }
+    if (appInfo.splitSourceDirs != null && appInfo.splitPublicSourceDirs == null) {
+      appInfo.splitPublicSourceDirs = appInfo.splitSourceDirs.clone();
+    }
     ComponentInfo[][] componentInfoArrays =
         new ComponentInfo[][] {
           packageInfo.activities,
@@ -957,6 +974,157 @@ public class ShadowPackageManager {
     populatePackageInfoWithDefaults(packageInfo);
     // After adding defaults to packageInfo, we can call method that doesn't validate/add defaults.
     addPackageNoDefaults(packageInfo);
+  }
+
+  /**
+   * Adds or updates a split APK on an already-installed package, simulating runtime split delivery
+   * (such as Play Feature Delivery).
+   *
+   * <p>Updates {@link PackageInfo#splitNames}, {@link ApplicationInfo#splitNames} (on API 26+), and
+   * when {@code splitApkPath} is non-null, {@link ApplicationInfo#splitSourceDirs} and {@link
+   * ApplicationInfo#splitPublicSourceDirs}. Existing package components are preserved.
+   *
+   * <p>When called for the application under test, also updates the application's {@link
+   * ApplicationInfo}, {@link LoadedApk} split paths, and {@link android.content.res.AssetManager}
+   * so split metadata, resources, and assets are immediately visible through the app's {@link
+   * android.content.Context}.
+   *
+   * @param packageName the package name of an already-installed package
+   * @param splitName the name of the split (e.g., {@code "feature1"})
+   * @param splitApkPath optional path to the split APK file containing resources or assets
+   * @throws IllegalArgumentException if {@code packageName} is not installed
+   */
+  public void addSplit(String packageName, String splitName, @Nullable String splitApkPath) {
+    Objects.requireNonNull(packageName, "packageName");
+    Objects.requireNonNull(splitName, "splitName");
+
+    ApplicationInfo updatedAppInfo;
+    synchronized (lock) {
+      PackageInfo packageInfo = packageInfos.get(packageName);
+      if (packageInfo == null) {
+        throw new IllegalArgumentException("Package not installed: " + packageName);
+      }
+      ApplicationInfo appInfo = packageInfo.applicationInfo;
+      if (appInfo == null) {
+        appInfo = new ApplicationInfo();
+        appInfo.packageName = packageName;
+        packageInfo.applicationInfo = appInfo;
+      }
+
+      String[] existingNames = packageInfo.splitNames;
+      if (existingNames == null && RuntimeEnvironment.getApiLevel() >= O) {
+        existingNames = appInfo.splitNames;
+      }
+
+      int existingIndex = -1;
+      if (existingNames != null) {
+        for (int i = 0; i < existingNames.length; i++) {
+          if (splitName.equals(existingNames[i])) {
+            existingIndex = i;
+            break;
+          }
+        }
+      }
+      boolean isUpdate = existingIndex >= 0;
+
+      String[] newNames;
+      int targetIndex;
+      if (isUpdate) {
+        newNames = existingNames.clone();
+        targetIndex = existingIndex;
+      } else if (existingNames == null) {
+        newNames = new String[] {splitName};
+        targetIndex = 0;
+      } else {
+        newNames = Arrays.copyOf(existingNames, existingNames.length + 1);
+        targetIndex = existingNames.length;
+        newNames[targetIndex] = splitName;
+      }
+
+      packageInfo.splitNames = newNames;
+      if (RuntimeEnvironment.getApiLevel() >= O) {
+        appInfo.splitNames = newNames.clone();
+      }
+
+      if (splitApkPath != null) {
+        String[] newSourceDirs =
+            appInfo.splitSourceDirs == null
+                ? new String[newNames.length]
+                : Arrays.copyOf(
+                    appInfo.splitSourceDirs,
+                    Math.max(appInfo.splitSourceDirs.length, newNames.length));
+        newSourceDirs[targetIndex] = splitApkPath;
+        appInfo.splitSourceDirs = newSourceDirs;
+        appInfo.splitPublicSourceDirs = newSourceDirs.clone();
+      }
+
+      updatedAppInfo = appInfo;
+
+      Resources cachedResources = resources.get(packageName);
+      if (cachedResources != null) {
+        if (isUpdate) {
+          resources.remove(packageName);
+        } else if (splitApkPath != null && Files.isRegularFile(Path.of(splitApkPath))) {
+          reflector(AssetManagerReflector.class, cachedResources.getAssets())
+              .addAssetPath(splitApkPath);
+        }
+      }
+    }
+
+    Application app = RuntimeEnvironment.getApplication();
+    if (app != null && packageName.equals(app.getPackageName())) {
+      syncApplicationSplits(app, updatedAppInfo, splitApkPath);
+    }
+  }
+
+  private static void syncApplicationSplits(
+      Application app, ApplicationInfo updatedAppInfo, @Nullable String splitApkPath) {
+    ApplicationInfo appInfo = app.getApplicationInfo();
+    if (appInfo != null) {
+      if (RuntimeEnvironment.getApiLevel() >= O) {
+        appInfo.splitNames =
+            updatedAppInfo.splitNames != null ? updatedAppInfo.splitNames.clone() : null;
+      }
+      appInfo.splitSourceDirs =
+          updatedAppInfo.splitSourceDirs != null ? updatedAppInfo.splitSourceDirs.clone() : null;
+      appInfo.splitPublicSourceDirs =
+          updatedAppInfo.splitPublicSourceDirs != null
+              ? updatedAppInfo.splitPublicSourceDirs.clone()
+              : null;
+    }
+
+    if (app.getBaseContext() != null) {
+      LoadedApk loadedApk =
+          reflector(ContextImplReflector.class, app.getBaseContext()).getPackageInfo();
+      if (loadedApk != null) {
+        LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
+        if (RuntimeEnvironment.getApiLevel() >= O) {
+          loadedApkReflector.setSplitNames(
+              updatedAppInfo.splitNames != null ? updatedAppInfo.splitNames.clone() : null);
+        }
+        String[] splitDirs = nonNullPaths(updatedAppInfo.splitSourceDirs);
+        loadedApkReflector.setSplitAppDirs(splitDirs);
+        loadedApkReflector.setSplitResDirs(splitDirs);
+      }
+    }
+
+    if (splitApkPath != null && Files.isRegularFile(Path.of(splitApkPath))) {
+      reflector(AssetManagerReflector.class, app.getAssets()).addAssetPath(splitApkPath);
+    }
+  }
+
+  @Nullable
+  private static String[] nonNullPaths(@Nullable String[] paths) {
+    if (paths == null) {
+      return null;
+    }
+    List<String> result = new ArrayList<>(paths.length);
+    for (String path : paths) {
+      if (path != null) {
+        result.add(path);
+      }
+    }
+    return result.isEmpty() ? null : result.toArray(new String[0]);
   }
 
   /** Adds install source information for a package. */

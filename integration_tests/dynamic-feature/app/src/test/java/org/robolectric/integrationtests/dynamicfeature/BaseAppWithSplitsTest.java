@@ -2,6 +2,7 @@ package org.robolectric.integrationtests.dynamicfeature;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Application;
@@ -13,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,6 +101,31 @@ public class BaseAppWithSplitsTest {
     assertThat(loadedApkReflector.getSplitClassLoader("feature2")).isNotNull();
     assertThrows(
         NameNotFoundException.class, () -> loadedApkReflector.getSplitClassLoader("nonexistent"));
+  }
+
+  @Test
+  public void addSplit_loadsRealFeatureSplitsIncrementally() throws Exception {
+    Application app = RuntimeEnvironment.getApplication();
+    ApplicationInfo appInfo = app.getApplicationInfo();
+    Map<String, String> splitPaths = new LinkedHashMap<>();
+    for (int i = 0; i < appInfo.splitNames.length; i++) {
+      splitPaths.put(appInfo.splitNames[i], appInfo.splitSourceDirs[i]);
+    }
+
+    PackageManager pm = app.getPackageManager();
+    String pkgName = "com.example.dynamicdelivery";
+    PackageInfo basePkg = new PackageInfo();
+    basePkg.packageName = pkgName;
+    shadowOf(pm).installPackage(basePkg);
+
+    shadowOf(pm).addSplit(pkgName, "feature1", splitPaths.get("feature1"));
+    Resources res = pm.getResourcesForApplication(pkgName);
+    int feature1Id = res.getIdentifier("feature_greeting", "string", FEATURE1_PACKAGE);
+    assertThat(res.getString(feature1Id)).isEqualTo("Hello from feature 1");
+
+    shadowOf(pm).addSplit(pkgName, "feature2", splitPaths.get("feature2"));
+    int feature2Id = res.getIdentifier("feature_greeting", "string", FEATURE2_PACKAGE);
+    assertThat(res.getString(feature2Id)).isEqualTo("Hello from feature 2");
   }
 
   @ForType(className = "android.app.ContextImpl")
