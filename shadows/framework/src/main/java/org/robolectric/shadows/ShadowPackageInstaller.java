@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -373,6 +374,7 @@ public class ShadowPackageInstaller {
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
     private PersistableBundle appMetadata = new PersistableBundle();
+    private final Set<String> writtenNames = new LinkedHashSet<>();
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(
@@ -395,8 +397,17 @@ public class ShadowPackageInstaller {
 
     @Implementation
     @Nonnull
+    protected String[] getNames() throws IOException {
+      return writtenNames.toArray(new String[0]);
+    }
+
+    @Implementation
+    @Nonnull
     protected OutputStream openWrite(@Nonnull String name, long offsetBytes, long lengthBytes)
         throws IOException {
+      if (name != null && !name.isEmpty()) {
+        writtenNames.add(name);
+      }
       outputStream =
           new OutputStream() {
             @Override
