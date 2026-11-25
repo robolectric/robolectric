@@ -7,10 +7,12 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.PixelCopy;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.FrameLayout;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,6 +30,8 @@ import org.robolectric.annotation.GraphicsMode.Mode;
 @Config(minSdk = TIRAMISU)
 @GraphicsMode(Mode.NATIVE)
 public class ShadowPixelCopyTest {
+
+  private static final int TRANSLUCENT_BLUE = 0x800000FF;
 
   @Before
   public void setUp() {
@@ -75,5 +79,40 @@ public class ShadowPixelCopyTest {
 
     assertThat(result.get()).isEqualTo(PixelCopy.SUCCESS);
     assertThat(bitmap.getPixel(25, 25)).isEqualTo(Color.RED);
+  }
+
+  @Test
+  public void requestWindowWithResize_realDrawTraversals_replacesPreviousContent() {
+    Activity activity = Robolectric.buildActivity(TranslucentActivity.class).setup().get();
+    ShadowLooper.idleMainLooper();
+    View decorView = activity.getWindow().getDecorView();
+    Rect middleRows =
+        new Rect(0, decorView.getHeight() / 4, decorView.getWidth(), decorView.getHeight() * 3 / 4);
+    Bitmap bitmap = Bitmap.createBitmap(8, 6, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(Color.GREEN);
+    AtomicInteger result = new AtomicInteger(-1);
+
+    PixelCopy.request(
+        activity.getWindow(), middleRows, bitmap, result::set, new Handler(Looper.getMainLooper()));
+    ShadowLooper.idleMainLooper();
+
+    assertThat(result.get()).isEqualTo(PixelCopy.SUCCESS);
+    for (int y = 0; y < bitmap.getHeight(); y++) {
+      for (int x = 0; x < bitmap.getWidth(); x++) {
+        assertThat(bitmap.getPixel(x, y)).isEqualTo(TRANSLUCENT_BLUE);
+      }
+    }
+  }
+
+  /** Shows a translucent blue view in a window that has no background. */
+  static final class TranslucentActivity extends Activity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+      setTheme(android.R.style.Theme_Translucent_NoTitleBar);
+      super.onCreate(savedInstanceState);
+      View content = new View(this);
+      content.setBackgroundColor(TRANSLUCENT_BLUE);
+      setContentView(content);
+    }
   }
 }

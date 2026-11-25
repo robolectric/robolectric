@@ -220,12 +220,12 @@ public class ShadowPixelCopy {
           Bitmap.createBitmap(
               imageReader.getWidth(), imageReader.getHeight(), Bitmap.Config.ARGB_8888);
 
-      copyFromImageReader(imageReader, intermediateBitmap);
-      Rect dst = new Rect(0, 0, destBitmap.getWidth(), destBitmap.getHeight());
-      Canvas resizingCanvas = new Canvas(destBitmap);
-      Paint paint = new Paint();
-      resizingCanvas.drawBitmap(intermediateBitmap, srcRect, dst, paint);
-      intermediateBitmap.recycle();
+      try {
+        copyFromImageReader(imageReader, intermediateBitmap);
+        drawScreenshot(intermediateBitmap, srcRect, destBitmap);
+      } finally {
+        intermediateBitmap.recycle();
+      }
     }
   }
 
