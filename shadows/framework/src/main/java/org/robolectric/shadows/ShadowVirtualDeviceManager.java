@@ -38,6 +38,7 @@ import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.view.Display;
 import android.view.Surface;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -169,6 +170,26 @@ public class ShadowVirtualDeviceManager {
   protected boolean isValidVirtualDeviceId(int deviceId) {
     return mVirtualDevices.stream()
         .anyMatch(virtualDevice -> virtualDevice.getDeviceId() == deviceId);
+  }
+
+  @Implementation
+  protected int getDeviceIdForDisplayId(int displayId) {
+    // Returning Context.DEVICE_ID_DEFAULT for Display.INVALID_DISPLAY and unknown displays matches
+    // upstream VirtualDeviceManager#getDeviceIdForDisplayId behavior.
+    if (displayId == Display.DEFAULT_DISPLAY || displayId == Display.INVALID_DISPLAY) {
+      return Context.DEVICE_ID_DEFAULT;
+    }
+    DisplayManagerGlobal displayManagerGlobal = ShadowDisplayManagerGlobal.getGlobalInstance();
+    if (displayManagerGlobal != null && displayManagerGlobal.getDisplayInfo(displayId) == null) {
+      return Context.DEVICE_ID_DEFAULT;
+    }
+    for (VirtualDeviceManager.VirtualDevice virtualDevice : mVirtualDevices) {
+      ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+      if (shadowVirtualDevice.displayIds.contains(displayId)) {
+        return virtualDevice.getDeviceId();
+      }
+    }
+    return Context.DEVICE_ID_DEFAULT;
   }
 
   @Filter(minSdk = VANILLA_ICE_CREAM, order = Order.AFTER)

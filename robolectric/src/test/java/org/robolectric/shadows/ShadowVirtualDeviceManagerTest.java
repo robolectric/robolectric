@@ -23,6 +23,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.companion.virtual.IVirtualDevice;
@@ -1084,6 +1085,76 @@ public class ShadowVirtualDeviceManagerTest {
     virtualDevice.close();
     assertThat(secondAudioDevice.getAudioCapture()).isNull();
     assertThat(secondCapture.read(new byte[16], 0, 16)).isEqualTo(0);
+  }
+
+  @Test
+  public void testGetDeviceIdForDisplayId_defaultAndUnknownDisplay_returnsDefaultDeviceId() {
+    assertThat(virtualDeviceManager.getDeviceIdForDisplayId(Display.DEFAULT_DISPLAY))
+        .isEqualTo(Context.DEVICE_ID_DEFAULT);
+    assertThat(virtualDeviceManager.getDeviceIdForDisplayId(Display.INVALID_DISPLAY))
+        .isEqualTo(Context.DEVICE_ID_DEFAULT);
+    assertThat(virtualDeviceManager.getDeviceIdForDisplayId(999))
+        .isEqualTo(Context.DEVICE_ID_DEFAULT);
+  }
+
+  @Test
+  public void testGetDeviceIdForDisplayId_virtualDisplay_returnsDeviceIdUntilReleasedOrClosed() {
+    int releasedDisplayId;
+    int closedDisplayId;
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      VirtualDisplay releasedDisplay =
+          virtualDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("releasedDisplay", /* surface= */ null, /* flags= */ 0),
+              /* executor= */ null,
+              /* callback= */ null);
+      VirtualDisplay keptDisplay =
+          virtualDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("keptDisplay", /* surface= */ null, /* flags= */ 0),
+              /* executor= */ null,
+              /* callback= */ null);
+      releasedDisplayId = releasedDisplay.getDisplay().getDisplayId();
+      closedDisplayId = keptDisplay.getDisplay().getDisplayId();
+
+      assertThat(virtualDeviceManager.getDeviceIdForDisplayId(releasedDisplayId))
+          .isEqualTo(virtualDevice.getDeviceId());
+      assertThat(virtualDeviceManager.getDeviceIdForDisplayId(closedDisplayId))
+          .isEqualTo(virtualDevice.getDeviceId());
+
+      releasedDisplay.release();
+      assertThat(virtualDeviceManager.getDeviceIdForDisplayId(releasedDisplayId))
+          .isEqualTo(Context.DEVICE_ID_DEFAULT);
+      assertThat(virtualDeviceManager.getDeviceIdForDisplayId(closedDisplayId))
+          .isEqualTo(virtualDevice.getDeviceId());
+    }
+
+    assertThat(virtualDeviceManager.getDeviceIdForDisplayId(closedDisplayId))
+        .isEqualTo(Context.DEVICE_ID_DEFAULT);
+  }
+
+  @Test
+  public void testActivityLaunchedOnVirtualDisplay_populatesDeviceId() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      VirtualDisplay virtualDisplay =
+          virtualDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("projectedDisplay", /* surface= */ null, /* flags= */ 0),
+              /* executor= */ null,
+              /* callback= */ null);
+      int displayId = virtualDisplay.getDisplay().getDisplayId();
+
+      try (ActivityController<Activity> controller =
+          Robolectric.buildActivity(
+              Activity.class,
+              /* intent= */ null,
+              ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())) {
+        Activity activity = controller.setup().get();
+        assertThat(activity.getDisplay().getDisplayId()).isEqualTo(displayId);
+        assertThat(activity.getDeviceId()).isEqualTo(virtualDevice.getDeviceId());
+      }
+    }
   }
 
   private static AudioFormat createAudioCaptureFormat() {
