@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresApi;
 import android.os.Build;
-import com.google.common.base.Preconditions;
 import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -156,34 +154,6 @@ public class ShadowBuild {
    */
   public static void setVersionRelease(String release) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "RELEASE", release);
-  }
-
-  /**
-   * Overrides the minor SDK version reported by {@link Build.VERSION#SDK_INT_FULL} within the
-   * currently active major SDK. Available in Android Baklava+.
-   *
-   * <p>This method is intended for testing minor-SDK version guards (for example {@link
-   * Build.VERSION_CODES_FULL#BAKLAVA_1}) when Robolectric runs against a major-SDK runtime jar.
-   * Because it only updates the {@link Build.VERSION#SDK_INT_FULL} constant, the underlying
-   * framework classes and runtime behavior remain those of the active Robolectric SDK jar, so APIs
-   * introduced in a minor SDK release will not be present unless the active SDK jar includes them.
-   *
-   * <p>It will be reset for the next test.
-   *
-   * @throws IllegalArgumentException if {@code sdkIntFull} is negative or encodes a major SDK
-   *     version different from {@link Build.VERSION#SDK_INT} (use {@link
-   *     org.robolectric.annotation.Config#sdk()} to configure the major SDK version)
-   */
-  @RequiresApi(BAKLAVA)
-  public static void setVersionSdkIntFull(int sdkIntFull) {
-    Preconditions.checkArgument(
-        sdkIntFull >= 0 && Build.getMajorSdkVersion(sdkIntFull) == Build.VERSION.SDK_INT,
-        "sdkIntFull (%s) major version (%s) must match Build.VERSION.SDK_INT (%s)."
-            + " Use @Config(sdk = ...) to configure the major SDK version.",
-        sdkIntFull,
-        Build.getMajorSdkVersion(sdkIntFull),
-        Build.VERSION.SDK_INT);
-    reflector(VersionReflector.class).setSdkIntFull(sdkIntFull);
   }
 
   /**
@@ -347,9 +317,5 @@ public class ShadowBuild {
 
     @Static
     void __staticInitializer__();
-
-    @Static
-    @Accessor("SDK_INT_FULL")
-    void setSdkIntFull(int sdkIntFull);
   }
 }
