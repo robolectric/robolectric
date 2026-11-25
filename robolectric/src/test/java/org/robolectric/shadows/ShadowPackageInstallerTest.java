@@ -164,6 +164,32 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test
+  public void sessionGetNames_returnsWrittenNamesInOrderWithoutDuplicates() throws Exception {
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+    PackageInstaller.Session session = packageInstaller.openSession(sessionId);
+
+    assertThat(session.getNames()).isEmpty();
+
+    try (OutputStream base = session.openWrite("base.apk", 0, -1)) {
+      base.write(1);
+    }
+    try (OutputStream split1 = session.openWrite("split_feature1.apk", 0, -1)) {
+      split1.write(2);
+    }
+    try (OutputStream split2 = session.openWrite("split_config.xxhdpi.apk", 0, -1)) {
+      split2.write(3);
+    }
+    try (OutputStream rewriteBase = session.openWrite("base.apk", 0, -1)) {
+      rewriteBase.write(4);
+    }
+
+    assertThat(session.getNames())
+        .asList()
+        .containsExactly("base.apk", "split_feature1.apk", "split_config.xxhdpi.apk")
+        .inOrder();
+  }
+
+  @Test
   public void sessionCommitSession_streamProperlyClosed() throws Exception {
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
     PackageInstaller.Session session = packageInstaller.openSession(sessionId);
