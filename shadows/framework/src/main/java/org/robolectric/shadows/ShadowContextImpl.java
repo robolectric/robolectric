@@ -614,5 +614,8 @@ public class ShadowContextImpl {
 
     @Accessor("mClassLoader")
     void setClassLoader(ClassLoader classLoader);
+
+    @Accessor("mPackageInfo")
+    LoadedApk getPackageInfo();
   }
 }
