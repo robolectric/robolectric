@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.app.UiAutomation.ROTATION_FREEZE_0;
 import static android.app.UiAutomation.ROTATION_FREEZE_180;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
@@ -178,7 +179,9 @@ public class ShadowUiAutomation {
     FutureTask<Bitmap> screenshotTask =
         new FutureTask<>(() -> {
           List<Root> visibleRoots =
-              getViewRoots().reverse().stream().filter(IS_VISIBLE).collect(toList());
+              getViewRoots().reverse().stream()
+                  .filter(IS_VISIBLE.and(isOnDisplay(Display.DEFAULT_DISPLAY)))
+                  .collect(toList());
           Point displaySize = new Point();
           ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
           Bitmap screenshot =
@@ -272,7 +275,7 @@ public class ShadowUiAutomation {
     //  leave the window bounds, and will split pointer down events based on the window flags.
     //  This will be necessary to support more sophisticated multi-window use cases.
 
-    List<Root> touchableRoots = getViewRoots().stream().filter(IS_TOUCHABLE).collect(toList());
+    List<Root> touchableRoots = rootsForEvent(IS_TOUCHABLE, event);
     for (int i = 0; i < touchableRoots.size(); i++) {
       Root root = touchableRoots.get(i);
       if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
@@ -307,11 +310,36 @@ public class ShadowUiAutomation {
   }
 
   private static boolean injectKeyEvent(KeyEvent event) {
-    getViewRoots().stream()
-        .filter(IS_FOCUSABLE)
+    rootsForEvent(IS_FOCUSABLE, event).stream()
         .findFirst()
         .ifPresent(root -> root.getRootView().dispatchKeyEvent(event));
     return true;
+  }
+
+  /**
+   * The roots matching {@code predicate} on the display an injected event goes to, or, if that
+   * display has none, on every display. Events built without a display (such as those Espresso
+   * injects) name the default display, so this still reaches an activity shown only on a secondary
+   * display.
+   */
+  private static List<Root> rootsForEvent(Predicate<Root> predicate, InputEvent event) {
+    ImmutableList<Root> roots = getViewRoots();
+    List<Root> onDisplay =
+        roots.stream().filter(predicate.and(isOnDisplay(targetDisplayId(event)))).collect(toList());
+    return onDisplay.isEmpty() ? roots.stream().filter(predicate).collect(toList()) : onDisplay;
+  }
+
+  /** The display an injected event goes to: the one it names, or the default display. */
+  private static int targetDisplayId(InputEvent event) {
+    if (RuntimeEnvironment.getApiLevel() < Q) {
+      return Display.DEFAULT_DISPLAY;
+    }
+    int displayId = event.getDisplayId();
+    return displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
+  }
+
+  private static Predicate<Root> isOnDisplay(int displayId) {
+    return root -> root.getDisplayId() == displayId;
   }
 
   private static ImmutableList<Root> getViewRoots() {
@@ -420,6 +448,11 @@ public class ShadowUiAutomation {
 
     int getType() {
       return params.type;
+    }
+
+    int getDisplayId() {
+      Display display = getRootView().getDisplay();
+      return display == null ? Display.DEFAULT_DISPLAY : display.getDisplayId();
     }
 
     View getRootView() {
