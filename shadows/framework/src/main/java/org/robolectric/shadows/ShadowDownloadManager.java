@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.DownloadManager;
+import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -21,7 +22,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.fakes.BaseCursor;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -293,7 +293,7 @@ public class ShadowDownloadManager {
     }
   }
 
-  private static class ResultCursor extends BaseCursor {
+  private static class ResultCursor extends AbstractCursor {
     private static final int COLUMN_INDEX_LOCAL_FILENAME = 0;
     private static final int COLUMN_INDEX_DESCRIPTION = 1;
     private static final int COLUMN_INDEX_REASON = 2;
@@ -305,9 +305,20 @@ public class ShadowDownloadManager {
     private static final int COLUMN_INDEX_BYTES_SO_FAR = 8;
     private static final int COLUMN_INDEX_ID = 9;
 
+    private static final String[] COLUMN_NAMES = {
+      DownloadManager.COLUMN_LOCAL_FILENAME,
+      DownloadManager.COLUMN_DESCRIPTION,
+      DownloadManager.COLUMN_REASON,
+      DownloadManager.COLUMN_STATUS,
+      DownloadManager.COLUMN_URI,
+      DownloadManager.COLUMN_LOCAL_URI,
+      DownloadManager.COLUMN_TITLE,
+      DownloadManager.COLUMN_TOTAL_SIZE_BYTES,
+      DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR,
+      DownloadManager.COLUMN_ID,
+    };
+
     public List<DownloadManager.Request> requests = new ArrayList<>();
-    private int positionIndex = -1;
-    private boolean closed;
 
     @Override
     public int getCount() {
@@ -316,22 +327,9 @@ public class ShadowDownloadManager {
     }
 
     @Override
-    public int getPosition() {
-      return positionIndex;
-    }
-
-    @Override
-    public boolean moveToFirst() {
+    public String[] getColumnNames() {
       checkClosed();
-      positionIndex = 0;
-      return !requests.isEmpty();
-    }
-
-    @Override
-    public boolean moveToNext() {
-      checkClosed();
-      positionIndex += 1;
-      return positionIndex < requests.size();
+      return COLUMN_NAMES;
     }
 
     @Override
@@ -381,19 +379,9 @@ public class ShadowDownloadManager {
     }
 
     @Override
-    public void close() {
-      this.closed = true;
-    }
-
-    @Override
-    public boolean isClosed() {
-      return closed;
-    }
-
-    @Override
     public String getString(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadow.extract(requests.get(positionIndex));
+      ShadowRequest request = Shadow.extract(requests.get(getPosition()));
       switch (columnIndex) {
         case COLUMN_INDEX_LOCAL_FILENAME:
           return "local file name not implemented";
@@ -418,9 +406,14 @@ public class ShadowDownloadManager {
     }
 
     @Override
+    public short getShort(int columnIndex) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public int getInt(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadow.extract(requests.get(positionIndex));
+      ShadowRequest request = Shadow.extract(requests.get(getPosition()));
       if (columnIndex == COLUMN_INDEX_STATUS) {
         return request.getStatus();
       }
@@ -430,7 +423,7 @@ public class ShadowDownloadManager {
     @Override
     public long getLong(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadow.extract(requests.get(positionIndex));
+      ShadowRequest request = Shadow.extract(requests.get(getPosition()));
       if (columnIndex == COLUMN_INDEX_TOTAL_SIZE) {
         return request.getTotalSize();
       } else if (columnIndex == COLUMN_INDEX_BYTES_SO_FAR) {
@@ -441,8 +434,23 @@ public class ShadowDownloadManager {
       return 0;
     }
 
+    @Override
+    public float getFloat(int columnIndex) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double getDouble(int columnIndex) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isNull(int columnIndex) {
+      throw new UnsupportedOperationException();
+    }
+
     private void checkClosed() {
-      if (closed) {
+      if (isClosed()) {
         throw new IllegalStateException("Cursor is already closed.");
       }
     }

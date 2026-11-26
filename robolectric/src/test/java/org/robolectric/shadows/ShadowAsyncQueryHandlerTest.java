@@ -1,20 +1,20 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.fakes.RoboCursor;
+import org.robolectric.shadows.testing.CursorProvider;
 
 /** Unit tests for {@link ShadowAsyncQueryHandler}. */
 @RunWith(AndroidJUnit4.class)
@@ -25,7 +25,6 @@ public final class ShadowAsyncQueryHandlerTest {
 
   private static final int TOKEN = 22;
   private static final Object COOKIE = new Object();
-  private static final RoboCursor CURSOR = new RoboCursor();
 
   private ContentResolver contentResolver;
 
@@ -37,7 +36,9 @@ public final class ShadowAsyncQueryHandlerTest {
   @Test
   public void startQuery_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
-    shadowOf(contentResolver).setCursor(FAKE_URI, CURSOR);
+    Cursor expectedCursor = new MatrixCursor(new String[0]);
+    CursorProvider provider = new CursorProvider(expectedCursor);
+    ShadowContentResolver.registerProviderInternal(FAKE_URI.getAuthority(), provider);
 
     asyncQueryHandler.startQuery(
         TOKEN,
@@ -50,7 +51,8 @@ public final class ShadowAsyncQueryHandlerTest {
 
     assertThat(asyncQueryHandler.token).isEqualTo(TOKEN);
     assertThat(asyncQueryHandler.cookie).isEqualTo(COOKIE);
-    assertThat(asyncQueryHandler.cursor).isEqualTo(CURSOR);
+    assertThat(asyncQueryHandler.cursor).isSameInstanceAs(expectedCursor);
+    assertThat(provider.lastUri).isEqualTo(FAKE_URI);
   }
 
   @Test

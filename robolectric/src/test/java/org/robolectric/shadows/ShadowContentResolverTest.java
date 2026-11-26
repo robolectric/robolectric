@@ -69,8 +69,8 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.BaseCursor;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
+import org.robolectric.shadows.testing.CursorProvider;
 import org.robolectric.util.NamedStream;
 
 @RunWith(AndroidJUnit4.class)
@@ -130,7 +130,7 @@ public class ShadowContentResolverTest {
               String selection,
               String[] selectionArgs,
               String sortOrder) {
-            return new BaseCursor();
+            return new MatrixCursor(new String[0]);
           }
 
           @Override
@@ -267,80 +267,38 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void whenCursorHasBeenSet_query_shouldReturnTheCursor() {
-    assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
-    BaseCursor cursor = new BaseCursor();
-    shadowContentResolver.setCursor(cursor);
-    assertThat(shadowContentResolver.query(null, null, null, null, null)).isSameInstanceAs(cursor);
-  }
-
-  @Test
-  public void whenCursorHasBeenSet_queryWithCancellationSignal_shouldReturnTheCursor() {
-    assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal()))
+  public void query_withoutProvider_returnsNull() {
+    assertThat(contentResolver.query(uri21, null, null, null, null)).isNull();
+    assertThat(contentResolver.query(uri21, null, null, null, null, new CancellationSignal()))
         .isNull();
-    BaseCursor cursor = new BaseCursor();
-    shadowContentResolver.setCursor(cursor);
-    assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal()))
-        .isSameInstanceAs(cursor);
-  }
-
-  @Test
-  public void query_shouldReturnSpecificCursorsForSpecificUris() {
-    assertThat(shadowContentResolver.query(uri21, null, null, null, null)).isNull();
-    assertThat(shadowContentResolver.query(uri22, null, null, null, null)).isNull();
-
-    BaseCursor cursor21 = new BaseCursor();
-    BaseCursor cursor22 = new BaseCursor();
-    shadowContentResolver.setCursor(uri21, cursor21);
-    shadowContentResolver.setCursor(uri22, cursor22);
-
-    assertThat(shadowContentResolver.query(uri21, null, null, null, null))
-        .isSameInstanceAs(cursor21);
-    assertThat(shadowContentResolver.query(uri22, null, null, null, null))
-        .isSameInstanceAs(cursor22);
-  }
-
-  @Test
-  public void query_shouldKnowWhatItsParamsWere() {
-    String[] projection = {};
-    String selection = "select";
-    String[] selectionArgs = {};
-    String sortOrder = "order";
-
-    QueryParamTrackingCursor testCursor = new QueryParamTrackingCursor();
-
-    shadowContentResolver.setCursor(testCursor);
-    Cursor cursor =
-        shadowContentResolver.query(uri21, projection, selection, selectionArgs, sortOrder);
-    assertThat(cursor).isEqualTo(testCursor);
-    assertThat(testCursor.uri).isEqualTo(uri21);
-    assertThat(testCursor.projection).isEqualTo(projection);
-    assertThat(testCursor.selection).isEqualTo(selection);
-    assertThat(testCursor.selectionArgs).isEqualTo(selectionArgs);
-    assertThat(testCursor.sortOrder).isEqualTo(sortOrder);
   }
 
   @Test
   @Config(minSdk = O)
-  public void query_shouldKnowWhatIsInBundle() {
-    String[] projection = {};
-    String selection = "select";
-    String[] selectionArgs = {};
-    String sortOrder = "order";
-    Bundle queryArgs = new Bundle();
-    queryArgs.putString(QUERY_ARG_SQL_SELECTION, selection);
-    queryArgs.putStringArray(QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs);
-    queryArgs.putString(QUERY_ARG_SQL_SORT_ORDER, sortOrder);
+  public void query_withBundle_withoutProvider_returnsNull() {
+    assertThat(contentResolver.query(uri21, null, new Bundle(), null)).isNull();
+  }
 
-    QueryParamTrackingCursor testCursor = new QueryParamTrackingCursor();
-    shadowContentResolver.setCursor(testCursor);
-    Cursor cursor = shadowContentResolver.query(uri21, projection, queryArgs, null);
-    assertThat(cursor).isEqualTo(testCursor);
-    assertThat(testCursor.uri).isEqualTo(uri21);
-    assertThat(testCursor.projection).isEqualTo(projection);
-    assertThat(testCursor.selection).isEqualTo(selection);
-    assertThat(testCursor.selectionArgs).isEqualTo(selectionArgs);
-    assertThat(testCursor.sortOrder).isEqualTo(sortOrder);
+  @Test
+  @Config(minSdk = O)
+  public void query_withBundle_delegatesToProvider() {
+    String[] projection = {};
+    Bundle queryArgs = new Bundle();
+    queryArgs.putString(QUERY_ARG_SQL_SELECTION, "select");
+    queryArgs.putStringArray(QUERY_ARG_SQL_SELECTION_ARGS, new String[] {"arg"});
+    queryArgs.putString(QUERY_ARG_SQL_SORT_ORDER, "order");
+    CancellationSignal signal = new CancellationSignal();
+    Cursor expectedCursor = new MatrixCursor(new String[0]);
+
+    CursorProvider provider = new CursorProvider(expectedCursor);
+    ShadowContentResolver.registerProviderInternal(uri21.getAuthority(), provider);
+
+    assertThat(contentResolver.query(uri21, projection, queryArgs, signal))
+        .isSameInstanceAs(expectedCursor);
+    assertThat(provider.lastUri).isEqualTo(uri21);
+    assertThat(provider.lastProjection).isSameInstanceAs(projection);
+    assertThat(provider.lastQueryArgs).isEqualTo(queryArgs);
+    assertThat(provider.lastCancellationSignal).isSameInstanceAs(signal);
   }
 
   @Test
@@ -1091,7 +1049,7 @@ public class ShadowContentResolverTest {
               String selection,
               String[] selectionArgs,
               String sortOrder) {
-            return new BaseCursor();
+            return new MatrixCursor(new String[0]);
           }
 
           @Override
@@ -1315,24 +1273,6 @@ public class ShadowContentResolverTest {
 
     ShadowContentResolver.setSyncAdapterTypes(syncAdapterTypes);
     assertThat(ContentResolver.getSyncAdapterTypes()).isEqualTo(syncAdapterTypes);
-  }
-
-  private static class QueryParamTrackingCursor extends BaseCursor {
-    public Uri uri;
-    public String[] projection;
-    public String selection;
-    public String[] selectionArgs;
-    public String sortOrder;
-
-    @Override
-    public void setQuery(
-        Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-      this.uri = uri;
-      this.projection = projection;
-      this.selection = selection;
-      this.selectionArgs = selectionArgs;
-      this.sortOrder = sortOrder;
-    }
   }
 
   private static class TestContentObserver extends ContentObserver {
