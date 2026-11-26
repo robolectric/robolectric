@@ -22,6 +22,7 @@ android {
 
 dependencies {
   implementation(libs.kotlinx.coroutines.android)
+  implementation(libs.androidx.constraintlayout)
   implementation(libs.androidx.window)
 
   // Testing dependencies

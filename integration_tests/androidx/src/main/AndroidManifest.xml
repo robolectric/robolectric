@@ -2,7 +2,11 @@
 <!--
   Manifest for androidx integration test module
 -->
-<manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application />
+    <application>
+        <activity
+            android:name="org.robolectric.integrationtests.androidx.ConstraintLayoutActivity"
+            android:exported="true" />
+    </application>
 </manifest>
