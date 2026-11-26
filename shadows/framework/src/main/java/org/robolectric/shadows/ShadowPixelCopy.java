@@ -206,6 +206,14 @@ public class ShadowPixelCopy {
    */
   static void captureImageFromSurface(Surface surface, Bitmap destBitmap, @Nullable Rect srcRect) {
     validateBitmap(destBitmap);
+    // On a device any thread may ask for a copy. In LooperMode.INSTRUMENTATION_TEST the caller is
+    // often the test thread, so do the copy on the main thread and wait for it.
+    ShadowInstrumentation.runOnMainSyncNoIdle(
+        () -> captureImageFromSurfaceOnMainThread(surface, destBitmap, srcRect));
+  }
+
+  private static void captureImageFromSurfaceOnMainThread(
+      Surface surface, Bitmap destBitmap, @Nullable Rect srcRect) {
     checkState(Looper.getMainLooper().isCurrentThread());
 
     ShadowNativeSurface shadowSurface = Shadow.extract(surface);
