@@ -400,6 +400,9 @@ public class ShadowCameraManager {
 
     cameraIdToCharacteristics.remove(cameraId);
     triggerOnCameraUnavailable(cameraId);
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
+      triggerOnCameraRemoved(cameraId);
+    }
   }
 
   /** Returns what the supplied camera's torch is set to. */
@@ -430,6 +433,17 @@ public class ShadowCameraManager {
     lastCallback = callback;
     lastCallbackHandler = handler;
     lastCallbackExecutor = executor;
+  }
+
+  /**
+   * Calls all registered callbacks' onCameraRemoved method. This is a no-op if no callbacks are
+   * registered.
+   */
+  private void triggerOnCameraRemoved(@Nonnull String cameraId) {
+    Objects.requireNonNull(cameraId);
+    for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
+      callback.onCameraRemoved(cameraId);
+    }
   }
 
   @ForType(CameraDeviceImpl.class)

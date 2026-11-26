@@ -43,6 +43,7 @@ import android.view.Gravity;
 import android.view.IWindow;
 import android.view.IWindowManager;
 import android.view.IWindowSession;
+import android.view.InputChannel;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
@@ -191,6 +192,16 @@ public class ShadowWindowManagerGlobal {
                 case "updateRequestedVisibilities":
                 case "updateRequestedVisibleTypes":
                   windowSessionDelegate.updateInsets(args);
+                  return null;
+                case "grantInputChannel":
+                  if (method.getReturnType().equals(InputChannel.class)) {
+                    if (ReflectionHelpers.hasConstructor(InputChannel.class)) {
+                      return callConstructor(InputChannel.class);
+                    } else {
+                      return callConstructor(
+                          InputChannel.class, ClassParameter.from(long.class, 0L));
+                    }
+                  }
                   return null;
                 default:
                   return ReflectionHelpers.defaultValueForType(method.getReturnType().getName());
@@ -857,5 +868,16 @@ public class ShadowWindowManagerGlobal {
   @ForType(className = "android.view.InsetsVisibilities")
   interface InsetsVisibilitiesReflector {
     boolean getVisibility(int type);
+  }
+
+  /** Shadow for {@link InputChannel}. */
+  @Implements(value = InputChannel.class, isInAndroidSdk = false, minSdk = CINNAMON_BUN)
+  public static class ShadowInputChannel {
+
+    @Implementation(maxSdk = CINNAMON_BUN)
+    protected void copyTo(InputChannel outParameter) {}
+
+    @Implementation
+    protected void checkValid() {}
   }
 }

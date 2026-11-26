@@ -18,12 +18,15 @@ import android.content.ClipData;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.MotionEvent;
+import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -280,5 +283,18 @@ public class ShadowWindowManagerGlobalTest {
       window.getAttributes().layoutInDisplayCutoutMode =
           WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
     }
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void surfaceControlViewHost_setView_succeeds() {
+    SurfaceControlViewHost host =
+        new SurfaceControlViewHost(
+            ApplicationProvider.getApplicationContext(),
+            ShadowDisplay.getDefaultDisplay(),
+            /* hostToken= */ (IBinder) null);
+    View view = new View(ApplicationProvider.getApplicationContext());
+    host.setView(view, /* width= */ 100, /* height= */ 100);
+    assertThat(host.getView()).isEqualTo(view);
   }
 }

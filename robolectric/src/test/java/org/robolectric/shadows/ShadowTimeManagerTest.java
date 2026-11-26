@@ -222,6 +222,36 @@ public final class ShadowTimeManagerTest {
   }
 
   @Test
+  public void
+      setTimeZoneCapabilityState_updatesConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability() {
+    TimeManager timeManager =
+        ApplicationProvider.getApplicationContext().getSystemService(TimeManager.class);
+    ShadowTimeManager shadowTimeManager = Shadow.extract(timeManager);
+
+    TimeZoneConfiguration configuration = new TimeZoneConfiguration.Builder().build();
+    timeManager.updateTimeZoneConfiguration(configuration);
+
+    shadowTimeManager.setTimeZoneCapabilityState(
+        ShadowTimeManager.CONFIGURE_HOME_TIME_ZONE_OFFSET_CHANGE_NOTIFICATIONS_ENABLED_CAPABILITY,
+        CAPABILITY_SUPPORTED);
+
+    Object capabilities = timeManager.getTimeZoneCapabilitiesAndConfig().getCapabilities();
+
+    // Use reflection to call getters as these methods might not be available on all SDK levels
+    // supported by this shadow. Check if the method exists before calling it to avoid
+    // NoSuchMethodError on older SDKs.
+    if (!ReflectionHelpers.hasMethod(
+        capabilities.getClass(),
+        "getConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability")) {
+      return; // Method not available on this SDK level, ignore.
+    }
+    int value =
+        ReflectionHelpers.callInstanceMethod(
+            capabilities, "getConfigureHomeTimeZoneOffsetChangeNotificationsEnabledCapability");
+    assertThat(value).isEqualTo(CAPABILITY_SUPPORTED);
+  }
+
+  @Test
   @Config(maxSdk = Build.VERSION_CODES.S_V2)
   public void classInitialization_onOlderSdk_doesNotCrash() {
     TimeManager timeManager =

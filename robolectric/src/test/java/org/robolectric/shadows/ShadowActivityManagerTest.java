@@ -12,6 +12,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -50,6 +51,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowActivityManagerTest {
@@ -514,6 +516,25 @@ public class ShadowActivityManagerTest {
     assertThat(applicationExitInfoList.get(1).getTimestamp()).isEqualTo(123);
   }
 
+  @Config(minSdk = R)
+  @Test
+  public void addApplicationExitInfo_subReasonSet() {
+    shadowActivityManager.addApplicationExitInfo(
+        ShadowActivityManager.ApplicationExitInfoBuilder.newBuilder()
+            .setReason(ApplicationExitInfo.REASON_LOW_MEMORY)
+            .setSubReason(9)
+            .build());
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(1);
+    ApplicationExitInfo exitInfo = applicationExitInfoList.get(0);
+    assertThat(exitInfo.getReason()).isEqualTo(ApplicationExitInfo.REASON_LOW_MEMORY);
+    assertThat(reflector(ApplicationExitInfoReflector.class, exitInfo).getSubReason()).isEqualTo(9);
+  }
+
   @Config(minSdk = VANILLA_ICE_CREAM)
   @Test
   public void addHistoricalProcessStartReason_builderWorks() {
@@ -687,5 +708,10 @@ public class ShadowActivityManagerTest {
             activityManager.isActivityStartAllowedOnDisplay(
                 context, otherDisplay.getDisplayId(), intent))
         .isFalse();
+  }
+
+  @ForType(ApplicationExitInfo.class)
+  private interface ApplicationExitInfoReflector {
+    int getSubReason();
   }
 }
