@@ -2,8 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -13,17 +15,23 @@ import android.os.Looper;
 import android.view.PixelCopy;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.Window;
 import android.widget.FrameLayout;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
+import org.robolectric.annotation.LooperMode;
 
 /** Tests for {@link ShadowPixelCopy} when real draw traversals are enabled. */
 @RunWith(AndroidJUnit4.class)
@@ -113,6 +121,47 @@ public class ShadowPixelCopyTest {
       View content = new View(this);
       content.setBackgroundColor(TRANSLUCENT_BLUE);
       setContentView(content);
+    }
+  }
+
+  @Test
+  @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
+  public void requestWindow_realDrawTraversals_fromNonMainThread_copiesWindow() throws Exception {
+    Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+    AtomicReference<ActivityController<Activity>> controller = new AtomicReference<>();
+    AtomicReference<Window> window = new AtomicReference<>();
+    instrumentation.runOnMainSync(() -> {
+      controller.set(Robolectric.buildActivity(Activity.class).setup());
+      Activity activity = controller.get().get();
+      View view = new View(activity);
+      view.setBackgroundColor(Color.RED);
+      activity.setContentView(view);
+      window.set(activity.getWindow());
+    });
+    try {
+      instrumentation.waitForIdleSync();
+      assertThat(Looper.getMainLooper().isCurrentThread()).isFalse();
+      View decorView = window.get().getDecorView();
+      Bitmap bitmap =
+          Bitmap.createBitmap(decorView.getWidth(), decorView.getHeight(), Bitmap.Config.ARGB_8888);
+      AtomicInteger result = new AtomicInteger(-1);
+      CountDownLatch finished = new CountDownLatch(1);
+
+      PixelCopy.request(
+          window.get(),
+          bitmap,
+          copyResult -> {
+            result.set(copyResult);
+            finished.countDown();
+          },
+          new Handler(Looper.getMainLooper()));
+
+      assertThat(finished.await(10, SECONDS)).isTrue();
+      assertThat(result.get()).isEqualTo(PixelCopy.SUCCESS);
+      assertThat(bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2))
+          .isEqualTo(Color.RED);
+    } finally {
+      instrumentation.runOnMainSync(() -> controller.get().close());
     }
   }
 }
