@@ -665,6 +665,31 @@ public class ShadowAlarmManagerTest {
     }
   }
 
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void alarmSetThroughActivityContext_isVisibleThroughApplicationContext() {
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      Context application = ApplicationProvider.getApplicationContext();
+      AlarmManager applicationAlarmManager =
+          (AlarmManager) application.getSystemService(Context.ALARM_SERVICE);
+      AlarmManager activityAlarmManager =
+          (AlarmManager) controller.get().getSystemService(Context.ALARM_SERVICE);
+      assertThat(activityAlarmManager).isNotSameInstanceAs(applicationAlarmManager);
+      PendingIntent operation =
+          PendingIntent.getBroadcast(
+              application, 0, new Intent("action"), PendingIntent.FLAG_IMMUTABLE);
+
+      activityAlarmManager.set(AlarmManager.ELAPSED_REALTIME, 1000, operation);
+
+      assertThat(shadowOf(applicationAlarmManager).getScheduledAlarms()).hasSize(1);
+      applicationAlarmManager.cancel(operation);
+      assertThat(shadowOf(activityAlarmManager).getScheduledAlarms()).isEmpty();
+    }
+  }
+
   private class TestBroadcastListener extends BroadcastReceiver implements AutoCloseable {
 
     private final Runnable alarm;
