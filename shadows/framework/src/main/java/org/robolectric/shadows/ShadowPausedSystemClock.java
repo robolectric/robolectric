@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 
+import android.os.Looper;
 import android.os.SystemClock;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.time.DateTimeException;
@@ -45,6 +46,9 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   @GuardedBy("ShadowPausedSystemClock.class")
   private static long currentRealtimeNs = INITIAL_TIME_NS;
 
+  @SuppressWarnings("NonFinalStaticField")
+  private static volatile boolean advancedInRealTime;
+
   private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
   // hopefully temporary list of clock listeners that are NOT cleared between tests
   // This is needed to accommodate Loopers which are not reset between tests
@@ -74,6 +78,10 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
    */
   @Implementation
   protected static void sleep(long millis) {
+    if (advancedInRealTime && Looper.getMainLooper().getThread() != Thread.currentThread()) {
+      sleepInRealTime(millis);
+      return;
+    }
     synchronized (ShadowPausedSystemClock.class) {
       currentUptimeNs += (millis * MILLIS_PER_NANO);
       currentRealtimeNs += (millis * MILLIS_PER_NANO);
@@ -204,8 +212,30 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
     informListeners(duration);
   }
 
+  static void internalSetAdvancedInRealTime(boolean enabled) {
+    advancedInRealTime = enabled;
+  }
+
+  /** Blocks for {@code millis}; as the framework's, an interrupt is kept rather than ending it. */
+  private static void sleepInRealTime(long millis) {
+    long deadline = System.nanoTime() + millis * MILLIS_PER_NANO;
+    boolean interrupted = false;
+    long left;
+    while ((left = deadline - System.nanoTime()) > 0) {
+      try {
+        Thread.sleep(left / MILLIS_PER_NANO, (int) (left % MILLIS_PER_NANO));
+      } catch (InterruptedException e) {
+        interrupted = true;
+      }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
   @Resetter
   public static synchronized void reset() {
+    advancedInRealTime = false;
     currentUptimeNs = INITIAL_TIME_NS;
     currentRealtimeNs = INITIAL_TIME_NS;
     ShadowSystemClock.reset();

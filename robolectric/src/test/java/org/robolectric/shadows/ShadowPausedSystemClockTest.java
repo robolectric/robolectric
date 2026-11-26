@@ -264,4 +264,70 @@ public class ShadowPausedSystemClockTest {
     ShadowPausedSystemClock.advanceBy(Duration.ofMillis(-1));
     assertThat(SystemClock.uptimeMillis()).isEqualTo(currentTime);
   }
+
+  @Test
+  public void sleep_offMainThread_advancesClock() throws Exception {
+    long start = SystemClock.uptimeMillis();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      executor.submit(() -> SystemClock.sleep(10_000)).get(5, TimeUnit.SECONDS);
+    } finally {
+      executor.shutdown();
+    }
+
+    assertThat(SystemClock.uptimeMillis() - start).isEqualTo(10_000);
+  }
+
+  @Test
+  public void sleep_offMainThread_advancedInRealTime_blocksWithoutAdvancingClock()
+      throws Exception {
+    ShadowSystemClock.setAdvancedInRealTime(true);
+    long start = SystemClock.uptimeMillis();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    long elapsedNanos;
+    try {
+      elapsedNanos =
+          executor
+              .submit(() -> {
+                long before = System.nanoTime();
+                SystemClock.sleep(200);
+                return System.nanoTime() - before;
+              })
+              .get(5, TimeUnit.SECONDS);
+    } finally {
+      executor.shutdown();
+    }
+
+    assertThat(elapsedNanos).isAtLeast(TimeUnit.MILLISECONDS.toNanos(200));
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(start);
+  }
+
+  @Test
+  public void sleep_offMainThread_advancedInRealTime_keepsInterrupt() throws Exception {
+    ShadowSystemClock.setAdvancedInRealTime(true);
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      boolean interrupted =
+          executor
+              .submit(() -> {
+                Thread.currentThread().interrupt();
+                SystemClock.sleep(50);
+                return Thread.interrupted();
+              })
+              .get(5, TimeUnit.SECONDS);
+      assertThat(interrupted).isTrue();
+    } finally {
+      executor.shutdown();
+    }
+  }
+
+  @Test
+  public void sleep_mainThread_advancedInRealTime_advancesClock() {
+    ShadowSystemClock.setAdvancedInRealTime(true);
+    long start = SystemClock.uptimeMillis();
+
+    SystemClock.sleep(10_000);
+
+    assertThat(SystemClock.uptimeMillis() - start).isEqualTo(10_000);
+  }
 }

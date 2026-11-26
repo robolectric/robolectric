@@ -137,6 +137,8 @@ public final class Simulator {
     // rendering and capturing frames. Otherwise the clock falls behind by each frame's render
     // time, and poll() waits a full vsync interval after every frame instead of overlapping it.
     long lastSystemTime = System.nanoTime();
+    // The loop keeps the clock in step with real time, so other threads' sleeps should take it.
+    ShadowSystemClock.setAdvancedInRealTime(true);
     while (running.get()) {
       // Find the next simulated time at which the main looper has work: the earlier of its next
       // delayed message and the next Choreographer vsync. Either is 0 when nothing is scheduled,
