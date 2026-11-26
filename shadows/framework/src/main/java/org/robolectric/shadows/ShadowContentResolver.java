@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
-import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
-import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
@@ -55,7 +52,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.fakes.BaseCursor;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
@@ -71,13 +67,11 @@ public class ShadowContentResolver {
 
   @RealObject ContentResolver realContentResolver;
 
-  private BaseCursor cursor;
   private static final List<Statement> statements = new CopyOnWriteArrayList<>();
   private static final List<InsertStatement> insertStatements = new CopyOnWriteArrayList<>();
   private static final List<UpdateStatement> updateStatements = new CopyOnWriteArrayList<>();
   private static final List<DeleteStatement> deleteStatements = new CopyOnWriteArrayList<>();
   private static final List<NotifiedUri> notifiedUris = new ArrayList<>();
-  private static final Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private static final Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
   private static final Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
   private static final Map<String, List<ContentProviderOperation>> contentProviderOperations =
@@ -101,7 +95,6 @@ public class ShadowContentResolver {
     updateStatements.clear();
     deleteStatements.clear();
     notifiedUris.clear();
-    uriCursorMap.clear();
     inputStreamMap.clear();
     outputStreamMap.clear();
     contentProviderOperations.clear();
@@ -301,16 +294,7 @@ public class ShadowContentResolver {
     if (provider != null) {
       return provider.query(uri, projection, queryArgs, cancellationSignal);
     } else {
-      BaseCursor returnCursor = getCursor(uri);
-      if (returnCursor == null) {
-        return null;
-      }
-      String selection = queryArgs.getString(QUERY_ARG_SQL_SELECTION);
-      String[] selectionArgs = queryArgs.getStringArray(QUERY_ARG_SQL_SELECTION_ARGS);
-      String sortOrder = queryArgs.getString(QUERY_ARG_SQL_SORT_ORDER);
-
-      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
-      return returnCursor;
+      return null;
     }
   }
 
@@ -321,13 +305,7 @@ public class ShadowContentResolver {
     if (provider != null) {
       return provider.query(uri, projection, selection, selectionArgs, sortOrder);
     } else {
-      BaseCursor returnCursor = getCursor(uri);
-      if (returnCursor == null) {
-        return null;
-      }
-
-      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
-      return returnCursor;
+      return null;
     }
   }
 
@@ -344,13 +322,7 @@ public class ShadowContentResolver {
       return provider.query(
           uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
     } else {
-      BaseCursor returnCursor = getCursor(uri);
-      if (returnCursor == null) {
-        return null;
-      }
-
-      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
-      return returnCursor;
+      return null;
     }
   }
 
@@ -826,28 +798,6 @@ public class ShadowContentResolver {
    *     ContentProvider that can return any Cursor.
    */
   @Deprecated
-  public void setCursor(BaseCursor cursor) {
-    this.cursor = cursor;
-  }
-
-  /**
-   * @deprecated This method does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use {@link
-   *     org.robolectric.Robolectric#setupContentProvider(Class, String)} to install a test-specific
-   *     ContentProvider that can return any Cursor.
-   */
-  @Deprecated
-  public void setCursor(Uri uri, BaseCursor cursorForUri) {
-    uriCursorMap.put(uri, cursorForUri);
-  }
-
-  /**
-   * @deprecated This method affects all calls, and does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use {@link
-   *     org.robolectric.Robolectric#setupContentProvider(Class, String)} to install a test-specific
-   *     ContentProvider that can return any Cursor.
-   */
-  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public void setNextDatabaseIdForInserts(int nextId) {
     nextDatabaseIdForInserts = nextId;
@@ -1045,16 +995,6 @@ public class ShadowContentResolver {
         | NoSuchMethodException
         | InvocationTargetException e) {
       throw new RuntimeException("Error instantiating class " + providerInfo.name, e);
-    }
-  }
-
-  private BaseCursor getCursor(Uri uri) {
-    if (uriCursorMap.get(uri) != null) {
-      return uriCursorMap.get(uri);
-    } else if (cursor != null) {
-      return cursor;
-    } else {
-      return null;
     }
   }
 
