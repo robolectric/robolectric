@@ -3,8 +3,10 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.app.Instrumentation;
+import android.app.Presentation;
 import android.app.UiAutomation;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -14,6 +16,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -321,6 +324,108 @@ public class ShadowUiAutomationTest {
 
       activity.getWindowManager().removeViewImmediate(overlayView);
     }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void takeScreenshot_presentationOnSecondaryDisplay_isNotDrawn() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      View content = new View(controller.get());
+      content.setBackgroundColor(Color.RED);
+      controller.get().setContentView(content);
+      Presentation presentation = showPresentation(controller.get(), Color.BLUE, null);
+      ShadowLooper.idleMainLooper();
+
+      Bitmap screenshot = uiAutomation.takeScreenshot();
+
+      assertThat(screenshot.getPixel(screenshot.getWidth() / 2, screenshot.getHeight() / 2))
+          .isEqualTo(Color.RED);
+      presentation.dismiss();
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void injectInputEvent_presentationOnSecondaryDisplay_touchGoesToDefaultDisplay() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      AtomicBoolean activityTouched = new AtomicBoolean();
+      AtomicBoolean presentationTouched = new AtomicBoolean();
+      View content = new View(controller.get());
+      content.setOnTouchListener((v, e) -> activityTouched.getAndSet(true) || true);
+      controller.get().setContentView(content);
+      Presentation presentation =
+          showPresentation(controller.get(), Color.BLUE, presentationTouched);
+      ShadowLooper.idleMainLooper();
+      int[] location = new int[2];
+      content.getLocationOnScreen(location);
+      float x = location[0] + content.getWidth() / 2f;
+      float y = location[1] + content.getHeight() / 2f;
+      long downTime = SystemClock.uptimeMillis();
+      MotionEvent down = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0);
+      down.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+
+      uiAutomation.injectInputEvent(down, true);
+      down.recycle();
+
+      assertThat(activityTouched.get()).isTrue();
+      assertThat(presentationTouched.get()).isFalse();
+      presentation.dismiss();
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void injectInputEvent_activityOnlyOnSecondaryDisplay_eventWithoutDisplay_isDelivered() {
+    int displayId = ShadowDisplayManager.addDisplay("w400dp-h600dp");
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(
+                Activity.class,
+                /* intent= */ null,
+                ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+            .setup()) {
+      AtomicBoolean touched = new AtomicBoolean();
+      View content = new View(controller.get());
+      content.setOnTouchListener((v, e) -> touched.getAndSet(true) || true);
+      controller.get().setContentView(content);
+      ShadowLooper.idleMainLooper();
+      int[] location = new int[2];
+      content.getLocationOnScreen(location);
+      long downTime = SystemClock.uptimeMillis();
+      MotionEvent down =
+          MotionEvent.obtain(
+              downTime,
+              downTime,
+              MotionEvent.ACTION_DOWN,
+              location[0] + content.getWidth() / 2f,
+              location[1] + content.getHeight() / 2f,
+              0);
+      down.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+
+      uiAutomation.injectInputEvent(down, true);
+      down.recycle();
+
+      assertThat(touched.get()).isTrue();
+    }
+  }
+
+  private static Presentation showPresentation(Context context, int color, AtomicBoolean touched) {
+    int displayId = ShadowDisplayManager.addDisplay("w2000dp-h2000dp");
+    DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+    Presentation presentation = new Presentation(context, displayManager.getDisplay(displayId));
+    View view = new View(presentation.getContext());
+    view.setBackgroundColor(color);
+    if (touched != null) {
+      view.setOnTouchListener((v, e) -> touched.getAndSet(true) || true);
+    }
+    presentation.setContentView(view);
+    presentation.show();
+    return presentation;
   }
 
   @Test
