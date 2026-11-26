@@ -18,6 +18,9 @@ import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.RemoteViews;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.google.common.collect.HashMultimap;
@@ -96,6 +99,42 @@ public class ShadowAppWidgetManager {
       widgetInfo.layoutId = getRemoteViewsToApply(views).getLayoutId();
     }
     widgetInfo.lastRemoteViews = views;
+  }
+
+  /**
+   * Tells the widgets' collection with {@code viewId} that its data changed, as the system does. On
+   * SDK 35+, a collection the framework converted into items has its items replaced, so they are
+   * collected again from its {@code RemoteViewsService}, and the widget is updated, as {@code
+   * AppWidgetManager} does on a device. Otherwise the collection's adapter reloads from its factory
+   * ({@code onDataSetChanged()}), as {@code AppWidgetHostView.viewDataChanged} does.
+   */
+  @Implementation
+  protected void notifyAppWidgetViewDataChanged(int[] appWidgetIds, int viewId) {
+    for (int appWidgetId : appWidgetIds) {
+      notifyAppWidgetViewDataChanged(appWidgetId, viewId);
+    }
+  }
+
+  /** As {@link #notifyAppWidgetViewDataChanged(int[], int)}. */
+  @Implementation
+  protected void notifyAppWidgetViewDataChanged(int appWidgetId, int viewId) {
+    WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
+    if (widgetInfo == null || widgetInfo.view == null) {
+      return;
+    }
+    if (VERSION.SDK_INT >= VANILLA_ICE_CREAM
+        && widgetInfo.lastRemoteViews != null
+        && widgetInfo.lastRemoteViews.replaceRemoteCollections(viewId)) {
+      updateAppWidget(appWidgetId, widgetInfo.lastRemoteViews);
+      return;
+    }
+    View collection = widgetInfo.view.findViewById(viewId);
+    if (collection instanceof AdapterView) {
+      Adapter adapter = ((AdapterView<?>) collection).getAdapter();
+      if (adapter instanceof BaseAdapter) {
+        ((BaseAdapter) adapter).notifyDataSetChanged();
+      }
+    }
   }
 
   private boolean canReapplyRemoteViews(WidgetInfo widgetInfo, RemoteViews views) {

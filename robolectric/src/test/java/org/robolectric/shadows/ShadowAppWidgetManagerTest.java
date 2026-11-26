@@ -31,10 +31,13 @@ import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.RemoteViews;
+import android.widget.RemoteViewsService;
 import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -620,6 +623,117 @@ public class ShadowAppWidgetManagerTest {
       applicationAppWidgetManager.updateAppWidgetOptions(1, null);
 
       assertThat(activityAppWidgetManager.getAppWidgetOptions(1)).isNotNull();
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void notifyAppWidgetViewDataChanged_collection_reloadsFromFactory() {
+    CollectionFactory.items = ImmutableList.of("one", "two");
+    int widgetId =
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, android.R.layout.list_content);
+    RemoteViews views = new RemoteViews(context.getPackageName(), android.R.layout.list_content);
+    views.setRemoteAdapter(android.R.id.list, new Intent(context, CollectionService.class));
+    appWidgetManager.updateAppWidget(widgetId, views);
+    shadowOf(getMainLooper()).idle();
+    ListView list = shadowAppWidgetManager.getViewFor(widgetId).findViewById(android.R.id.list);
+    assertThat(list.getAdapter().getCount()).isEqualTo(2);
+
+    CollectionFactory.items = ImmutableList.of("one", "two", "three");
+    appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, android.R.id.list);
+    shadowOf(getMainLooper()).idle();
+
+    list = shadowAppWidgetManager.getViewFor(widgetId).findViewById(android.R.id.list);
+    assertThat(list.getAdapter().getCount()).isEqualTo(3);
+  }
+
+  @Test
+  public void notifyAppWidgetViewDataChanged_collection_keepsTheServicesFactory() {
+    CollectionFactory.items = ImmutableList.of("one");
+    CollectionFactory.created = 0;
+    int widgetId =
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, android.R.layout.list_content);
+    RemoteViews views = new RemoteViews(context.getPackageName(), android.R.layout.list_content);
+    views.setRemoteAdapter(android.R.id.list, new Intent(context, CollectionService.class));
+    appWidgetManager.updateAppWidget(widgetId, views);
+    shadowOf(getMainLooper()).idle();
+
+    CollectionFactory.items = ImmutableList.of("one", "two");
+    appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, android.R.id.list);
+    appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, android.R.id.list);
+    shadowOf(getMainLooper()).idle();
+
+    // As RemoteViewsService keeps one factory per intent: created once, then only reloaded.
+    assertThat(CollectionFactory.created).isEqualTo(1);
+    ListView list = shadowAppWidgetManager.getViewFor(widgetId).findViewById(android.R.id.list);
+    assertThat(list.getAdapter().getCount()).isEqualTo(2);
+  }
+
+  /** A widget collection service whose factory reads {@link CollectionFactory#items} on load. */
+  public static class CollectionService extends RemoteViewsService {
+    @Override
+    public RemoteViewsFactory onGetViewFactory(Intent intent) {
+      return new CollectionFactory();
+    }
+  }
+
+  static class CollectionFactory implements RemoteViewsService.RemoteViewsFactory {
+    @SuppressWarnings("NonFinalStaticField")
+    static List<String> items = ImmutableList.of();
+
+    @SuppressWarnings("NonFinalStaticField")
+    static int created;
+
+    private List<String> loaded = ImmutableList.of();
+
+    @Override
+    public void onCreate() {
+      created++;
+    }
+
+    @Override
+    public void onDataSetChanged() {
+      loaded = items;
+    }
+
+    @Override
+    public void onDestroy() {}
+
+    @Override
+    public int getCount() {
+      return loaded.size();
+    }
+
+    @Override
+    public RemoteViews getViewAt(int position) {
+      RemoteViews row =
+          new RemoteViews(
+              ApplicationProvider.getApplicationContext().getPackageName(),
+              android.R.layout.simple_list_item_1);
+      row.setTextViewText(android.R.id.text1, loaded.get(position));
+      return row;
+    }
+
+    @Override
+    public RemoteViews getLoadingView() {
+      return null;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+      return 1;
+    }
+
+    @Override
+    public long getItemId(int position) {
+      return position;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+      return true;
     }
   }
 
