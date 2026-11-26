@@ -42,14 +42,26 @@ public class ShadowAlarmManager {
 
   private final Handler schedulingHandler = new Handler(Looper.getMainLooper());
 
+  /**
+   * The alarms set through every {@link AlarmManager}. Each context has its own {@link
+   * AlarmManager} instance, but on a device they all talk to one alarm service, so an alarm set
+   * through an activity's instance is visible through the application's.
+   */
   @GuardedBy("scheduledAlarms")
-  private final PriorityQueue<InternalScheduledAlarm> scheduledAlarms = new PriorityQueue<>();
+  private static final PriorityQueue<InternalScheduledAlarm> scheduledAlarms =
+      new PriorityQueue<>();
 
   @Resetter
   public static void reset() {
     TimeZone.setDefault(DEFAULT_TIMEZONE);
     canScheduleExactAlarms = false;
     autoSchedule = false;
+    synchronized (scheduledAlarms) {
+      for (InternalScheduledAlarm alarm : scheduledAlarms) {
+        alarm.deschedule();
+      }
+      scheduledAlarms.clear();
+    }
   }
 
   /**
