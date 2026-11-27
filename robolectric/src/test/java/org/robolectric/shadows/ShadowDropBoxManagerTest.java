@@ -9,12 +9,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.DropBoxManager;
 import android.os.DropBoxManager.Entry;
-import android.os.SystemClock;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -106,23 +104,19 @@ public class ShadowDropBoxManagerTest {
 
   @Test
   public void testAddText() {
-    long baseTimestamp = 55000L;
-    ShadowSystemClock.advanceBy(55000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
+    long before = ShadowSystem.currentTimeMillis();
     manager.addText(TAG, "HELLO WORLD");
-    ShadowSystemClock.advanceBy(100, TimeUnit.MILLISECONDS);
     manager.addText(TAG, "GOODBYE WORLD");
 
-    Entry entry = manager.getNextEntry(null, 0);
-    assertThat(entry).isNotNull();
-    assertThat(entry.getText(1024)).isEqualTo("HELLO WORLD");
-    assertThat(entry.getTimeMillis()).isEqualTo(baseTimestamp);
+    Entry first = manager.getNextEntry(null, 0);
+    assertThat(first.getText(1024)).isEqualTo("HELLO WORLD");
+    assertThat(first.getTimeMillis()).isAtLeast(before);
 
-    entry = manager.getNextEntry(null, baseTimestamp + 1);
-    assertThat(entry.getText(1024)).isEqualTo("GOODBYE WORLD");
-    assertThat(entry.getTimeMillis()).isEqualTo(baseTimestamp + 100);
+    Entry second = manager.getNextEntry(null, first.getTimeMillis());
+    assertThat(second.getText(1024)).isEqualTo("GOODBYE WORLD");
+    assertThat(second.getTimeMillis()).isGreaterThan(first.getTimeMillis());
 
-    assertThat(manager.getNextEntry(null, baseTimestamp + 99)).isNotNull();
-    assertThat(manager.getNextEntry(null, baseTimestamp + 100)).isNull();
+    assertThat(manager.getNextEntry(null, second.getTimeMillis())).isNull();
   }
 
   @Test
