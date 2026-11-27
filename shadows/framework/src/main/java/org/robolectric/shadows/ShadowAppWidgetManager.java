@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -337,6 +338,13 @@ public class ShadowAppWidgetManager {
     WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
     widgetInfo.view = widgetInfo.lastRemoteViews.apply(context, new AppWidgetHostView(context));
   }
+
+  /**
+   * Does nothing. The framework reports a tap on a widget to the app widget service, which
+   * Robolectric does not have; a widget's click handlers call it as they run.
+   */
+  @Implementation(minSdk = S)
+  protected void noteAppWidgetTapped(int appWidgetId) {}
 
   private void enableWidgetsIfNecessary(Class<? extends AppWidgetProvider> appWidgetProviderClass) {
     if (!isWidgetsEnabled) {
