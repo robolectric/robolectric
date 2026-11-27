@@ -10,15 +10,19 @@ import android.text.format.DateUtils;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDateUtilsTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private Application context;
 
@@ -60,6 +64,14 @@ public class ShadowDateUtilsTest {
     assertThat(DateUtils.isToday(today)).isTrue();
     assertThat(DateUtils.isToday(today + (86400 * 1000) /* 24 hours */)).isFalse();
     assertThat(DateUtils.isToday(today + (86400 * 10000) /* 240 hours */)).isFalse();
+  }
+
+  @Test
+  public void isToday_withRealWallClock_comparesWithTheCurrentDate() {
+    setSystemPropertyRule.set("robolectric.useRealWallClock", "true");
+
+    assertThat(DateUtils.isToday(new Date().getTime())).isTrue();
+    assertThat(DateUtils.isToday(new Date().getTime() + DateUtils.DAY_IN_MILLIS)).isFalse();
   }
 
   private long getMillisAtStartOfYear() {

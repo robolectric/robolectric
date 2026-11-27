@@ -11,6 +11,7 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.DateTimeException;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -19,11 +20,13 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
 @Config(maxSdk = BAKLAVA)
 public class ShadowLegacySystemClockTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Test
   public void shouldAllowForFakingOfTime() {
@@ -67,6 +70,8 @@ public class ShadowLegacySystemClockTest {
 
   @Test
   public void shouldInterceptSystemTimeCalls() throws Throwable {
+    // The virtual clock that framework code reads unless robolectric.useRealWallClock is set.
+    setSystemPropertyRule.set("robolectric.useRealWallClock", "false");
     ShadowSystemClock.setNanoTime(3141592L);
     long systemNanoTime =
         (Long)

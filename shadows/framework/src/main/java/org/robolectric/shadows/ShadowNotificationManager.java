@@ -97,7 +97,8 @@ public class ShadowNotificationManager {
   protected void notify(String tag, int id, Notification notification) {
     if (!enforceMaxNotificationLimit || notifications.size() < MAX_NOTIFICATION_LIMIT) {
       notifications.put(
-          new Key(tag, id), new PostedNotification(notification, ShadowSystem.currentTimeMillis()));
+          new Key(tag, id),
+          new PostedNotification(notification, ShadowSystem.frameworkCurrentTimeMillis()));
     }
   }
 
