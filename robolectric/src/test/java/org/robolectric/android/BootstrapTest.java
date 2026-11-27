@@ -32,6 +32,7 @@ import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.view.Surface.ROTATION_0;
@@ -297,6 +298,19 @@ public class BootstrapTest {
       // expected
       assertThat(e.getMessage()).contains("'nodpi' isn't actually a dpi");
     }
+  }
+
+  @Test
+  @Config(maxSdk = N_MR1)
+  public void applyQualifiers_beforeO_ignoresColorModeQualifiers() {
+    Bootstrap.applyQualifiers(
+        "w393dp-h851dp-normal-long-notround-any-highdr-440dpi-keyshidden-nonav",
+        RuntimeEnvironment.getApiLevel(),
+        configuration,
+        displayMetrics);
+
+    assertThat(configuration.screenWidthDp).isEqualTo(393);
+    assertThat(configuration.densityDpi).isEqualTo(440);
   }
 
   @Test

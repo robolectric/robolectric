@@ -1,6 +1,7 @@
 package org.robolectric.android;
 
 import android.content.res.Configuration;
+import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
@@ -11,6 +12,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 
 /**
  * Parser that converts a qualifier string to a Configuration and DisplayMetrics.
@@ -464,49 +466,40 @@ class QualifierParser {
   }
 
   private static boolean parseWideColorGamut(String name, Configuration out) {
+    int value;
     if (Objects.equals(name, WILDCARD_NAME)) {
-      out.colorMode =
-          (byte)
-              ((out.colorMode & ~Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK)
-                  | Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_UNDEFINED);
-      return true;
+      value = Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_UNDEFINED;
     } else if (Objects.equals(name, "widecg")) {
-      out.colorMode =
-          (byte)
-              ((out.colorMode & ~Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK)
-                  | Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_YES);
-      return true;
+      value = Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_YES;
     } else if (Objects.equals(name, "nowidecg")) {
-      out.colorMode =
-          (byte)
-              ((out.colorMode & ~Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK)
-                  | Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_NO);
-      return true;
+      value = Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_NO;
+    } else {
+      return false;
     }
-    return false;
+    setColorMode(out, Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK, value);
+    return true;
   }
 
   private static boolean parseHdr(String name, Configuration out) {
+    int value;
     if (Objects.equals(name, WILDCARD_NAME)) {
-      out.colorMode =
-          (byte)
-              ((out.colorMode & ~Configuration.COLOR_MODE_HDR_MASK)
-                  | Configuration.COLOR_MODE_HDR_UNDEFINED);
-      return true;
+      value = Configuration.COLOR_MODE_HDR_UNDEFINED;
     } else if (Objects.equals(name, "highdr")) {
-      out.colorMode =
-          (byte)
-              ((out.colorMode & ~Configuration.COLOR_MODE_HDR_MASK)
-                  | Configuration.COLOR_MODE_HDR_YES);
-      return true;
+      value = Configuration.COLOR_MODE_HDR_YES;
     } else if (Objects.equals(name, "lowdr")) {
-      out.colorMode =
-          (byte)
-              ((out.colorMode & ~Configuration.COLOR_MODE_HDR_MASK)
-                  | Configuration.COLOR_MODE_HDR_NO);
-      return true;
+      value = Configuration.COLOR_MODE_HDR_NO;
+    } else {
+      return false;
     }
-    return false;
+    setColorMode(out, Configuration.COLOR_MODE_HDR_MASK, value);
+    return true;
+  }
+
+  private static void setColorMode(Configuration out, int mask, int value) {
+    // Configuration.colorMode was added in O. Earlier SDKs accept the qualifier but ignore it.
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.O) {
+      out.colorMode = (out.colorMode & ~mask) | value;
+    }
   }
 
   private static boolean parseOrientation(String name, Configuration out) {
