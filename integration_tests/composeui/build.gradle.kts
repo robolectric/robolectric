@@ -11,7 +11,7 @@ plugins {
 
 android {
   namespace = "org.robolectric.integrationtests.composeui"
-  compileSdk = 37
+  compileSdk { version = release(37) { minorApiLevel = 1 } }
 
   defaultConfig { minSdk = 24 }
 

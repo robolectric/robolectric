@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-  compileSdk = 37
+  compileSdk { version = release(37) { minorApiLevel = 1 } }
   namespace = "org.robolectric.sparsearray"
 
   defaultConfig { minSdk = 24 }
