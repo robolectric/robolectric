@@ -6,9 +6,6 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.view.Display;
 import android.view.ViewRootImpl;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import androidx.test.runner.lifecycle.Stage;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.android.controller.ActivityController;
@@ -18,15 +15,12 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
- * Updates the windows on a non-default display when it changes or is removed. Changes to the
- * default display are global configuration changes, which tests deliver with {@link
+ * Updates the windows on a non-default display when the display changes or is removed, and the
+ * activities in split screen when its divider moves, as the window manager does on a device.
+ * Changes to the default display are global configuration changes, which tests deliver with {@link
  * ActivityController#configurationChange()}.
  */
 final class DisplayChanges {
-  private static final Stage[] LIVE_STAGES = {
-    Stage.CREATED, Stage.STARTED, Stage.RESUMED, Stage.PAUSED, Stage.STOPPED, Stage.RESTARTED
-  };
-
   private DisplayChanges() {}
 
   /** Gives the activities and window contexts on a display the display's new configuration. */
@@ -36,18 +30,76 @@ final class DisplayChanges {
       return;
     }
     for (Activity activity : getActivitiesOn(displayId)) {
-      ActivityController<?> controller = Shadow.<ShadowActivity>extract(activity).getController();
-      Configuration configuration =
-          WindowConfigurations.getDisplayConfiguration(
-              displayId, activity.getApplicationContext().getResources().getConfiguration());
-      if (controller != null
-          && activity.getResources().getConfiguration().diff(configuration) != 0) {
-        controller.configurationChange();
-      }
+      changeConfigurationIfNeeded(activity);
     }
     WindowManagerServiceDelegate.onDisplayChanged(displayId);
     // Windows that stay on the display, such as a presentation's, need new frames.
     ShadowWindowManagerGlobal.resizeWindowsOnDisplay(displayId);
+  }
+
+  /**
+   * Applies the orientation requests of the activities on a display after the display started or
+   * stopped ignoring them.
+   */
+  static void onIgnoreOrientationRequestChanged(int displayId) {
+    for (Activity activity : LiveActivities.get()) {
+      if (getDisplayId(activity) == displayId) {
+        Shadow.<ShadowActivity>extract(activity).applyRequestedOrientation();
+      }
+    }
+  }
+
+  /** Gives the activities in split screen on a display their new halves after the divider moved. */
+  static void onSplitScreenChanged(int displayId) {
+    for (Activity activity : LiveActivities.get()) {
+      if (getDisplayId(activity) == displayId
+          && WindowConfigurations.isInSplitScreen(activity.getResources().getConfiguration())) {
+        changeConfigurationIfNeeded(activity);
+      }
+    }
+  }
+
+  /**
+   * Makes the activities in split screen on a display leave it after the divider reached an edge:
+   * those in the half on that side are stopped, and the others fill the display.
+   */
+  static void onSplitScreenDismissed(int displayId, boolean topOrLeft) {
+    List<Activity> remainingActivities = new ArrayList<>();
+    for (Activity activity : LiveActivities.get()) {
+      Configuration configuration = activity.getResources().getConfiguration();
+      if (getDisplayId(activity) != displayId
+          || !WindowConfigurations.isInSplitScreen(configuration)) {
+        continue;
+      }
+      if (WindowConfigurations.isInTopOrLeftOfSplitScreen(configuration) == topOrLeft) {
+        Shadow.<ShadowActivity>extract(activity).leaveSplitScreen(/* dismissed= */ true);
+      } else {
+        remainingActivities.add(activity);
+      }
+    }
+    for (Activity activity : remainingActivities) {
+      Shadow.<ShadowActivity>extract(activity).leaveSplitScreen(/* dismissed= */ false);
+    }
+  }
+
+  /**
+   * Gives the activity the configuration of its window, given the global configuration, if that
+   * changed since it last received one.
+   */
+  static void changeConfigurationIfNeeded(Activity activity) {
+    ActivityController<?> controller = Shadow.<ShadowActivity>extract(activity).getController();
+    if (controller == null) {
+      return;
+    }
+    Configuration configuration =
+        WindowConfigurations.getActivityConfiguration(
+            activity, activity.getApplicationContext().getResources().getConfiguration());
+    ActivityReflector activityReflector = reflector(ActivityReflector.class, activity);
+    if (activityReflector.getCurrentConfig().diff(configuration) != 0
+        || (activityReflector.getStopped()
+            && activity.getResources().getConfiguration().diff(configuration) != 0)) {
+      controller.configurationChange();
+    }
   }
 
   /**
@@ -85,19 +137,15 @@ final class DisplayChanges {
     if (displayId == Display.DEFAULT_DISPLAY) {
       return activities;
     }
-    ActivityLifecycleMonitor monitor;
-    try {
-      monitor = ActivityLifecycleMonitorRegistry.getInstance();
-    } catch (IllegalStateException e) {
-      return activities;
-    }
-    for (Stage stage : LIVE_STAGES) {
-      for (Activity activity : monitor.getActivitiesInStage(stage)) {
-        if (activity.getWindowManager().getDefaultDisplay().getDisplayId() == displayId) {
-          activities.add(activity);
-        }
+    for (Activity activity : LiveActivities.get()) {
+      if (getDisplayId(activity) == displayId) {
+        activities.add(activity);
       }
     }
     return activities;
+  }
+
+  private static int getDisplayId(Activity activity) {
+    return activity.getWindowManager().getDefaultDisplay().getDisplayId();
   }
 }

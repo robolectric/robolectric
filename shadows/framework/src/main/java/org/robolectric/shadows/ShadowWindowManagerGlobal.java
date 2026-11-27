@@ -25,6 +25,7 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -36,6 +37,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.util.DisplayMetrics;
 import android.util.MergedConfiguration;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -273,6 +275,9 @@ public class ShadowWindowManagerGlobal {
    * {@link IWindowSession} and track window state.
    */
   protected static class WindowSessionDelegate {
+    /** The height of the caption the system draws on a freeform window. */
+    private static final int FREEFORM_CAPTION_HEIGHT_DP = 42;
+
     private final LinkedHashMap<IWindow, WindowInfo> windows = new LinkedHashMap<>();
 
     // From WindowManagerGlobal (was WindowManagerImpl in JB).
@@ -445,9 +450,13 @@ public class ShadowWindowManagerGlobal {
                     ? windowLayoutResult.insetsState
                     : findFirst(InsetsState.class, args))
                 : null);
-        // A window on another display gets that display's configuration.
-        if (WindowConfigurations.getDisplayOverrideConfiguration(windowInfo.displayId) != null) {
-          MergedConfiguration mergedConfiguration = getMergedConfiguration(windowInfo.displayId);
+        // A window on another display or in a window of its own gets its override configuration.
+        Configuration overrideConfig = getWindowOverrideConfiguration(windowInfo);
+        if (overrideConfig != null) {
+          MergedConfiguration mergedConfiguration =
+              new MergedConfiguration(
+                  RuntimeEnvironment.getApplication().getResources().getConfiguration(),
+                  overrideConfig);
           if (windowLayoutResult != null) {
             windowLayoutResult.mergedConfiguration.setTo(mergedConfiguration);
           } else {
@@ -495,6 +504,28 @@ public class ShadowWindowManagerGlobal {
       windowInfo.displayFrame.set(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
       Rect contentFrame = new Rect(windowInfo.displayFrame);
       systemUi.adjustFrameForInsets(attrs, contentFrame);
+      // The windows of an activity in a window of its own, such as a freeform window, are in it.
+      Activity activity = getApiLevel() >= P ? LiveActivities.get(attrs.token) : null;
+      Rect activityWindowBounds =
+          activity != null
+              ? WindowConfigurations.getWindowBounds(
+                  windowInfo.displayId, activity.getResources().getConfiguration())
+              : null;
+      if (activityWindowBounds != null && !contentFrame.intersect(activityWindowBounds)) {
+        contentFrame.set(activityWindowBounds);
+      }
+      // Since T, the system draws the caption of a freeform window, and reports it as an inset.
+      windowInfo.captionHeight =
+          activity != null
+                  && getApiLevel() >= TIRAMISU
+                  && attrs.type == WindowManager.LayoutParams.TYPE_BASE_APPLICATION
+                  && WindowConfigurations.isInFreeformWindow(
+                      activity.getResources().getConfiguration())
+              ? Math.round(
+                  FREEFORM_CAPTION_HEIGHT_DP
+                      * displayInfo.logicalDensityDpi
+                      / (float) DisplayMetrics.DENSITY_DEFAULT)
+              : 0;
       // TODO: Remove this and respect the requested size as real Android does. For back compat
       //  reasons temporarily ignore requested size.
       boolean useRequestedSize = Boolean.getBoolean("robolectric.windowManager.useRequestedSize");
@@ -519,6 +550,9 @@ public class ShadowWindowManagerGlobal {
         // If we are not respecting the requested size, for backwards compatibility allow the window
         // to offset to the requested position ignoring the gravity and display bounds.
         windowInfo.frame.offsetTo(attrs.x, attrs.y);
+        if (activityWindowBounds != null) {
+          windowInfo.frame.offset(contentFrame.left, contentFrame.top);
+        }
       } else {
         Gravity.applyDisplay(attrs.gravity, contentFrame, windowInfo.frame);
       }
@@ -664,7 +698,7 @@ public class ShadowWindowManagerGlobal {
             boolean.class /* dragResizing */)) {
           ClassParameterBuilder rlrArgs = new ClassParameterBuilder();
           rlrArgs.add(ClientWindowFrames.class, windowInfo.frames);
-          rlrArgs.add(MergedConfiguration.class, getMergedConfiguration(windowInfo.displayId));
+          rlrArgs.add(MergedConfiguration.class, getMergedConfiguration(windowInfo));
           rlrArgs.add(InsetsState.class, windowInfo.insetsState);
           rlrArgs.add(InsetsSourceControl.Array.class, new InsetsSourceControl.Array());
           WindowRelayoutResult layout =
@@ -694,7 +728,7 @@ public class ShadowWindowManagerGlobal {
         /* newConfig */ args.add(Configuration.class, configuration);
       } else {
         /* newMergedConfiguration */ args.add(
-            MergedConfiguration.class, getMergedConfiguration(windowInfo.displayId));
+            MergedConfiguration.class, getMergedConfiguration(windowInfo));
       }
       /* backDropFrame */ args.addIf(sdk <= R, Rect.class, new Rect());
       if (sdk >= TIRAMISU) {
@@ -716,15 +750,30 @@ public class ShadowWindowManagerGlobal {
       callInstanceMethod(window, "resized", args.build());
     }
 
-    /** Returns the global configuration, with the display's override if it isn't the default. */
-    private static MergedConfiguration getMergedConfiguration(int displayId) {
+    /**
+     * Returns the global configuration, with the window's override if the activity has a window of
+     * its own or is on another display.
+     */
+    private static MergedConfiguration getMergedConfiguration(WindowInfo windowInfo) {
       Configuration globalConfig =
           RuntimeEnvironment.getApplication().getResources().getConfiguration();
-      Configuration displayOverrideConfig =
-          WindowConfigurations.getDisplayOverrideConfiguration(displayId);
-      return displayOverrideConfig == null
+      Configuration overrideConfig = getWindowOverrideConfiguration(windowInfo);
+      return overrideConfig == null
           ? new MergedConfiguration(globalConfig)
-          : new MergedConfiguration(globalConfig, displayOverrideConfig);
+          : new MergedConfiguration(globalConfig, overrideConfig);
+    }
+
+    @Nullable
+    private static Configuration getWindowOverrideConfiguration(WindowInfo windowInfo) {
+      Activity activity = getApiLevel() >= P ? LiveActivities.get(windowInfo.attrs.token) : null;
+      if (activity != null) {
+        Configuration activityOverrideConfig =
+            WindowConfigurations.getCurrentWindowOverrideConfiguration(activity);
+        if (activityOverrideConfig != null) {
+          return activityOverrideConfig;
+        }
+      }
+      return WindowConfigurations.getDisplayOverrideConfiguration(windowInfo.displayId);
     }
 
     private void transferWindowInsetsControlTo(WindowInfo windowInfo) {
@@ -781,6 +830,8 @@ public class ShadowWindowManagerGlobal {
     int displayId = -1;
     int requestedVisibleTypes = getApiLevel() >= R ? systemBars() : 0;
     boolean hasInsetsControl;
+    int captionHeight;
+    boolean hasCaptionInsets;
 
     WindowInfo() {
       if (getApiLevel() >= S) {

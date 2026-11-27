@@ -21,6 +21,12 @@ public class ShadowCompatibility {
 
   private static final long CALL_ACTIVITY_RESULT_BEFORE_RESUME = 78294732L;
 
+  /**
+   * Makes views report their location relative to their activity's bounds. A device doesn't enable
+   * this override by default.
+   */
+  private static final long OVERRIDE_SANDBOX_VIEW_BOUNDS_APIS = 237531167L;
+
   private static final long ENFORCE_EDGE_TO_EDGE = 309578419L;
 
   private static final long ENABLE_CHECKING_TELEPHONY_FEATURES_FOR_VCN = 330902016;
@@ -34,7 +40,8 @@ public class ShadowCompatibility {
 
   @Implementation(minSdk = VERSION_CODES.S_V2)
   protected static boolean isChangeEnabled(long changeId) {
-    if (changeId == CALL_ACTIVITY_RESULT_BEFORE_RESUME) {
+    if (changeId == CALL_ACTIVITY_RESULT_BEFORE_RESUME
+        || changeId == OVERRIDE_SANDBOX_VIEW_BOUNDS_APIS) {
       return false;
     } else if (ENABLED_SINCE_TARGET_SDK.containsKey(changeId)) {
       int targetSdkVersion = getTargetSdkVersion();
