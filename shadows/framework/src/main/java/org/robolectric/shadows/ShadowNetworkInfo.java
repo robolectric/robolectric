@@ -2,13 +2,17 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
@@ -24,10 +28,28 @@ public class ShadowNetworkInfo {
   interface NetworkInfoReflector {
     @Direct
     void setExtraInfo(String extraInfo);
+
+    @Accessor("mTypeName")
+    void setTypeName(String typeName);
+
+    @Accessor("mSubtypeName")
+    void setSubtypeName(String subtypeName);
   }
 
-  @Implementation
-  protected static void __staticInitializer__() {}
+  @ForType(ConnectivityManager.class)
+  interface ConnectivityManagerReflector {
+    @Static
+    String getNetworkTypeName(int type);
+
+    @Static
+    boolean isNetworkTypeMobile(int networkType);
+  }
+
+  @ForType(TelephonyManager.class)
+  interface TelephonyManagerReflector {
+    @Static
+    String getNetworkTypeName(int type);
+  }
 
   /**
    * @deprecated use {@link #newInstance(NetworkInfo.DetailedState, int, int, boolean,
@@ -133,16 +155,38 @@ public class ShadowNetworkInfo {
   }
 
   /**
-   * Sets up the return value of {@link #getType()}.
+   * Sets up the return value of {@link #getType()}, and names the connection as the framework does,
+   * for {@link NetworkInfo#getTypeName()} and {@link NetworkInfo#getSubtypeName()}.
    *
    * @param connectionType the value that {@link #getType()} will return.
    */
   public void setConnectionType(int connectionType) {
     this.connectionType = connectionType;
+    updateNames();
   }
 
+  /**
+   * Sets up the return value of {@link #getSubtype()}. Like {@link #setConnectionType(int)}, it
+   * also names the connection as the framework does, for {@link NetworkInfo#getTypeName()} and
+   * {@link NetworkInfo#getSubtypeName()}.
+   */
   public void setSubType(int subType) {
     this.connectionSubType = subType;
+    updateNames();
+  }
+
+  /**
+   * Names the connection type ({@code "WIFI"}, {@code "MOBILE"}) and, for a mobile network, its
+   * subtype ({@code "LTE"}); other types have an empty subtype name, as on a device.
+   */
+  private void updateNames() {
+    NetworkInfoReflector networkInfo = reflector(NetworkInfoReflector.class, realNetworkInfo);
+    networkInfo.setTypeName(
+        reflector(ConnectivityManagerReflector.class).getNetworkTypeName(connectionType));
+    networkInfo.setSubtypeName(
+        reflector(ConnectivityManagerReflector.class).isNetworkTypeMobile(connectionType)
+            ? reflector(TelephonyManagerReflector.class).getNetworkTypeName(connectionSubType)
+            : "");
   }
 
   public void setDetailedState(NetworkInfo.DetailedState detailedState) {
