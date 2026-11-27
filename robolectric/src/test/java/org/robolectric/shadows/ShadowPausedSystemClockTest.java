@@ -17,13 +17,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPausedSystemClockTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Test
   public void sleep() {
@@ -220,6 +223,8 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void shouldInterceptSystemTimeCalls() throws Throwable {
+    // The virtual clock that framework code reads unless robolectric.useRealWallClock is set.
+    setSystemPropertyRule.set("robolectric.useRealWallClock", "false");
     long systemNanoTime =
         (Long)
             RobolectricInternals.intercept("java/lang/System/nanoTime()J", null, null, getClass());

@@ -51,9 +51,8 @@ public class ShadowDropBoxManager {
    */
   @Implementation
   protected void addText(String tag, String data) {
-    // NOTE: Need to use ShadowSystemClock for current time, because this doesn't run in the
-    // ClassLoader that customizes System.currentTimeMillis.
-    long timestamp = ShadowSystem.currentTimeMillis();
+    // The same clock that DropBoxManagerService reads in framework code.
+    long timestamp = ShadowSystem.frameworkCurrentTimeMillis();
     // Like DropBoxManagerService, give each entry a timestamp after the previous one's.
     if (!entries.isEmpty()) {
       timestamp = Math.max(timestamp, entries.lastKey() + 1);

@@ -20,16 +20,30 @@ public class ShadowSystem {
   }
 
   /**
-   * Implements {@link System#currentTimeMillis} through ShadowWrangler.
+   * Implements {@link System#currentTimeMillis} for framework code through ShadowWrangler. With
+   * {@code -Drobolectric.useRealWallClock=true} it is the real wall clock, otherwise the virtual
+   * uptime.
    *
-   * @return Current time with millis.
+   * @deprecated Framework code will read the real wall clock in the next release, which {@code
+   *     -Drobolectric.useRealWallClock=true} turns on now. Use {@link System#currentTimeMillis}.
    */
-  @SuppressWarnings("unused")
+  @Deprecated
   public static long currentTimeMillis() {
+    return frameworkCurrentTimeMillis();
+  }
+
+  static long frameworkCurrentTimeMillis() {
+    if (useRealWallClock()) {
+      return System.currentTimeMillis();
+    }
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       return ShadowLegacySystemClock.currentTimeMillis();
     } else {
       return SystemClock.uptimeMillis();
     }
+  }
+
+  static boolean useRealWallClock() {
+    return Boolean.getBoolean("robolectric.useRealWallClock");
   }
 }
