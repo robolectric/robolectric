@@ -53,7 +53,12 @@ public class ShadowDropBoxManager {
   protected void addText(String tag, String data) {
     // NOTE: Need to use ShadowSystemClock for current time, because this doesn't run in the
     // ClassLoader that customizes System.currentTimeMillis.
-    addData(tag, ShadowSystem.currentTimeMillis(), data.getBytes(UTF_8));
+    long timestamp = ShadowSystem.currentTimeMillis();
+    // Like DropBoxManagerService, give each entry a timestamp after the previous one's.
+    if (!entries.isEmpty()) {
+      timestamp = Math.max(timestamp, entries.lastKey() + 1);
+    }
+    addData(tag, timestamp, data.getBytes(UTF_8));
   }
 
   /** Clears all entries. */
