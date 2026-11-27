@@ -240,7 +240,7 @@ public class ShadowChoreographerTest {
     // post an initial callback which depending on API version may execute at current time
     Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
     ShadowLooper.idleMainLooper();
-    long uptimeMillis = ShadowSystem.currentTimeMillis();
+    long uptimeMillis = SystemClock.uptimeMillis();
 
     Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
 

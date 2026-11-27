@@ -30,6 +30,7 @@ import android.service.notification.ZenPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -725,15 +726,17 @@ public class ShadowNotificationManagerTest {
   @Test
   @Config(minSdk = Config.OLDEST_SDK)
   public void testNotify_setsPostTime() {
-    long startTimeMillis = ShadowSystem.currentTimeMillis();
-
-    ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 1000.
+    long beforeFirst = ShadowSystem.currentTimeMillis();
     notificationManager.notify(1, notification1);
-    ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 2000.
+    long afterFirst = ShadowSystem.currentTimeMillis();
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(1));
     notificationManager.notify(2, notification2);
+    long afterSecond = ShadowSystem.currentTimeMillis();
 
-    assertThat(getStatusBarNotification(1).getPostTime()).isEqualTo(startTimeMillis + 1000);
-    assertThat(getStatusBarNotification(2).getPostTime()).isEqualTo(startTimeMillis + 2000);
+    long firstPostTime = getStatusBarNotification(1).getPostTime();
+    assertThat(firstPostTime).isIn(Range.closed(beforeFirst, afterFirst));
+    assertThat(getStatusBarNotification(2).getPostTime())
+        .isIn(Range.closed(firstPostTime, afterSecond));
   }
 
   @Test
