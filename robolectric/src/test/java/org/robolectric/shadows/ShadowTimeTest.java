@@ -3,9 +3,9 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import android.os.SystemClock;
 import android.text.format.Time;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.Range;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,8 +66,10 @@ public class ShadowTimeTest {
   @Test
   public void shouldSetToNow() {
     Time t = new Time();
-    SystemClock.setCurrentTimeMillis(1000);
+    long before = ShadowSystem.currentTimeMillis();
     t.setToNow();
-    assertThat(t.toMillis(false)).isEqualTo(1000);
+    long after = ShadowSystem.currentTimeMillis();
+    // Time stores whole seconds.
+    assertThat(t.toMillis(false)).isIn(Range.closed(before - before % 1000, after));
   }
 }
