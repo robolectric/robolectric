@@ -27,6 +27,7 @@ import android.os.LocaleList;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
+import com.google.common.collect.ImmutableList;
 import com.google.common.truth.Correspondence;
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -67,6 +68,7 @@ import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.ClassTracker;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.plugins.StubSdk;
@@ -720,5 +722,45 @@ public class AndroidTestEnvironmentTest {
     public Collection<Entry<String, String>> getShadows() {
       return new ArrayList<>();
     }
+  }
+
+  @Test
+  public void setUpApplicationState_manifestFromApkOnly_keepsApksTargetSdkVersion() {
+    AndroidManifest manifest = bootstrapWrapper.getAppManifest();
+    int apkTargetSdkVersion = manifest.getTargetSdkVersion();
+    bootstrapWrapper.changeAppManifest(
+        new AndroidManifest(
+            /* androidManifestFile= */ null,
+            /* resDirectory= */ null,
+            /* assetsDirectory= */ null,
+            ImmutableList.of(),
+            manifest.getPackageName(),
+            manifest.getApkFile(),
+            ImmutableList.of()));
+
+    bootstrapWrapper.callSetUpApplicationState();
+
+    // Without a manifest file to read, the AndroidManifest itself would report its default.
+    Application application = RuntimeEnvironment.getApplication();
+    assertThat(application.getApplicationInfo().targetSdkVersion).isEqualTo(apkTargetSdkVersion);
+  }
+
+  @Test
+  public void setUpApplicationState_noManifestFileOrApk_targetsDefaultSdk() {
+    AndroidManifest manifest = bootstrapWrapper.getAppManifest();
+    bootstrapWrapper.changeAppManifest(
+        new AndroidManifest(
+            /* androidManifestFile= */ null,
+            /* resDirectory= */ null,
+            /* assetsDirectory= */ null,
+            ImmutableList.of(),
+            manifest.getPackageName(),
+            /* apkFile= */ null,
+            ImmutableList.of()));
+
+    bootstrapWrapper.callSetUpApplicationState();
+
+    assertThat(RuntimeEnvironment.getApplication().getApplicationInfo().targetSdkVersion)
+        .isEqualTo(24);
   }
 }
