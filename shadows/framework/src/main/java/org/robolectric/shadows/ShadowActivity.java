@@ -65,6 +65,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -113,6 +115,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean throwIntentSenderException;
   private boolean hasReportedFullyDrawn = false;
   private boolean isInPictureInPictureMode = false;
+  @Nullable private PictureInPictureParams pictureInPictureParams;
   private Object splashScreen = null;
   private boolean showWhenLocked = false;
   private boolean turnScreenOn = false;
@@ -967,8 +970,36 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation(minSdk = O)
   protected boolean enterPictureInPictureMode(PictureInPictureParams params) {
+    recordPictureInPictureParams(params);
     isInPictureInPictureMode = true;
     return true;
+  }
+
+  /**
+   * Records the params, which the framework passes to the system server, so a test can read them
+   * back with {@link #getPictureInPictureParams()}.
+   */
+  @Filter(order = Order.AFTER, minSdk = O)
+  protected void setPictureInPictureParams(PictureInPictureParams params) {
+    recordPictureInPictureParams(params);
+  }
+
+  /** Merges the params into the activity's, as the system server does. */
+  private void recordPictureInPictureParams(PictureInPictureParams params) {
+    if (pictureInPictureParams == null) {
+      pictureInPictureParams = new PictureInPictureParams.Builder().build();
+    }
+    pictureInPictureParams.copyOnlySet(params);
+  }
+
+  /**
+   * Returns the activity's params: those passed to {@link Activity#setPictureInPictureParams} and
+   * {@link Activity#enterPictureInPictureMode(PictureInPictureParams)}, merged as the system server
+   * merges them, so a later call keeps the fields it doesn't set. Null if there were none.
+   */
+  @Nullable
+  public PictureInPictureParams getPictureInPictureParams() {
+    return pictureInPictureParams;
   }
 
   @Implementation

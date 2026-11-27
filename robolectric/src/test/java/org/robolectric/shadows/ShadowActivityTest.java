@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
@@ -36,6 +37,7 @@ import android.app.DirectAction;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
+import android.app.RemoteAction;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
@@ -50,12 +52,14 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.util.DisplayMetrics;
+import android.util.Rational;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -71,6 +75,7 @@ import android.widget.LinearLayout;
 import android.widget.SearchView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -91,6 +96,7 @@ import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
@@ -1571,6 +1577,66 @@ public class ShadowActivityTest {
     assertThat(activity.isInPictureInPictureMode()).isFalse();
     activity.enterPictureInPictureMode(new PictureInPictureParams.Builder().build());
     assertThat(activity.isInPictureInPictureMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setPictureInPictureParams_recordsParams() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ShadowActivity shadowActivity = shadowOf(activity);
+    assertThat(shadowActivity.getPictureInPictureParams()).isNull();
+    PictureInPictureParams params =
+        new PictureInPictureParams.Builder().setAspectRatio(new Rational(16, 9)).build();
+
+    activity.setPictureInPictureParams(params);
+
+    assertThat(aspectRatioOf(shadowActivity.getPictureInPictureParams()))
+        .isEqualTo(new Rational(16, 9));
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void enterPipWithParams_recordsParams() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    PictureInPictureParams params =
+        new PictureInPictureParams.Builder().setAspectRatio(new Rational(4, 3)).build();
+
+    activity.enterPictureInPictureMode(params);
+
+    assertThat(aspectRatioOf(shadowOf(activity).getPictureInPictureParams()))
+        .isEqualTo(new Rational(4, 3));
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setPictureInPictureParams_mergesWithEarlierParams() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    RemoteAction play =
+        new RemoteAction(
+            Icon.createWithResource(activity, android.R.drawable.ic_media_play),
+            "Play",
+            "Play",
+            PendingIntent.getBroadcast(
+                activity, 0, new Intent("play"), PendingIntent.FLAG_IMMUTABLE));
+
+    activity.setPictureInPictureParams(
+        new PictureInPictureParams.Builder()
+            .setAspectRatio(new Rational(16, 9))
+            .setAutoEnterEnabled(true)
+            .build());
+    activity.setPictureInPictureParams(
+        new PictureInPictureParams.Builder().setActions(ImmutableList.of(play)).build());
+
+    PictureInPictureParams params = shadowOf(activity).getPictureInPictureParams();
+    assertThat(params.getAspectRatio()).isEqualTo(new Rational(16, 9));
+    assertThat(params.isAutoEnterEnabled()).isTrue();
+    assertThat(params.getActions()).containsExactly(play);
+  }
+
+  /** {@link PictureInPictureParams#getAspectRatio()} is public only from T. */
+  private static Rational aspectRatioOf(PictureInPictureParams params) {
+    return ReflectionHelpers.getField(params, "mAspectRatio");
   }
 
   @Test
