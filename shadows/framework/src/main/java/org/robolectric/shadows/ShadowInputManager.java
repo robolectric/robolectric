@@ -46,11 +46,21 @@ public class ShadowInputManager {
     return result;
   }
 
-  /** On U and above, this method delegates to {@link android.hardware.input.InputManagerGlobal}. */
+  /**
+   * Dispatches the event to the window it targets on the main thread, as {@link
+   * android.app.UiAutomation#injectInputEvent} does under Robolectric, waiting for the dispatch
+   * whatever the mode. On U and above, {@link android.hardware.input.InputManagerGlobal} does the
+   * same.
+   */
   @Implementation(maxSdk = TIRAMISU)
   protected boolean injectInputEvent(InputEvent event, int mode) {
-    // ignore
-    return true;
+    return ShadowUiAutomation.injectInputEvent(event);
+  }
+
+  /** As {@link #injectInputEvent(InputEvent, int)}; the target UID is not checked. */
+  @Implementation(minSdk = TIRAMISU, maxSdk = TIRAMISU)
+  protected boolean injectInputEvent(InputEvent event, int mode, int targetUid) {
+    return ShadowUiAutomation.injectInputEvent(event);
   }
 
   /** On U and above, this method delegates to {@link android.hardware.input.InputManagerGlobal}. */
