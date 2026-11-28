@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
+import java.util.Arrays;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -38,7 +39,17 @@ public class ShadowLoadedApk {
 
   @Implementation(minSdk = VERSION_CODES.O)
   public ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
-    return this.getClass().getClassLoader();
+    if (splitName == null) {
+      return getClassLoader();
+    }
+    ApplicationInfo appInfo = realLoadedApk.getApplicationInfo();
+    if (appInfo != null
+        && appInfo.splitNames != null
+        && appInfo.splitNames.length > 0
+        && !Arrays.asList(appInfo.splitNames).contains(splitName)) {
+      throw new NameNotFoundException("Unknown split name: " + splitName);
+    }
+    return getClassLoader();
   }
 
   private void tryInitAppComponentFactory(LoadedApk realLoadedApk) {
@@ -85,5 +96,14 @@ public class ShadowLoadedApk {
 
     @Accessor("mAppComponentFactory")
     void setAppFactory(Object appFactory);
+
+    @Accessor("mSplitNames")
+    void setSplitNames(String[] splitNames);
+
+    @Accessor("mSplitAppDirs")
+    void setSplitAppDirs(String[] splitAppDirs);
+
+    @Accessor("mSplitResDirs")
+    void setSplitResDirs(String[] splitResDirs);
   }
 }

@@ -96,6 +96,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -120,6 +122,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.shadows.ShadowAssetManager.AssetManagerReflector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -1077,7 +1080,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (res != null) {
         return res;
       }
-      res = new Resources(new AssetManager(), null, null);
+      AssetManager assetManager = new AssetManager();
+      PackageInfo packageInfo = packageInfos.get(packageName);
+      if (packageInfo != null
+          && packageInfo.applicationInfo != null
+          && packageInfo.applicationInfo.splitSourceDirs != null) {
+        for (String splitPath : packageInfo.applicationInfo.splitSourceDirs) {
+          if (splitPath != null && Files.isRegularFile(Path.of(splitPath))) {
+            reflector(AssetManagerReflector.class, assetManager).addAssetPath(splitPath);
+          }
+        }
+      }
+      res = new Resources(assetManager, null, null);
       resources.put(packageName, res);
       return res;
     }
