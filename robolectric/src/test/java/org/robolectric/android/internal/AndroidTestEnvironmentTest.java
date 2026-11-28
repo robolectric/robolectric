@@ -28,8 +28,13 @@ import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
 import com.google.common.truth.Correspondence;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -47,6 +52,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
+import org.bouncycastle.crypto.PBEParametersGenerator;
+import org.bouncycastle.crypto.digests.SHA1Digest;
+import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
+import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Rule;
 import org.junit.Test;
@@ -142,6 +151,45 @@ public class AndroidTestEnvironmentTest {
     t.join();
     assertThat(res.get()).isTrue();
     assertThat(RuntimeEnvironment.isMainThread()).isFalse();
+  }
+
+  @Test
+  public void bksVersion1KeyStore_canBeLoaded() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
+    char[] password = "changeit".toCharArray();
+
+    KeyStore keyStore = KeyStore.getInstance("BKS");
+    keyStore.load(new ByteArrayInputStream(emptyBksVersion1KeyStore(password)), password);
+
+    assertThat(keyStore.size()).isEqualTo(0);
+  }
+
+  /**
+   * An empty BKS key store in the version 1 format, which Bouncy Castle no longer writes. It
+   * differs from version 2 only in the length of the integrity check's key.
+   */
+  private static byte[] emptyBksVersion1KeyStore(char[] password) throws IOException {
+    byte[] salt = new byte[20];
+    int iterationCount = 1024;
+    byte[] entries = {0}; // No entries, then the end marker.
+    PKCS12ParametersGenerator generator = new PKCS12ParametersGenerator(new SHA1Digest());
+    generator.init(PBEParametersGenerator.PKCS12PasswordToBytes(password), salt, iterationCount);
+    HMac hMac = new HMac(new SHA1Digest());
+    // Version 1 passes the key length in bytes where version 2 passes it in bits.
+    hMac.init(generator.generateDerivedMacParameters(hMac.getMacSize()));
+    hMac.update(entries, 0, entries.length);
+    byte[] mac = new byte[hMac.getMacSize()];
+    hMac.doFinal(mac, 0);
+
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataOutputStream out = new DataOutputStream(bytes);
+    out.writeInt(1);
+    out.writeInt(salt.length);
+    out.write(salt);
+    out.writeInt(iterationCount);
+    out.write(entries);
+    out.write(mac);
+    return bytes.toByteArray();
   }
 
   /**

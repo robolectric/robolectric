@@ -317,7 +317,16 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
+  /**
+   * Lets Bouncy Castle read version 1 BKS key stores, which Android's platform provider reads and
+   * apps still ship as trust stores, but desktop Bouncy Castle rejects unless this is set.
+   */
+  @VisibleForTesting static final String BKS_ENABLE_V1 = "org.bouncycastle.bks.enable_v1";
+
   private static FutureTask<BouncyCastleProvider> startBouncyCastleProvider() {
+    if (System.getProperty(BKS_ENABLE_V1) == null) {
+      System.setProperty(BKS_ENABLE_V1, "true");
+    }
     FutureTask<BouncyCastleProvider> task = new FutureTask<>(BouncyCastleProvider::new);
     Thread thread = new Thread(task, "Robolectric BouncyCastleProvider initializer");
     thread.setDaemon(true);
