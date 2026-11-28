@@ -1,6 +1,8 @@
 package org.robolectric.integrationtests.dynamicfeature;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Application;
 import android.content.Context;
@@ -8,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +18,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Robolectric tests that run inside the base app module with both dynamic feature splits installed.
@@ -82,5 +87,28 @@ public class BaseAppWithSplitsTest {
     int feature2Id =
         split2.getResources().getIdentifier("feature_greeting", "string", FEATURE2_PACKAGE);
     assertThat(split2.getString(feature2Id)).isEqualTo("Hello from feature 2");
+  }
+
+  @Test
+  public void loadedApk_getSplitClassLoader_validatesAgainstClusterSplits() throws Exception {
+    Application app = RuntimeEnvironment.getApplication();
+    Object loadedApk = reflector(ContextImplReflector.class, app.getBaseContext()).getPackageInfo();
+    LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
+
+    assertThat(loadedApkReflector.getSplitClassLoader("feature1")).isNotNull();
+    assertThat(loadedApkReflector.getSplitClassLoader("feature2")).isNotNull();
+    assertThrows(
+        NameNotFoundException.class, () -> loadedApkReflector.getSplitClassLoader("nonexistent"));
+  }
+
+  @ForType(className = "android.app.ContextImpl")
+  interface ContextImplReflector {
+    @Accessor("mPackageInfo")
+    Object getPackageInfo();
+  }
+
+  @ForType(className = "android.app.LoadedApk")
+  interface LoadedApkReflector {
+    ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException;
   }
 }
