@@ -34,6 +34,7 @@ import org.robolectric.nativeruntime.RenderNodeNatives;
 import org.robolectric.nativeruntime.SurfaceNatives;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeSurface.Picker;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -52,6 +53,54 @@ public class ShadowNativeSurface {
   private final AtomicReference<ImageReader> containerImageReader = new AtomicReference<>(null);
 
   @RealObject private Surface realSurface;
+
+  // The texture this surface was made from, if any; see TextureViewFrames.
+  private SurfaceTexture surfaceTexture;
+
+  @Implementation
+  protected void __constructor__(SurfaceTexture surfaceTexture) {
+    this.surfaceTexture = surfaceTexture;
+    Shadow.invokeConstructor(
+        Surface.class, realSurface, ClassParameter.from(SurfaceTexture.class, surfaceTexture));
+  }
+
+  /** The frames of the texture this surface was made from, while a TextureView shows it. */
+  private TextureViewFrames textureViewFrames() {
+    return surfaceTexture == null ? null : TextureViewFrames.of(surfaceTexture);
+  }
+
+  @Implementation
+  protected boolean isValid() {
+    if (textureViewFrames() != null) {
+      return true;
+    }
+    return reflector(SurfaceReflector.class, realSurface).isValid();
+  }
+
+  /**
+   * For a surface made from a TextureView's texture ({@link
+   * ShadowTextureView#setProvidesSurfaceTexture}), a canvas over the view's next frame.
+   */
+  @Implementation
+  protected Canvas lockCanvas(Rect inOutDirty) {
+    TextureViewFrames frames = textureViewFrames();
+    if (frames != null) {
+      Canvas canvas = frames.lock(inOutDirty);
+      if (canvas == null) {
+        throw new IllegalArgumentException("Surface was already locked, or its view has no size");
+      }
+      return canvas;
+    }
+    return reflector(SurfaceReflector.class, realSurface).lockCanvas(inOutDirty);
+  }
+
+  @Implementation
+  protected Canvas lockHardwareCanvas() {
+    if (textureViewFrames() != null) {
+      return lockCanvas(null);
+    }
+    return reflector(SurfaceReflector.class, realSurface).lockHardwareCanvas();
+  }
 
   @Implementation
   protected static long nativeCreateFromSurfaceTexture(SurfaceTexture surfaceTexture)
@@ -215,8 +264,14 @@ public class ShadowNativeSurface {
     this.containerImageReader.set(realImageReader);
   }
 
-  @Filter(order = Order.AFTER)
+  @Implementation
   protected void unlockCanvasAndPost(Canvas canvas) {
+    TextureViewFrames frames = textureViewFrames();
+    if (frames != null && frames.owns(canvas)) {
+      frames.post(canvas);
+      return;
+    }
+    reflector(SurfaceReflector.class, realSurface).unlockCanvasAndPost(canvas);
     ImageReader imageReader = containerImageReader.get();
     if (imageReader != null) {
       ShadowNativeImageReader.triggerOnImageAvailableCallbacks(imageReader);
@@ -298,6 +353,18 @@ public class ShadowNativeSurface {
 
     @Direct
     void copyFrom(SurfaceControl other);
+
+    @Direct
+    boolean isValid();
+
+    @Direct
+    Canvas lockCanvas(Rect inOutDirty);
+
+    @Direct
+    Canvas lockHardwareCanvas();
+
+    @Direct
+    void unlockCanvasAndPost(Canvas canvas);
   }
 
   /** Shadow picker for {@link Surface}. */
