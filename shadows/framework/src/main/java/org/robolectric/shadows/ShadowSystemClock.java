@@ -114,6 +114,21 @@ public abstract class ShadowSystemClock {
     }
   }
 
+  /**
+   * Sets whether something advances the clock in step with wall-clock time, as the simulator's main
+   * loop does. While it does, {@link SystemClock#sleep} on a thread other than the main thread
+   * blocks for the time asked, as on a device, instead of advancing the clock at once: the clock
+   * catches up as the main loop advances it. The main thread's sleep still advances the clock.
+   *
+   * <p>Off by default, and reset between tests. Not supported in {@link LooperMode.Mode#LEGACY}.
+   */
+  public static void setAdvancedInRealTime(boolean advancedInRealTime) {
+    if (looperMode() == Mode.LEGACY) {
+      throw new IllegalStateException("setAdvancedInRealTime is not supported in LEGACY mode");
+    }
+    ShadowPausedSystemClock.internalSetAdvancedInRealTime(advancedInRealTime);
+  }
+
   /** Sets whether gnss location based time is available. */
   public static void setGnssTimeAvailable(boolean available) {
     gnssTimeAvailable = available;
