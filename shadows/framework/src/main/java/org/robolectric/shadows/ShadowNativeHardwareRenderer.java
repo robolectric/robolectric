@@ -26,6 +26,8 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.view.Surface;
 import java.io.FileDescriptor;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -34,6 +36,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.Direct.DirectFormat;
 import org.robolectric.util.reflector.ForType;
@@ -249,7 +252,44 @@ public class ShadowNativeHardwareRenderer {
       // consistent.
       adjustFrameInfoTimes(frameInfo.frameInfo, -offset);
     }
+    notifyFrameCommitted();
     return result;
+  }
+
+  /**
+   * The frame commit callbacks set with {@code nSetFrameCommitCallback}, by native proxy. Before
+   * {@code CINNAMON_BUN} HWUI under Robolectric never calls one back (before {@code
+   * VANILLA_ICE_CREAM} there is no native implementation at all), so {@link #syncAndDrawFrame}
+   * calls it once the frame is drawn, as HWUI does once the frame is committed.
+   */
+  private static final Map<Long, Object> frameCommitCallbacks = new ConcurrentHashMap<>();
+
+  /**
+   * Keeps the callback for {@link #syncAndDrawFrame} to call; see {@link #frameCommitCallbacks}.
+   */
+  @Implementation(minSdk = S_V2, maxSdk = BAKLAVA)
+  protected static void nSetFrameCommitCallback(
+      long nativeProxy,
+      @ClassName("android.graphics.HardwareRenderer$FrameCommitCallback") Object callback) {
+    if (callback == null) {
+      frameCommitCallbacks.remove(nativeProxy);
+    } else {
+      frameCommitCallbacks.put(nativeProxy, callback);
+    }
+  }
+
+  private void notifyFrameCommitted() {
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    if (apiLevel < S_V2 || apiLevel > BAKLAVA) {
+      return;
+    }
+    long nativeProxy =
+        reflector(HardwareRendererReflector.class, realHardwareRenderer).getNativeProxy();
+    Object callback = frameCommitCallbacks.remove(nativeProxy);
+    if (callback != null) {
+      reflector(FrameCommitCallbackReflector.class, callback)
+          .onFrameCommit(/* didProduceBuffer= */ true);
+    }
   }
 
   /**
@@ -594,6 +634,11 @@ public class ShadowNativeHardwareRenderer {
     // nNotifyCallbackPending not supported in host graphics on U, so just no-op it for now
   }
 
+  @ForType(className = "android.graphics.HardwareRenderer$FrameCommitCallback")
+  interface FrameCommitCallbackReflector {
+    void onFrameCommit(boolean didProduceBuffer);
+  }
+
   @ForType(HardwareRenderer.class)
   interface HardwareRendererReflector {
     void setWideGamut(boolean isWideColorGamut);
@@ -602,6 +647,9 @@ public class ShadowNativeHardwareRenderer {
 
     @Direct
     int syncAndDrawFrame(FrameInfo frameInfo);
+
+    @Accessor("mNativeProxy")
+    long getNativeProxy();
 
     void forceDrawNextFrame();
 
