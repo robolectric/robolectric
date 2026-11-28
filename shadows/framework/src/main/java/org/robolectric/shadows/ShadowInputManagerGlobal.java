@@ -6,6 +6,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.hardware.input.InputManagerGlobal;
 import android.util.SparseArray;
 import android.view.InputDevice;
+import android.view.InputEvent;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -42,6 +43,22 @@ public class ShadowInputManagerGlobal {
 
   private void setInputDevices(SparseArray<InputDevice> devices) {
     reflector(InputManagerReflector.class, realInputManager).setInputDevices(devices);
+  }
+
+  /**
+   * Dispatches the event to the window it targets on the main thread, as {@link
+   * android.app.UiAutomation#injectInputEvent} does under Robolectric, waiting for the dispatch
+   * whatever the mode. There is no input service to send it to.
+   */
+  @Implementation
+  protected boolean injectInputEvent(InputEvent event, int mode) {
+    return ShadowUiAutomation.injectInputEvent(event);
+  }
+
+  /** As {@link #injectInputEvent(InputEvent, int)}; the target UID is not checked. */
+  @Implementation
+  protected boolean injectInputEvent(InputEvent event, int mode, int targetUid) {
+    return ShadowUiAutomation.injectInputEvent(event);
   }
 
   @Implementation
