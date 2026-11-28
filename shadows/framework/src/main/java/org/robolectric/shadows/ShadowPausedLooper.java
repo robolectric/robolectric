@@ -579,7 +579,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
       }
 
       if (msg != null) {
-        SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
+        ShadowPausedSystemClock.internalAdvanceTo(shadowMsg(msg).getWhen());
         msg.getTarget().dispatchMessage(msg);
         triggerIdleHandlersIfNeeded(msg);
       }
