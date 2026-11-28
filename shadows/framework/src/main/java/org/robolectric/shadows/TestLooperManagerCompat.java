@@ -33,17 +33,28 @@ final class TestLooperManagerCompat implements AutoCloseable {
   TestLooperManagerCompat(MessageQueue queue) {
     this.queue = queue;
     this.delegate = null;
+    this.ownsDelegate = false;
   }
 
-  private TestLooperManagerCompat(TestLooperManager testLooperManager) {
+  // Whether this holds the delegate, and so releases it when closed. False when borrowing the
+  // delegate of another holder.
+  private final boolean ownsDelegate;
+
+  private TestLooperManagerCompat(TestLooperManager testLooperManager, boolean ownsDelegate) {
     this.queue = null;
     this.delegate = testLooperManager;
+    this.ownsDelegate = ownsDelegate;
   }
 
   static TestLooperManagerCompat acquire(Looper looper) {
     if (getApiLevel() >= BAKLAVA) {
-      TestLooperManager testLooperManager = new TestLooperManager(looper);
-      return new TestLooperManagerCompat(testLooperManager);
+      // Only one TestLooperManager may hold a looper. If one already does, for example Espresso's
+      // while it runs a message that idles the looper, drive the looper through it.
+      TestLooperManager holder = ShadowTestLooperManager.getHolder(looper);
+      if (holder != null) {
+        return new TestLooperManagerCompat(holder, /* ownsDelegate= */ false);
+      }
+      return new TestLooperManagerCompat(new TestLooperManager(looper), /* ownsDelegate= */ true);
     } else {
       return new TestLooperManagerCompat(looper.getQueue());
     }
@@ -134,7 +145,7 @@ final class TestLooperManagerCompat implements AutoCloseable {
 
   @Override
   public void close() {
-    if (delegate != null) {
+    if (delegate != null && ownsDelegate) {
       delegate.release();
     }
   }
