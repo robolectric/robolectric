@@ -34,7 +34,6 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
 import android.text.TextUtils;
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -43,13 +42,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -96,9 +93,7 @@ public class ShadowInstrumentation {
   @GuardedBy("itself")
   private final List<Wrapper> registeredReceivers = new ArrayList<>();
 
-  // map of PermissionKey to granted permissions
-  private final Map<PermissionKey, Set<String>> grantedPermissionsMap =
-      Collections.synchronizedMap(new HashMap<>());
+  private final PermissionsTable permissionsTable = new PermissionsTable();
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private SecurityException exceptionForBindService = null;
   private boolean bindServiceCallsOnServiceConnectedInline;
@@ -1011,22 +1006,17 @@ public class ShadowInstrumentation {
   }
 
   int checkPermission(String permission, int pid, int uid, int deviceId) {
-    if (pid == -1) {
-      for (Map.Entry<PermissionKey, Set<String>> entry : grantedPermissionsMap.entrySet()) {
-        if (entry.getKey().deviceId() == deviceId
-            && entry.getKey().uid() == uid
-            && entry.getValue().contains(permission)) {
-          return PERMISSION_GRANTED;
-        }
-      }
-      return PERMISSION_DENIED;
-    } else {
-      Set<String> grantedPermissions =
-          grantedPermissionsMap.get(PermissionKey.create(deviceId, pid, uid));
-      return grantedPermissions != null && grantedPermissions.contains(permission)
-          ? PERMISSION_GRANTED
-          : PERMISSION_DENIED;
-    }
+    Boolean decision = permissionsTable.get(deviceId, pid, uid, permission);
+    boolean granted =
+        decision != null
+            ? decision
+            : ShadowApplicationPackageManager.isGrantedByDefault(uid, permission);
+    return granted ? PERMISSION_GRANTED : PERMISSION_DENIED;
+  }
+
+  /** The permissions granted or denied in this test, shared with the PackageManager. */
+  PermissionsTable getPermissionsTable() {
+    return permissionsTable;
   }
 
   void grantPermissions(String... permissionNames) {
@@ -1038,10 +1028,9 @@ public class ShadowInstrumentation {
   }
 
   void grantPermissions(int deviceId, int pid, int uid, String... permissions) {
-    PermissionKey key = PermissionKey.create(deviceId, pid, uid);
-    Set<String> grantedPermissions =
-        grantedPermissionsMap.computeIfAbsent(key, k -> new HashSet<>());
-    Collections.addAll(grantedPermissions, permissions);
+    for (String permission : permissions) {
+      permissionsTable.set(deviceId, pid, uid, permission, true);
+    }
   }
 
   void denyPermissions(String... permissionNames) {
@@ -1053,12 +1042,8 @@ public class ShadowInstrumentation {
   }
 
   void denyPermissions(int deviceId, int pid, int uid, String... permissions) {
-    PermissionKey key = PermissionKey.create(deviceId, pid, uid);
-    Set<String> grantedPermissions = grantedPermissionsMap.get(key);
-    if (grantedPermissions != null) {
-      for (String permissionName : permissions) {
-        grantedPermissions.remove(permissionName);
-      }
+    for (String permission : permissions) {
+      permissionsTable.set(deviceId, pid, uid, permission, false);
     }
   }
 
@@ -1210,18 +1195,5 @@ public class ShadowInstrumentation {
     @Constructor
     UiAutomation newInstance(
         Looper looper, @WithType("android.app.IUiAutomationConnection") Object connection);
-  }
-
-  @AutoValue
-  abstract static class PermissionKey {
-    abstract int deviceId();
-
-    abstract int pid();
-
-    abstract int uid();
-
-    static PermissionKey create(int deviceId, int pid, int uid) {
-      return new AutoValue_ShadowInstrumentation_PermissionKey(deviceId, pid, uid);
-    }
   }
 }

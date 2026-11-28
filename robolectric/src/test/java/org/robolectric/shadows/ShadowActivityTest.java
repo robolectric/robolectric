@@ -1475,7 +1475,7 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
 
     activity.requestPermissions(
-        new String[] {Manifest.permission.INTERNET}, /* requestCode= */ 1007);
+        new String[] {Manifest.permission.RECORD_AUDIO}, /* requestCode= */ 1007);
 
     assertThat(shadowOf(activity).getNextStartedActivity().getAction())
         .isEqualTo("android.content.pm.action.REQUEST_PERMISSIONS");
@@ -1484,7 +1484,7 @@ public class ShadowActivityTest {
   @Test
   @Config(minSdk = CINNAMON_BUN)
   public void requestPermissions_granted_doesNotStartRequestIntent() {
-    String[] permission = {Manifest.permission.INTERNET};
+    String[] permission = {Manifest.permission.RECORD_AUDIO};
     shadowOf(getApplication()).grantPermissions(permission);
     Activity activity = Robolectric.setupActivity(Activity.class);
 

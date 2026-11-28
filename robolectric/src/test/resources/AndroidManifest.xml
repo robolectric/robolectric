@@ -32,6 +32,8 @@
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.GET_TASKS"/>
+  <!-- A runtime permission, which has to be granted. -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
   <application android:name="org.robolectric.shadows.testing.TestApplication"
          android:theme="@style/Theme.Robolectric"
