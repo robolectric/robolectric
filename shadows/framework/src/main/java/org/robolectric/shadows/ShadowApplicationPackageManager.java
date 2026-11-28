@@ -2460,20 +2460,26 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return reflector(ReflectorApplicationPackageManager.class, realObject).getContext();
   }
 
-  /** Stub that will always throw. */
+  /** Returns a property of the app under test, read from its manifest. */
   @Implementation(minSdk = S)
   protected @ClassName("android.content.pm.PackageManager$Property") Object getProperty(
       String propertyName, String packageName) throws NameNotFoundException {
-    // TODO: in future read this value from parsed manifest
-    throw new NameNotFoundException("unsupported");
+    Object property = getPropertyInternal(packageName, null, propertyName);
+    if (property == null) {
+      throw new NameNotFoundException(packageName + ": " + propertyName);
+    }
+    return property;
   }
 
-  /** Stub that will always throw. */
+  /** Returns a property of a component of the app under test, read from its manifest. */
   @Implementation(minSdk = S)
   protected @ClassName("android.content.pm.PackageManager$Property") Object getProperty(
       String propertyName, ComponentName name) throws NameNotFoundException {
-    // TODO: in future read this value from parsed manifest
-    throw new NameNotFoundException("unsupported");
+    Object property = getPropertyInternal(name.getPackageName(), name.getClassName(), propertyName);
+    if (property == null) {
+      throw new NameNotFoundException(name.flattenToShortString() + ": " + propertyName);
+    }
+    return property;
   }
 
   /** Reflector interface for {@link ApplicationPackageManager}'s internals. */

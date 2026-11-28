@@ -108,6 +108,7 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.provider.DocumentsContract;
 import android.telecom.TelecomManager;
+import android.util.Log;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.content.pm.ApplicationInfoBuilder;
 import androidx.test.core.content.pm.PackageInfoBuilder;
@@ -119,6 +120,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -4983,6 +4985,102 @@ public class ShadowPackageManagerTest {
         new ComponentName(RuntimeEnvironment.getApplication().getPackageName(), "mycomponentname");
     assertThrows(
         NameNotFoundException.class, () -> packageManager.getProperty("myproperty", componentName));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProperty_fromManifest_hasEachValueType() throws NameNotFoundException {
+    String packageName = RuntimeEnvironment.getApplication().getPackageName();
+
+    PackageManager.Property string =
+        packageManager.getProperty("org.robolectric.propertyString", packageName);
+    assertThat(string.isString()).isTrue();
+    assertThat(string.getString()).isEqualTo("propertyValue");
+    assertThat(string.getPackageName()).isEqualTo(packageName);
+    assertThat(string.getClassName()).isNull();
+    assertThat(
+            packageManager
+                .getProperty("org.robolectric.propertyStringFromRes", packageName)
+                .getString())
+        .isEqualTo("Testing App");
+    assertThat(
+            packageManager.getProperty("org.robolectric.propertyBoolean", packageName).getBoolean())
+        .isTrue();
+    assertThat(packageManager.getProperty("org.robolectric.propertyInt", packageName).getInteger())
+        .isEqualTo(123);
+    assertThat(packageManager.getProperty("org.robolectric.propertyFloat", packageName).getFloat())
+        .isEqualTo(1.5f);
+    PackageManager.Property resource =
+        packageManager.getProperty("org.robolectric.propertyResource", packageName);
+    assertThat(resource.isResourceId()).isTrue();
+    assertThat(resource.getResourceId()).isEqualTo(R.string.app_name);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProperty_component_fromManifest() throws NameNotFoundException {
+    ComponentName componentName =
+        new ComponentName(RuntimeEnvironment.getApplication(), ActivityWithMetadata.class);
+
+    PackageManager.Property property =
+        packageManager.getProperty("org.robolectric.componentProperty", componentName);
+
+    assertThat(property.getString()).isEqualTo("componentValue");
+    assertThat(property.getClassName()).isEqualTo(ActivityWithMetadata.class.getName());
+    assertThrows(
+        NameNotFoundException.class,
+        () ->
+            packageManager.getProperty(
+                "org.robolectric.componentProperty",
+                RuntimeEnvironment.getApplication().getPackageName()));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProperty_added() throws NameNotFoundException {
+    shadowOf(packageManager)
+        .addProperty(
+            new PackageManager.Property("added", 7, false, "com.example.other", "com.example.A"));
+
+    PackageManager.Property property =
+        packageManager.getProperty(
+            "added", new ComponentName("com.example.other", "com.example.A"));
+
+    assertThat(property.getInteger()).isEqualTo(7);
+    assertThrows(
+        NameNotFoundException.class,
+        () -> packageManager.getProperty("added", "com.example.other"));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProperty_added_replacesManifestProperty() throws NameNotFoundException {
+    String packageName = RuntimeEnvironment.getApplication().getPackageName();
+    shadowOf(packageManager)
+        .addProperty(
+            new PackageManager.Property(
+                "org.robolectric.propertyString", "addedValue", packageName, null));
+
+    assertThat(
+            packageManager.getProperty("org.robolectric.propertyString", packageName).getString())
+        .isEqualTo("addedValue");
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProperty_fromManifest_doesNotLogErrors() throws NameNotFoundException {
+    String packageName = RuntimeEnvironment.getApplication().getPackageName();
+
+    PackageManager.Property property =
+        packageManager.getProperty("org.robolectric.propertyString", packageName);
+
+    assertThat(property.getString()).isEqualTo("propertyValue");
+    assertThat(
+            ShadowLog.getLogs().stream()
+                .filter(log -> log.type >= Log.ERROR)
+                .map(log -> log.tag + ": " + log.msg)
+                .collect(Collectors.toList()))
+        .isEmpty();
   }
 
   @Test

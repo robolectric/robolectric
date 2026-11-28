@@ -28,6 +28,7 @@ import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Arrays.asList;
@@ -78,6 +79,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Log;
 import android.util.Pair;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -107,6 +109,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -154,6 +157,21 @@ public class ShadowPackageManager {
   static final Map<String, Object> packageInstallSourceInfoMap = new HashMap<>();
   static final Map<Integer, String[]> packagesForUid = new HashMap<>();
   static final Map<String, Integer> uidForPackage = new HashMap<>();
+
+  /**
+   * The manifest {@code <property>} elements of each package, by {@code PackageManager.Property}
+   * key; see {@link #propertyKey}.
+   */
+  @GuardedBy("lock")
+  static final Map<String, Object> properties = new HashMap<>();
+
+  /**
+   * The APK of each package whose manifest properties have not been read yet. Read on the first
+   * property lookup, so tests that never ask for a property never parse the manifest again.
+   */
+  @GuardedBy("lock")
+  static final Map<String, String> unreadManifestProperties = new HashMap<>();
+
   static final Map<Integer, String> namesForUid = new HashMap<>();
   static final Map<Integer, Integer> verificationResults = new HashMap<>();
 
@@ -1459,6 +1477,43 @@ public class ShadowPackageManager {
     addFilters(serviceFilters, appPackage.services);
     addFilters(providerFilters, appPackage.providers);
     addFilters(receiverFilters, appPackage.receivers);
+    if (RuntimeEnvironment.getApiLevel() >= S && appPackage.baseCodePath != null) {
+      synchronized (lock) {
+        unreadManifestProperties.put(appPackage.packageName, appPackage.baseCodePath);
+      }
+    }
+  }
+
+  /**
+   * Adds a property, as if declared by a {@code <property>} element in the manifest of the package
+   * {@link PackageManager.Property#getPackageName()} names.
+   */
+  @VisibleForTesting
+  void addProperty(@ClassName("android.content.pm.PackageManager$Property") Object property) {
+    PackageManager.Property p = (PackageManager.Property) property;
+    synchronized (lock) {
+      properties.put(propertyKey(p.getPackageName(), p.getClassName(), p.getName()), p);
+    }
+  }
+
+  /** The property named {@code name} of a package, or of one of its components, or null. */
+  @Nullable
+  static Object getPropertyInternal(String packageName, @Nullable String className, String name) {
+    synchronized (lock) {
+      String apkPath = unreadManifestProperties.remove(packageName);
+      if (apkPath != null) {
+        for (Object property : ManifestProperties.forApk(apkPath, packageName)) {
+          PackageManager.Property p = (PackageManager.Property) property;
+          // A property added by the test wins over the manifest's.
+          properties.putIfAbsent(propertyKey(p.getPackageName(), p.getClassName(), p.getName()), p);
+        }
+      }
+      return properties.get(propertyKey(packageName, className, name));
+    }
+  }
+
+  private static String propertyKey(String packageName, @Nullable String className, String name) {
+    return packageName + '/' + (className == null ? "" : className) + '#' + name;
   }
 
   /**
@@ -1918,6 +1973,8 @@ public class ShadowPackageManager {
   @Resetter
   public static void reset() {
     synchronized (lock) {
+      properties.clear();
+      unreadManifestProperties.clear();
       permissionRationaleMap.clear();
       systemAvailableFeatures.clear();
       systemSharedLibraryNames.clear();

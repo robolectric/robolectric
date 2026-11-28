@@ -66,6 +66,13 @@
     <meta-data android:name="org.robolectric.metaStringOfIntFromRes" android:value="@string/str_int" />
     <meta-data android:name="org.robolectric.metaStringRes" android:resource="@string/app_name" />
 
+    <property android:name="org.robolectric.propertyString" android:value="propertyValue" />
+    <property android:name="org.robolectric.propertyStringFromRes" android:value="@string/app_name" />
+    <property android:name="org.robolectric.propertyBoolean" android:value="true" />
+    <property android:name="org.robolectric.propertyInt" android:value="123" />
+    <property android:name="org.robolectric.propertyFloat" android:value="1.5" />
+    <property android:name="org.robolectric.propertyResource" android:resource="@string/app_name" />
+
     <activity android:name="org.robolectric.shadows.testing.TestActivity"/>
 
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
@@ -77,6 +84,7 @@
 
     <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithMetadata">
       <meta-data android:name="someName" android:value="someValue"/>
+      <property android:name="org.robolectric.componentProperty" android:value="componentValue"/>
     </activity>
 
     <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithConfigChanges"
