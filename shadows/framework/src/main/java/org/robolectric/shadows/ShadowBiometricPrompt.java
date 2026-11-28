@@ -1,19 +1,24 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.CallbackExecutor;
+import android.hardware.biometrics.BiometricManager.Authenticators;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricPrompt.AuthenticationCallback;
 import android.hardware.biometrics.BiometricPrompt.AuthenticationResult;
 import android.hardware.biometrics.BiometricPrompt.CryptoObject;
+import android.hardware.security.keymint.HardwareAuthenticatorType;
 import android.os.Build;
 import android.os.CancellationSignal;
+import android.os.UserHandle;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implements;
@@ -102,7 +107,7 @@ public class ShadowBiometricPrompt {
       AuthenticationCallback callback) {
     synchronized (lock) {
       currentAuthenticateSession =
-          new AuthenticateSession(realBiometricPrompt, callback, cancel, executor);
+          new AuthenticateSession(realBiometricPrompt, null, callback, cancel, executor);
     }
   }
 
@@ -114,7 +119,7 @@ public class ShadowBiometricPrompt {
       AuthenticationCallback callback) {
     synchronized (lock) {
       currentAuthenticateSession =
-          new AuthenticateSession(realBiometricPrompt, callback, cancel, executor);
+          new AuthenticateSession(realBiometricPrompt, crypto, callback, cancel, executor);
     }
   }
 
@@ -146,12 +151,14 @@ public class ShadowBiometricPrompt {
 
   private static final class AuthenticateSession {
     private final BiometricPrompt prompt;
+    @Nullable private final CryptoObject crypto;
     private final AuthenticationCallback callback;
     private final CancellationSignal cancel;
     private final Executor executor;
 
     AuthenticateSession(
         BiometricPrompt prompt,
+        @Nullable CryptoObject crypto,
         AuthenticationCallback callback,
         CancellationSignal cancel,
         @CallbackExecutor Executor executor) {
@@ -161,6 +168,7 @@ public class ShadowBiometricPrompt {
       requireNonNull(executor, "Executor must be non-null");
 
       this.prompt = prompt;
+      this.crypto = crypto;
       this.callback = callback;
       this.cancel = cancel;
       this.executor = executor;
@@ -189,7 +197,44 @@ public class ShadowBiometricPrompt {
     }
 
     private void authenticateSuccessfully() {
-      executor.execute(() -> callback.onAuthenticationSucceeded(getAuthenticationResult()));
+      boolean biometric = usesBiometric();
+      if (RuntimeEnvironment.getApiLevel() >= S) {
+        addAuthToken(biometric);
+      }
+      AuthenticationResult result = getAuthenticationResult(biometric);
+      executor.execute(() -> callback.onAuthenticationSucceeded(result));
+    }
+
+    /**
+     * Returns whether the user authenticated with a biometric rather than their device credential,
+     * which they do if the prompt allows a biometric and one is enrolled.
+     */
+    private boolean usesBiometric() {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        return true;
+      }
+      int allowed = prompt.getAllowedAuthenticators();
+      boolean allowsBiometric = allowed == 0 || (allowed & ~Authenticators.DEVICE_CREDENTIAL) != 0;
+      boolean allowsCredential = (allowed & Authenticators.DEVICE_CREDENTIAL) != 0;
+      return allowsBiometric
+          && (ShadowBiometricManager.getBiometricSecureId() != 0 || !allowsCredential);
+    }
+
+    /** Authorizes the keystore keys that this authentication unlocks, as the system does. */
+    private void addAuthToken(boolean biometric) {
+      long secureUserId = ShadowKeyguardManager.getSecureUserId(UserHandle.myUserId());
+      long biometricSecureId = biometric ? ShadowBiometricManager.getBiometricSecureId() : 0;
+      if (secureUserId == 0 && biometricSecureId == 0) {
+        return;
+      }
+      int type =
+          biometric ? HardwareAuthenticatorType.FINGERPRINT : HardwareAuthenticatorType.PASSWORD;
+      if (crypto != null) {
+        KeystoreServiceDelegate.addAuthTokenForLatestOperation(
+            secureUserId, biometricSecureId, type);
+      } else {
+        KeystoreServiceDelegate.addAuthToken(0, secureUserId, biometricSecureId, type);
+      }
     }
 
     private void authenticateWithError(int errorCode, String message) {
@@ -200,20 +245,24 @@ public class ShadowBiometricPrompt {
       executor.execute(() -> callback.onAuthenticationFailed());
     }
 
-    private AuthenticationResult getAuthenticationResult() {
+    private AuthenticationResult getAuthenticationResult(boolean biometric) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         return ReflectionHelpers.callConstructor(
             AuthenticationResult.class,
-            ClassParameter.from(CryptoObject.class, null),
-            ClassParameter.from(int.class, 0));
+            ClassParameter.from(CryptoObject.class, crypto),
+            ClassParameter.from(
+                int.class,
+                biometric
+                    ? BiometricPrompt.AUTHENTICATION_RESULT_TYPE_BIOMETRIC
+                    : BiometricPrompt.AUTHENTICATION_RESULT_TYPE_DEVICE_CREDENTIAL));
       } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
         return ReflectionHelpers.callConstructor(
-            AuthenticationResult.class, ClassParameter.from(CryptoObject.class, null));
+            AuthenticationResult.class, ClassParameter.from(CryptoObject.class, crypto));
       } else {
         try {
           return ReflectionHelpers.callConstructor(
               AuthenticationResult.class,
-              ClassParameter.from(CryptoObject.class, null),
+              ClassParameter.from(CryptoObject.class, crypto),
               ClassParameter.from(
                   Class.forName(
                       "android.hardware.biometrics.BiometricAuthenticator$BiometricIdentifier"),

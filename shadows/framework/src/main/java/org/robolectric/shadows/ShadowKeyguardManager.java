@@ -2,13 +2,18 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
 import android.content.Intent;
+import android.hardware.security.keymint.HardwareAuthenticatorType;
+import android.os.UserHandle;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -26,6 +31,9 @@ public class ShadowKeyguardManager {
   private static boolean isDeviceSecure;
   private static Intent confirmFactoryResetCredentialIntent;
   private static KeyguardManager.KeyguardDismissCallback callback;
+  // The GateKeeper secure user id, which a new secure lock screen gets and keys requiring user
+  // authentication are bound to.
+  private static long secureUserId;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or false by
@@ -139,6 +147,15 @@ public class ShadowKeyguardManager {
    */
   public void setIsDeviceSecure(boolean isDeviceSecure) {
     ShadowKeyguardManager.isDeviceSecure = isDeviceSecure;
+    if (!isDeviceSecure) {
+      // Removing the secure lock screen removes the enrolled biometrics too, and invalidates the
+      // keys that require user authentication.
+      secureUserId = 0;
+      ShadowBiometricManager.getBiometricSecureId();
+      if (RuntimeEnvironment.getApiLevel() >= S) {
+        KeystoreServiceDelegate.onLockScreenRemoved();
+      }
+    }
   }
 
   /**
@@ -170,7 +187,14 @@ public class ShadowKeyguardManager {
    * @see #isDeviceLocked()
    */
   public void setIsDeviceLocked(boolean isDeviceLocked) {
+    boolean unlocked = ShadowKeyguardManager.isDeviceLocked && !isDeviceLocked;
     ShadowKeyguardManager.isDeviceLocked = isDeviceLocked;
+    long secureUserId = getSecureUserId(UserHandle.myUserId());
+    if (unlocked && secureUserId != 0 && RuntimeEnvironment.getApiLevel() >= S) {
+      // The user unlocked the device with their credential, which authorizes the keys that
+      // require recent user authentication.
+      KeystoreServiceDelegate.addAuthToken(0, secureUserId, 0, HardwareAuthenticatorType.PASSWORD);
+    }
   }
 
   /**
@@ -261,8 +285,24 @@ public class ShadowKeyguardManager {
     }
   }
 
+  /** Returns the GateKeeper secure user id of {@code userId}, or 0 without a secure lock screen. */
+  static long getSecureUserId(int userId) {
+    if (!isDeviceSecure && !deviceSecureForUsers.contains(userId)) {
+      return 0;
+    }
+    while (secureUserId == 0) {
+      secureUserId = new SecureRandom().nextLong();
+    }
+    return secureUserId;
+  }
+
+  static boolean isDeviceLockedNow() {
+    return isDeviceLocked || deviceLockedForUsers.contains(UserHandle.myUserId());
+  }
+
   @Resetter
   public static void reset() {
+    secureUserId = 0;
     deviceLockedForUsers.clear();
     deviceSecureForUsers.clear();
     inRestrictedInputMode = false;
