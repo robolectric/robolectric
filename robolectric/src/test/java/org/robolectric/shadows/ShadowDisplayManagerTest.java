@@ -691,6 +691,37 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
+  public void getSupportedModes_defaultDisplay_hasItsMode() {
+    Display display = getGlobal().getRealDisplay(Display.DEFAULT_DISPLAY);
+
+    assertThat(display.getSupportedModes()).asList().containsExactly(display.getMode());
+    assertThat(display.getMode().getRefreshRate()).isEqualTo(60f);
+  }
+
+  @Test
+  public void getSupportedModes_addedDisplay_hasItsMode() {
+    int displayId = ShadowDisplayManager.addDisplay(/* qualifiersStr= */ "w100dp-h200dp");
+    Display display = getGlobal().getRealDisplay(displayId);
+
+    assertThat(display.getSupportedModes()).asList().containsExactly(display.getMode());
+  }
+
+  @Test
+  public void getSupportedModes_afterChangeDisplay_hasTheNewSize() {
+    int displayId = ShadowDisplayManager.addDisplay(/* qualifiersStr= */ "w100dp-h200dp");
+
+    ShadowDisplayManager.changeDisplay(displayId, "w300dp-h400dp");
+
+    Display display = getGlobal().getRealDisplay(displayId);
+    Point size = new Point();
+    display.getRealSize(size);
+    Display.Mode[] modes = display.getSupportedModes();
+    assertThat(modes).hasLength(1);
+    assertThat(modes[0].getPhysicalWidth()).isEqualTo(size.x);
+    assertThat(modes[0].getPhysicalHeight()).isEqualTo(size.y);
+  }
+
+  @Test
   @Config(minSdk = P)
   public void getSaturationLevel_defaultValue_shouldReturnOne() {
     assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(1.0f);
