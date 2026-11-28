@@ -27,6 +27,8 @@ androidComponents {
   }
 }
 
+tasks.withType<JavaCompile>().configureEach { options.compilerArgs.add("-parameters") }
+
 dependencies {
   // Testing dependencies
   testImplementation(project(":robolectric"))
