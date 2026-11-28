@@ -2,7 +2,6 @@ package org.robolectric.interceptors;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
@@ -19,9 +18,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.InvokeDynamicSupport;
-import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -67,11 +64,8 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemNanoTime_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
-    } else {
-      SystemClock.setCurrentTimeMillis(200);
-    }
+    // The clock starts at 100 ms.
+    ShadowSystemClock.advanceBy(Duration.ofMillis(100));
 
     long nanoTime = invokeDynamic(System.class, "nanoTime", long.class);
     assertThat(nanoTime).isEqualTo(Duration.ofMillis(200).toNanos());
@@ -79,11 +73,8 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemCurrentTimeMillis_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
-    } else {
-      SystemClock.setCurrentTimeMillis(200);
-    }
+    // The clock starts at 100 ms.
+    ShadowSystemClock.advanceBy(Duration.ofMillis(100));
 
     long currentTimeMillis = invokeDynamic(System.class, "currentTimeMillis", long.class);
     assertThat(currentTimeMillis).isEqualTo(200);

@@ -27,10 +27,13 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void sleep() {
-    assertTrue(SystemClock.setCurrentTimeMillis(1000));
+    long uptime = SystemClock.uptimeMillis();
+    long realtime = SystemClock.elapsedRealtime();
+
     SystemClock.sleep(34);
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
-    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
+
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime + 34);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(realtime + 34);
   }
 
   @Test
@@ -46,6 +49,7 @@ public class ShadowPausedSystemClockTest {
   @SuppressWarnings("FutureReturnValueIgnored")
   @Test
   public void sleep_concurrentAccess() throws Exception {
+    long uptime = SystemClock.uptimeMillis();
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {
       CountDownLatch latch = new CountDownLatch(2);
@@ -59,7 +63,7 @@ public class ShadowPausedSystemClockTest {
       });
       latch.await();
 
-      assertThat(SystemClock.uptimeMillis()).isEqualTo(300);
+      assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime + 200);
     } finally {
       executor.shutdown();
     }
@@ -67,12 +71,13 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void deepSleep_advancesOnlyRealtime() {
-    assertTrue(SystemClock.setCurrentTimeMillis(1000));
+    long uptime = SystemClock.uptimeMillis();
+    long realtime = SystemClock.elapsedRealtime();
 
     ShadowPausedSystemClock.deepSleep(34);
 
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
-    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(realtime + 34);
   }
 
   @Test
@@ -88,7 +93,8 @@ public class ShadowPausedSystemClockTest {
   @SuppressWarnings("FutureReturnValueIgnored")
   @Test
   public void deepSleep_concurrentAccess_doesNotCorruptData() throws Exception {
-    SystemClock.setCurrentTimeMillis(100);
+    long uptime = SystemClock.uptimeMillis();
+    long realtime = SystemClock.elapsedRealtime();
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {
       int numToExecute = 10000;
@@ -102,8 +108,8 @@ public class ShadowPausedSystemClockTest {
       }
       latch.await();
 
-      assertThat(SystemClock.uptimeMillis()).isEqualTo(100);
-      assertThat(SystemClock.elapsedRealtime()).isEqualTo(100 + numToExecute * 100);
+      assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime);
+      assertThat(SystemClock.elapsedRealtime()).isEqualTo(realtime + numToExecute * 100);
     } finally {
       executor.shutdown();
     }
@@ -154,13 +160,15 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void advanceTimeBy_shouldAdvanceBothElapsedRealtimeAndUptimeMillis() {
-    SystemClock.setCurrentTimeMillis(1000);
+    long uptime = SystemClock.uptimeMillis();
+    long realtime = SystemClock.elapsedRealtime();
+    long threadTime = SystemClock.currentThreadTimeMillis();
 
     ShadowPausedSystemClock.advanceBy(Duration.ofMillis(100));
 
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(1100);
-    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1100);
-    assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(1100);
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime + 100);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(realtime + 100);
+    assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(threadTime + 100);
   }
 
   @Test
@@ -181,25 +189,33 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void simulateDeepSleep_shouldOnlyAdvanceElapsedRealtime() {
-    ShadowSystemClock.advanceBy(1000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
+    long uptime = SystemClock.uptimeMillis();
+    long realtime = SystemClock.elapsedRealtime();
 
     ShadowPausedSystemClock.simulateDeepSleep(Duration.ofMillis(100));
 
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
-    assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(1000);
-    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1100);
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime);
+    assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(uptime);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(realtime + 100);
   }
 
   @Test
   public void testElapsedRealtime() {
-    ShadowSystemClock.advanceBy(1000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
-    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1000);
+    long realtime = SystemClock.elapsedRealtime();
+
+    ShadowSystemClock.advanceBy(Duration.ofMillis(900));
+
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(realtime + 900);
   }
 
   @Test
   public void testElapsedRealtimeNanos() {
-    ShadowSystemClock.advanceBy(1000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
-    assertThat(SystemClock.elapsedRealtimeNanos()).isEqualTo(1000000000);
+    long realtimeNanos = SystemClock.elapsedRealtimeNanos();
+
+    ShadowSystemClock.advanceBy(Duration.ofMillis(900));
+
+    assertThat(SystemClock.elapsedRealtimeNanos())
+        .isEqualTo(realtimeNanos + Duration.ofMillis(900).toNanos());
   }
 
   @Test
@@ -207,8 +223,9 @@ public class ShadowPausedSystemClockTest {
     long systemNanoTime =
         (Long)
             RobolectricInternals.intercept("java/lang/System/nanoTime()J", null, null, getClass());
+    // The clock starts at 100 ms.
     assertThat(systemNanoTime).isEqualTo(TimeUnit.MILLISECONDS.toNanos(100));
-    SystemClock.setCurrentTimeMillis(1000);
+    ShadowSystemClock.advanceBy(Duration.ofMillis(900));
     systemNanoTime =
         (Long)
             RobolectricInternals.intercept("java/lang/System/nanoTime()J", null, null, getClass());
@@ -223,6 +240,7 @@ public class ShadowPausedSystemClockTest {
   @Test
   @Config(minSdk = P)
   public void currentNetworkTimeMillis_networkTimeAvailable_shouldReturnCurrentTime() {
+    // The clock starts at 100 ms.
     assertThat(SystemClock.currentNetworkTimeMillis()).isEqualTo(100);
   }
 
@@ -242,8 +260,9 @@ public class ShadowPausedSystemClockTest {
   @Config(minSdk = Q)
   public void currentGnssTimeClock_shouldReturnGnssTime() {
     ShadowSystemClock.setGnssTimeAvailable(true);
-    SystemClock.setCurrentTimeMillis(123456L);
-    assertThat(SystemClock.currentGnssTimeClock().millis()).isEqualTo(123456);
+    // The clock starts at 100 ms.
+    ShadowSystemClock.advanceBy(Duration.ofMillis(1000));
+    assertThat(SystemClock.currentGnssTimeClock().millis()).isEqualTo(1100);
   }
 
   @Test
