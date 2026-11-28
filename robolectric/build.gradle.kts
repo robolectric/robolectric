@@ -52,6 +52,9 @@ dependencies {
   testImplementation(variantOf(libs.androidx.test.runner) { artifactType("aar") })
   testImplementation(libs.guava)
   testImplementation(libs.guava.testlib)
+  testImplementation(libs.cronet.fallback)
+  testImplementation(platform(libs.okhttp.bom))
+  testImplementation(libs.okhttp.mockwebserver)
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates) // compile against latest Android SDK
   testRuntimeOnly(androidStubsJar())
 }

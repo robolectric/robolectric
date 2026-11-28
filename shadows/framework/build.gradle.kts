@@ -21,6 +21,7 @@ dependencies {
   api(project(":utils:reflector"))
 
   api(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
+  compileOnly(libs.cronet.fallback)
   compileOnly(libs.findbugs.jsr305)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   api(libs.icu4j)

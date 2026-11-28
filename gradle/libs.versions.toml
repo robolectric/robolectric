@@ -3,6 +3,7 @@ robolectric-nativeruntime-dist-compat = "1.0.20"
 
 commons-logging = "1.4.0"
 xml-security = "4.0.4"
+cronet-fallback = "119.6045.31"
 
 # https://developer.android.com/studio/releases
 android-gradle = "9.5.2"
@@ -151,6 +152,7 @@ android-gradle = { module = "com.android.tools.build:gradle", version.ref = "and
 zipflinger = { module = "com.android:zipflinger", version.ref = "android-gradle" }
 
 android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
+cronet-fallback = { module = "org.chromium.net:cronet-fallback", version.ref = "cronet-fallback" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
