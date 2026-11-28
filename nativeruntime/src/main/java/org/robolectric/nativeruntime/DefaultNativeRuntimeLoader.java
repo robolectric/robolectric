@@ -670,7 +670,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
     URL libraryResource = Resources.getResource(nativeLibraryPath());
-    Path libraryPath = prepareLibrary(libraryResource, libraryName(), tempDirectory);
+    Path libraryPath = prepareLibrary(libraryResource, runtimeFileName(), tempDirectory);
     Logger.info("Loading android native library from: %s", libraryPath);
     try {
       System.load(libraryPath.toAbsolutePath().toString());
@@ -792,6 +792,31 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
         var output = Files.asByteSink(destination.toFile()).openStream()) {
       ByteStreams.copy(input, output);
     }
+    if (renamesRuntime()) {
+      // Keeps the AOSP soname if the binary does not have the expected layout.
+      ElfSoname.rename(destination, ElfSoname.uniquePrefix(VERSION.SDK_INT));
+    }
+  }
+
+  /**
+   * The V+ runtime is AOSP's host libandroid_runtime, the same library layoutlib ships, and both
+   * are named libandroid_runtime.so: glibc satisfies layoutlib_jni.so's DT_NEEDED with whichever
+   * object of that soname or name is loaded first. Once this copy is loaded, Paparazzi in the same
+   * JVM binds layoutlib to it and the JVM aborts while layoutlib registers its natives. On Linux,
+   * each SDK's copy is extracted under a file name, soname and hwui self-lookup name of its own, so
+   * it can neither satisfy another library's lookup nor, through hwui's
+   * dlopen("libandroid_runtime.so") of itself, acquire that name. The rewrite happens as the
+   * library is extracted, before it reaches the shared cache (which keys entries by this name), so
+   * a cached copy is never modified in place.
+   */
+  private static boolean renamesRuntime() {
+    return isAndroidVOrGreater() && OsUtil.isLinux();
+  }
+
+  private static String runtimeFileName() {
+    return renamesRuntime()
+        ? ElfSoname.libraryName(ElfSoname.uniquePrefix(VERSION.SDK_INT))
+        : libraryName();
   }
 
   private static boolean isSupported() {
