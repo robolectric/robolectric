@@ -153,6 +153,11 @@ public class ShadowDisplayManager {
     displayInfo.modeId = 0;
     displayInfo.defaultModeId = 0;
     displayInfo.supportedModes = new Display.Mode[] {new Display.Mode(0, widthPx, heightPx, 60)};
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM
+        && RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
+      // Display.getSupportedModes() reads the modes apps may use, which a device always fills.
+      ReflectionHelpers.setField(displayInfo, "appsSupportedModes", displayInfo.supportedModes);
+    }
     displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
