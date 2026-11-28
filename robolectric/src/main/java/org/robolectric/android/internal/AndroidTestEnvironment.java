@@ -572,7 +572,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     } else {
       parsedPackage = new Package("org.robolectric.default");
     }
-    if (parsedPackage != null && parsedPackage.applicationInfo != null) {
+    // An AndroidManifest made from an APK alone, as the simulator makes one, has no manifest file
+    // to read these from, and would replace what PackageParser read from the APK with defaults.
+    // Without an APK, the manifest's values are all there is.
+    if (parsedPackage != null
+        && parsedPackage.applicationInfo != null
+        && (packageFile == null || appManifest.getAndroidManifestFile() != null)) {
       parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
       if (RuntimeEnvironment.getApiLevel() >= P) {
         parsedPackage.applicationInfo.appComponentFactory = appManifest.getAppComponentFactory();
