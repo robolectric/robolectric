@@ -60,7 +60,7 @@ public class ShadowPixelCopy {
     if (ShadowView.areRealDrawTraversalsEnabled() && hasRealSurface(source)) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
-      reflector(PixelCopyReflector.class).request(source, dest, listener, listenerThread);
+      request(source.getHolder().getSurface(), null, dest, listener, listenerThread);
     } else {
       takeScreenshot(source, dest, null);
       alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
@@ -77,7 +77,7 @@ public class ShadowPixelCopy {
     if (ShadowView.areRealDrawTraversalsEnabled() && hasRealSurface(source)) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
-      reflector(PixelCopyReflector.class).request(source, srcRect, dest, listener, listenerThread);
+      request(source.getHolder().getSurface(), srcRect, dest, listener, listenerThread);
     } else {
       if (srcRect != null && srcRect.isEmpty()) {
         throw new IllegalArgumentException("sourceRect is empty");

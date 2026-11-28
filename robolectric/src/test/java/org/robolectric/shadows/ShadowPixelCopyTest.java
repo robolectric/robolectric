@@ -7,6 +7,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -58,6 +59,26 @@ public class ShadowPixelCopyTest {
     surfaceView.setBackgroundColor(Color.RED);
     activity.setContentView(surfaceView, new FrameLayout.LayoutParams(100, 100));
     ShadowLooper.idleMainLooper();
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    AtomicInteger result = new AtomicInteger(-1);
+
+    PixelCopy.request(surfaceView, bitmap, result::set, new Handler(Looper.getMainLooper()));
+    ShadowLooper.idleMainLooper();
+
+    assertThat(result.get()).isEqualTo(PixelCopy.SUCCESS);
+    assertThat(bitmap.getPixel(50, 50)).isEqualTo(Color.RED);
+  }
+
+  @Test
+  public void requestSurfaceView_realDrawTraversals_followsViewLifecycle_readsSurface() {
+    ShadowSurfaceView.setFollowsViewLifecycle(true);
+    Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+    SurfaceView surfaceView = new SurfaceView(activity);
+    activity.setContentView(surfaceView, new FrameLayout.LayoutParams(100, 100));
+    ShadowLooper.idleMainLooper();
+    Canvas canvas = surfaceView.getHolder().lockCanvas();
+    canvas.drawColor(Color.RED);
+    surfaceView.getHolder().unlockCanvasAndPost(canvas);
     Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
     AtomicInteger result = new AtomicInteger(-1);
 
