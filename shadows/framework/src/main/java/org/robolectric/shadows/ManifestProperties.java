@@ -11,7 +11,6 @@ import android.os.Build.VERSION_CODES;
 import android.util.Log;
 import com.android.internal.pm.parsing.pkg.PackageImpl;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
-import com.android.internal.pm.pkg.component.AconfigFlags;
 import com.android.internal.pm.pkg.component.ParsedComponent;
 import com.android.internal.pm.pkg.parsing.ParsingPackage;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
@@ -95,12 +94,6 @@ final class ManifestProperties {
   /** V+, where the parser moved to {@code com.android.internal}. Not loaded on earlier SDKs. */
   private static final class InternalParser {
     static List<Property> parse(File apk) {
-      if (RuntimeEnvironment.getApiLevel() == VERSION_CODES.VANILLA_ICE_CREAM) {
-        // On V, loading ParsingPackageUtils reads the device's aconfig flag files and logs an
-        // error for each one that is missing, which is all of them under Robolectric.
-        ReflectionHelpers.setStaticField(
-            AconfigFlags.class, "sTextProtoFilesOnDevice", Collections.emptyList());
-      }
       ParseResult<ParsedPackage> result =
           ParsingPackageUtils.parseDefault(
               ParseTypeImpl.forParsingWithoutPlatformCompat(),
