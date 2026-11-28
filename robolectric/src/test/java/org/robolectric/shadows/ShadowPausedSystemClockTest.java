@@ -4,7 +4,9 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -120,6 +122,8 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void testSetCurrentTime() {
+    // The setter only advances the clock without robolectric.useRealWallClock.
+    assume().that(ShadowSystem.useRealWallClock()).isFalse();
     assertTrue(SystemClock.setCurrentTimeMillis(1034));
     assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
@@ -130,7 +134,19 @@ public class ShadowPausedSystemClockTest {
   }
 
   @Test
+  public void setCurrentTimeMillis_withRealWallClock_throws() {
+    setSystemPropertyRule.set("robolectric.useRealWallClock", "true");
+    long uptime = SystemClock.uptimeMillis();
+
+    assertThrows(UnsupportedOperationException.class, () -> SystemClock.setCurrentTimeMillis(1034));
+
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(uptime);
+  }
+
+  @Test
   public void setCurrentTimeMillis_notifiesListener() {
+    // The setter only advances the clock without robolectric.useRealWallClock.
+    assume().that(ShadowSystem.useRealWallClock()).isFalse();
     AtomicBoolean listenerCalled = new AtomicBoolean();
     ShadowPausedSystemClock.addListener(advancedBy -> listenerCalled.set(true));
 
@@ -142,6 +158,8 @@ public class ShadowPausedSystemClockTest {
   @SuppressWarnings("FutureReturnValueIgnored")
   @Test
   public void setCurrentTimeMillis_concurrentAccess() throws Exception {
+    // The setter only advances the clock without robolectric.useRealWallClock.
+    assume().that(ShadowSystem.useRealWallClock()).isFalse();
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {
       CountDownLatch latch = new CountDownLatch(2);

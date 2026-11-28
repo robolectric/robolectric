@@ -124,10 +124,18 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
    * <p>It is recommended to use ShadowSystemClock.advanceBy instead to advance
    * SystemClock.uptimeMillis and SystemClock.elapsedRealTime
    *
+   * <p>With {@code -Drobolectric.useRealWallClock=true}, which will be the default in the next
+   * release, it throws {@link UnsupportedOperationException} instead.
+   *
    * @return false if specified time is less than current uptime.
    */
   @Implementation
   protected static boolean setCurrentTimeMillis(long millis) {
+    if (ShadowSystem.useRealWallClock()) {
+      throw new UnsupportedOperationException(
+          "Robolectric does not support setting the wall clock. Use ShadowSystemClock.advanceBy to"
+              + " advance the clock.");
+    }
     long newTimeNs = millis * MILLIS_PER_NANO;
     long advanceNanos;
     synchronized (ShadowPausedSystemClock.class) {
@@ -190,6 +198,17 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
     } else {
       throw new DateTimeException("Network time not available");
     }
+  }
+
+  /**
+   * Advances uptime and elapsed realtime to the given uptime, if it is later than the current one.
+   */
+  static void internalAdvanceTo(long uptimeMillis) {
+    long advanceNanos;
+    synchronized (ShadowPausedSystemClock.class) {
+      advanceNanos = uptimeMillis * MILLIS_PER_NANO - currentUptimeNs;
+    }
+    internalAdvanceBy(Duration.ofNanos(advanceNanos));
   }
 
   static void internalAdvanceBy(Duration duration) {
