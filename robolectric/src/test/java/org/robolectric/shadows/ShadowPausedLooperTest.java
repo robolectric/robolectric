@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
@@ -19,9 +20,12 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Message;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
+import android.os.TestLooperManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.util.concurrent.SettableFuture;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
@@ -924,5 +928,44 @@ public class ShadowPausedLooperTest {
     // just post a runnable and rely on setUp to check
     Handler handler = new Handler(getMainLooper());
     handler.post(() -> {});
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void idle_insideHeldTestLooperManagerExecute_runsPostedTasks() {
+    // Espresso holds a TestLooperManager for the main looper while it runs a message, and a
+    // message can call into Robolectric code that idles the looper, such as ActivityController.
+    TestLooperManager manager =
+        InstrumentationRegistry.getInstrumentation().acquireLooperManager(getMainLooper());
+    Handler handler = new Handler(getMainLooper());
+    AtomicBoolean nestedTaskRan = new AtomicBoolean();
+    handler.post(() -> {
+      handler.post(() -> nestedTaskRan.set(true));
+      shadowMainLooper().idle();
+    });
+
+    try {
+      Message message = manager.next();
+      manager.execute(message);
+      manager.recycle(message);
+    } finally {
+      manager.release();
+    }
+
+    assertThat(nestedTaskRan.get()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void idle_afterHeldTestLooperManagerReleased_runsPostedTasks() {
+    InstrumentationRegistry.getInstrumentation().acquireLooperManager(getMainLooper()).release();
+    AtomicBoolean ran = new AtomicBoolean();
+    new Handler(getMainLooper()).post(() -> ran.set(true));
+
+    shadowMainLooper().idle();
+
+    assertThat(ran.get()).isTrue();
+    // The looper is free again, so it can be held once more.
+    InstrumentationRegistry.getInstrumentation().acquireLooperManager(getMainLooper()).release();
   }
 }
